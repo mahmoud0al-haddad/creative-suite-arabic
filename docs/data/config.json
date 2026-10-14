@@ -1,0 +1,122 @@
+{
+  "owner": "mahmoud0al-haddad",
+  "repo": "creative-suite-arabic",
+  "releaseTag": "v2026.10-ar.1",
+  "releasePublished": false,
+  "setupFile": "Creative-Suite-Arabic-Windows-x64-Setup.exe",
+  "downloadUrl": "",
+  "githubUrl": "",
+  "sourceUrl": "",
+  "upstreamOwner": "storytold",
+  "maintainer": "mahmoud0al-haddad",
+  "screenshots": [
+    {
+      "app": "photocraft",
+      "title": "PhotoCraft",
+      "image": "assets/screenshots/photocraft-ar.png",
+      "altAr": "واجهة PhotoCraft باللغة العربية",
+      "altEn": "PhotoCraft interface in Arabic",
+      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
+      "descriptionEn": "Arabic interface from the independent modified build."
+    },
+    {
+      "app": "vectorcraft",
+      "title": "VectorCraft",
+      "image": "assets/screenshots/vectorcraft-ar.png",
+      "altAr": "واجهة VectorCraft باللغة العربية",
+      "altEn": "VectorCraft interface in Arabic",
+      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
+      "descriptionEn": "Arabic interface from the independent modified build."
+    },
+    {
+      "app": "filmcraft",
+      "title": "FilmCraft",
+      "image": "assets/screenshots/filmcraft-ar.png",
+      "altAr": "واجهة FilmCraft باللغة العربية",
+      "altEn": "FilmCraft interface in Arabic",
+      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
+      "descriptionEn": "Arabic interface from the independent modified build."
+    },
+    {
+      "app": "lightcraft",
+      "title": "LightCraft",
+      "image": "assets/screenshots/lightcraft-ar.png",
+      "altAr": "واجهة LightCraft باللغة العربية",
+      "altEn": "LightCraft interface in Arabic",
+      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
+      "descriptionEn": "Arabic interface from the independent modified build."
+    },
+    {
+      "app": "effectcraft",
+      "title": "EffectCraft",
+      "image": "assets/screenshots/effectcraft-ar.png",
+      "altAr": "واجهة EffectCraft باللغة العربية",
+      "altEn": "EffectCraft interface in Arabic",
+      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
+      "descriptionEn": "Arabic interface from the independent modified build."
+    },
+    {
+      "app": "designcraft",
+      "title": "DesignCraft",
+      "image": "assets/screenshots/designcraft-ar.png",
+      "altAr": "واجهة DesignCraft باللغة العربية",
+      "altEn": "DesignCraft interface in Arabic",
+      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
+      "descriptionEn": "Arabic interface from the independent modified build."
+    },
+    {
+      "app": "pdfcraft",
+      "title": "PdfCraft",
+      "image": "assets/screenshots/pdfcraft-ar.png",
+      "altAr": "واجهة PdfCraft باللغة العربية",
+      "altEn": "PdfCraft interface in Arabic",
+      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
+      "descriptionEn": "Arabic interface from the independent modified build."
+    },
+    {
+      "app": "wordcraft",
+      "title": "WordCraft",
+      "image": "assets/screenshots/wordcraft-ar.png",
+      "altAr": "واجهة WordCraft باللغة العربية",
+      "altEn": "WordCraft interface in Arabic",
+      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
+      "descriptionEn": "Arabic interface from the independent modified build."
+    },
+    {
+      "app": "deckcraft",
+      "title": "DeckCraft",
+      "image": "assets/screenshots/deckcraft-ar.png",
+      "altAr": "واجهة DeckCraft باللغة العربية",
+      "altEn": "DeckCraft interface in Arabic",
+      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
+      "descriptionEn": "Arabic interface from the independent modified build."
+    },
+    {
+      "app": "gridcraft",
+      "title": "GridCraft",
+      "image": "assets/screenshots/gridcraft-ar.png",
+      "altAr": "واجهة GridCraft باللغة العربية",
+      "altEn": "GridCraft interface in Arabic",
+      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
+      "descriptionEn": "Arabic interface from the independent modified build."
+    },
+    {
+      "app": "cadcraft",
+      "title": "CadCraft",
+      "image": "assets/screenshots/cadcraft-ar.png",
+      "altAr": "واجهة CadCraft باللغة العربية",
+      "altEn": "CadCraft interface in Arabic",
+      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
+      "descriptionEn": "Arabic interface from the independent modified build."
+    },
+    {
+      "app": "soundcraft",
+      "title": "SoundCraft",
+      "image": "assets/screenshots/soundcraft-ar.png",
+      "altAr": "واجهة SoundCraft باللغة العربية",
+      "altEn": "SoundCraft interface in Arabic",
+      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
+      "descriptionEn": "Arabic interface from the independent modified build."
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+# Preserve byte hashes, signed document fixtures and source asset inventories across operating systems.
+* -text
+*.png binary
+*.ttf binary
+*.pdf binary

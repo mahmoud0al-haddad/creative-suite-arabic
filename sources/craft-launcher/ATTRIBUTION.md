@@ -1,0 +1,59 @@
+# Attribution
+
+Every non-code asset in this repository, with its author, source and license. ArtCraft
+Launcher's own code and original assets are MIT OR Apache-2.0 (see [`LICENSE-MIT`](LICENSE-MIT),
+[`LICENSE-APACHE`](LICENSE-APACHE) and [`NOTICE`](NOTICE)). When you add an asset, add a row here
+in the same change; third-party assets must be permissively licensed and keep their license file
+next to them.
+
+## Bundled in the app
+
+Arabic localisation additionally bundles `assets/fonts/NotoSansArabic-Variable.ttf`,
+Noto Sans Arabic by The Noto Project Authors, from
+https://github.com/google/fonts/tree/main/ofl/notosansarabic, under SIL OFL 1.1
+(`assets/fonts/OFL-NotoSansArabic.txt`).
+
+On Windows, Arabic uses the user's existing `Windows/Fonts/tahoma.ttf` instead,
+to match the requested ordinary system typeface. Tahoma is not copied or redistributed.
+
+`vendor/epaint` is epaint 0.36.2 by Emil Ernerfeldt and contributors, under
+MIT OR Apache-2.0, with a local Unicode bidi layout adaptation for Arabic.
+
+| Path | Title | Author | Source | License |
+|---|---|---|---|---|
+| `assets/app-icon/` (geometric icon outputs), `assets/personal/suite.svg`, PNGs and ICO | Original neutral geometric suite grid | Arabic edition contributors | Generated from the retained original geometric SVG by `packaging/icons.sh` | MIT OR Apache-2.0; original code licences and NOTICE retained |
+| `assets/social/linkedin.svg` | LinkedIn logo, linking to ArtCraft's company page | Fonticons, Inc. ([Font Awesome Free](https://fontawesome.com) 6.7.2) | Font Awesome Free `svgs/brands/linkedin.svg`; white fill and a square view box, see [`assets/social/README.md`](assets/social/README.md) | CC BY 4.0. The logo is a trademark of LinkedIn Corporation. |
+| `assets/social/x.svg`, `youtube.svg`, `tiktok.svg`, `instagram.svg` | X, YouTube, TikTok and Instagram logos, linking to ArtCraft's accounts | [Simple Icons](https://simpleicons.org/) contributors | Simple Icons, `fill` set to white for tinting; see [`assets/social/README.md`](assets/social/README.md) | CC0 1.0. The logos are trademarks of X Corp., Google LLC, TikTok / ByteDance and Meta Platforms, Inc. |
+| `assets/fonts/Inter-Variable.ttf` | Inter 4.001, variable (body text) | The Inter Project Authors (Rasmus Andersson) | Google Fonts, <https://github.com/google/fonts/tree/main/ofl/inter> (`Inter[opsz,wght].ttf`, renamed) | SIL OFL 1.1, [`assets/fonts/OFL-Inter.txt`](assets/fonts/OFL-Inter.txt) |
+| `assets/fonts/Archivo-Variable.ttf` | Archivo 2.001, variable (headings and app names) | The Archivo Project Authors (Omnibus-Type) | Google Fonts, <https://github.com/google/fonts/tree/main/ofl/archivo> (`Archivo[wdth,wght].ttf`, renamed) | SIL OFL 1.1, [`assets/fonts/OFL-Archivo.txt`](assets/fonts/OFL-Archivo.txt) |
+| `assets/fonts/GeistMono-Variable.ttf` | Geist Mono 1.701, variable (labels and buttons) | The Geist Project Authors (Vercel) | Google Fonts, <https://github.com/google/fonts/tree/main/ofl/geistmono> (`GeistMono[wght].ttf`, renamed) | SIL OFL 1.1, [`assets/fonts/OFL-GeistMono.txt`](assets/fonts/OFL-GeistMono.txt) |
+
+### Craft App Suite icons
+
+The launcher shows each Craft app with that app's own icon. They are copied unmodified from each
+app's repository; their designs belong to the ArtCraft Team and each app's contributors and are
+licensed like those apps. Refresh them from the source path, never redraw them.
+
+| Path | Title | Author | Source | License |
+|---|---|---|---|---|
+| `assets/app-icons/photocraft.png` | PhotoCraft app icon (nine-tailed kitsune), 128 px | ArtCraft Team and the PhotoCraft contributors | [`storytold/photocraft`](https://github.com/storytold/photocraft) `assets/app-icon/hicolor/128x128/apps/ai.storyteller.photocraft.png`, copied unmodified | MIT OR Apache-2.0 (PhotoCraft's [`LICENSE-MIT`](https://github.com/storytold/photocraft/blob/main/LICENSE-MIT), [`LICENSE-APACHE`](https://github.com/storytold/photocraft/blob/main/LICENSE-APACHE)) |
+| `assets/app-icons/lightcraft.png` | LightCraft app icon (lynx), 128 px | ArtCraft Team and the LightCraft contributors | [`storytold/lightcraft`](https://github.com/storytold/lightcraft) `assets/app-icon/hicolor/128x128/apps/ai.storyteller.lightcraft.png`, copied unmodified | MIT OR Apache-2.0 (LightCraft's [`LICENSE-MIT`](https://github.com/storytold/lightcraft/blob/main/LICENSE-MIT), [`LICENSE-APACHE`](https://github.com/storytold/lightcraft/blob/main/LICENSE-APACHE)) |
+| `assets/app-icons/filmcraft.png` | FilmCraft app icon (owl with ear tufts), 128 px | ArtCraft Team and the FilmCraft contributors | [`storytold/filmcraft`](https://github.com/storytold/filmcraft) `assets/app-icon/hicolor/128x128/apps/ai.storyteller.filmcraft.png`, copied unmodified | MIT OR Apache-2.0 (FilmCraft's [`LICENSE-MIT`](https://github.com/storytold/filmcraft/blob/main/LICENSE-MIT), [`LICENSE-APACHE`](https://github.com/storytold/filmcraft/blob/main/LICENSE-APACHE)) |
+| `assets/app-icons/designcraft.png` | DesignCraft app icon (cat in a polka-dot scarf), 128 px | ArtCraft Team and the DesignCraft contributors | [`storytold/designcraft`](https://github.com/storytold/designcraft) `assets/app-icon/hicolor/128x128/apps/ai.storyteller.designcraft.png`, copied unmodified | MIT OR Apache-2.0 (DesignCraft's [`LICENSE-MIT`](https://github.com/storytold/designcraft/blob/main/LICENSE-MIT), [`LICENSE-APACHE`](https://github.com/storytold/designcraft/blob/main/LICENSE-APACHE)) |
+| `assets/app-icons/vectorcraft.png` | VectorCraft app icon (dragon), 128 px | ArtCraft Team and the VectorCraft contributors | [`storytold/vectorcraft`](https://github.com/storytold/vectorcraft) `assets/app-icon/hicolor/128x128/apps/ai.storyteller.vectorcraft.png`, copied unmodified | MIT OR Apache-2.0 (VectorCraft's [`LICENSE-MIT`](https://github.com/storytold/vectorcraft/blob/main/LICENSE-MIT), [`LICENSE-APACHE`](https://github.com/storytold/vectorcraft/blob/main/LICENSE-APACHE)) |
+| `assets/app-icons/pdfcraft.png` | PdfCraft app icon (lion), 128 px | ArtCraft Team and the PdfCraft contributors | [`storytold/pdfcraft`](https://github.com/storytold/pdfcraft) `assets/app-icon/hicolor/128x128/apps/ai.storyteller.pdfcraft.png`, copied unmodified | MIT OR Apache-2.0 (PdfCraft's [`LICENSE-MIT`](https://github.com/storytold/pdfcraft/blob/main/LICENSE-MIT), [`LICENSE-APACHE`](https://github.com/storytold/pdfcraft/blob/main/LICENSE-APACHE)) |
+| `assets/app-icons/effectcraft.png` | EffectCraft app icon (unicorn), 128 px | ArtCraft Team and the EffectCraft contributors | [`storytold/effectcraft`](https://github.com/storytold/effectcraft) `assets/app-icon/hicolor/128x128/apps/ai.storyteller.effectcraft.png`, copied unmodified | MIT OR Apache-2.0 (EffectCraft's [`LICENSE-MIT`](https://github.com/storytold/effectcraft/blob/main/LICENSE-MIT), [`LICENSE-APACHE`](https://github.com/storytold/effectcraft/blob/main/LICENSE-APACHE)) |
+| `assets/app-icons/wordcraft.png` | WordCraft app icon (placeholder icon), 128 px | ArtCraft Team and the WordCraft contributors | [`storytold/wordcraft`](https://github.com/storytold/wordcraft) `assets/app-icon/hicolor/128x128/apps/ai.storyteller.wordcraft.png`, copied unmodified | MIT OR Apache-2.0 (WordCraft's [`LICENSE-MIT`](https://github.com/storytold/wordcraft/blob/main/LICENSE-MIT), [`LICENSE-APACHE`](https://github.com/storytold/wordcraft/blob/main/LICENSE-APACHE)) |
+| `assets/app-icons/deckcraft.png` | DeckCraft app icon (placeholder icon (presentation board)), 128 px | ArtCraft Team and the DeckCraft contributors | [`storytold/deckcraft`](https://github.com/storytold/deckcraft) `assets/app-icon/hicolor/128x128/apps/ai.storyteller.deckcraft.png`, copied unmodified | MIT OR Apache-2.0 (DeckCraft's [`LICENSE-MIT`](https://github.com/storytold/deckcraft/blob/main/LICENSE-MIT), [`LICENSE-APACHE`](https://github.com/storytold/deckcraft/blob/main/LICENSE-APACHE)) |
+| `assets/app-icons/gridcraft.png` | GridCraft app icon (app icon), 128 px | ArtCraft Team and the GridCraft contributors | [`storytold/gridcraft`](https://github.com/storytold/gridcraft) `assets/app-icon/hicolor/128x128/apps/ai.storyteller.gridcraft.png`, copied unmodified | MIT OR Apache-2.0 (GridCraft's [`LICENSE-MIT`](https://github.com/storytold/gridcraft/blob/main/LICENSE-MIT), [`LICENSE-APACHE`](https://github.com/storytold/gridcraft/blob/main/LICENSE-APACHE)) |
+| `assets/app-icons/cadcraft.png` | CADCraft app icon (app icon), 128 px | ArtCraft Team and the CADCraft contributors | [`storytold/cadcraft`](https://github.com/storytold/cadcraft) `assets/app-icon/hicolor/128x128/apps/ai.storyteller.cadcraft.png`, copied unmodified | MIT OR Apache-2.0 (CADCraft's [`LICENSE-MIT`](https://github.com/storytold/cadcraft/blob/main/LICENSE-MIT), [`LICENSE-APACHE`](https://github.com/storytold/cadcraft/blob/main/LICENSE-APACHE)) |
+| `assets/app-icons/soundcraft.png` | SoundCraft app icon (nightingale (placeholder)), 128 px | ArtCraft Team and the SoundCraft contributors | [`storytold/soundcraft`](https://github.com/storytold/soundcraft) `assets/app-icon/hicolor/128x128/apps/ai.storyteller.soundcraft.png`, copied unmodified | MIT OR Apache-2.0 (SoundCraft's [`LICENSE-MIT`](https://github.com/storytold/soundcraft/blob/main/LICENSE-MIT), [`LICENSE-APACHE`](https://github.com/storytold/soundcraft/blob/main/LICENSE-APACHE)) |
+
+## Documentation and README
+
+| Path | Title | Author | Source | License |
+|---|---|---|---|---|
+| `docs/brand/LICENSE-brand.txt` (terms only; artwork excluded) | ArtCraft brand terms, retained unchanged | ArtCraft Team | getartcraft.com (via `craftrules/assets/brand/`) | Not open source; trademarks of the ArtCraft Team, [`docs/brand/LICENSE-brand.txt`](docs/brand/LICENSE-brand.txt) |
+| README app icons (linked, not copied) | Each Craft app's 64 px icon | ArtCraft Team and each app's contributors | `raw.githubusercontent.com/storytold/<app>/main/assets/app-icon/hicolor/64x64/apps/ai.storyteller.<app>.png` | MIT OR Apache-2.0 (each app's license) |
+
+Personal edition: `assets/personal/suite.svg`, PNG sizes and ICO are original geometric grid artwork generated for this modification, licensed MIT OR Apache-2.0. The edition is based on ArtCraft Launcher by the ArtCraft team; original copyright and notices are retained.

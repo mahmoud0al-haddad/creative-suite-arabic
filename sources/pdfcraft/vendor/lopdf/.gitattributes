@@ -1,0 +1,12 @@
+*          text eol=lf
+
+*.rs       text diff=rust
+*.toml     text diff=toml
+*.pdf      binary
+Cargo.lock text
+*.jpg binary
+*.jpeg binary
+*.png binary
+
+# Preserve the published source snapshot bytes and source-manifest checksums.
+* -text

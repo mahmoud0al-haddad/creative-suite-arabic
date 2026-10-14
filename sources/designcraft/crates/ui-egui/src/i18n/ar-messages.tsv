@@ -1,0 +1,419 @@
+@msg	1 to 4 topic levels	من مستوى واحد إلى أربعة مستويات للموضوعات
+@msg	@{v0}: {v1} PRs, {v2} commits, +{v3} / −{v4} lines (Δ {v5}), +{v6} / −{v7} binary assets, {v8} – {v9}	@{v0}: طلبات الدمج: {v1}، التعديلات: {v2}، الأسطر: +{v3} / −{v4} (الصافي {v5})، الملفات الثنائية: +{v6} / −{v7}، {v8} – {v9}
+@msg	Alternate layout: {e}	تخطيط بديل: {e}
+@msg	Book: {e}	كتاب: {e}
+@msg	Buttons: {e}	أزرار: {e}
+@msg	Color Settings: {e}	إعدادات الألوان: {e}
+@msg	Conditional Text: {e}	النص الشرطي: {e}
+@msg	Convert Shape: {e}	تحويل الشكل: {e}
+@msg	Couldn't write recovery data: {e}	تعذّر حفظ بيانات الاسترداد: {e}
+@msg	Export a PDF, IDML or package to share — no cloud account needed.	صدّر ملف PDF أو IDML أو حزمة لمشاركتها؛ لا تحتاج إلى حساب سحابي.
+@msg	Glyphs: {e}	محارف: {e}
+@msg	Hyperlinks: {e}	ارتباطات تشعبية: {e}
+@msg	Import XML: {e}	استيراد XML: {e}
+@msg	Invalid panel layout; restored the default dock	تخطيط اللوحات غير صالح؛ أُعيد ترتيب اللوحات الافتراضي
+@msg	Library: {e}	مكتبة: {e}
+@msg	Load DTD: {e}	تحميل DTD: {e}
+@msg	Media: {e}	وسائط: {e}
+@msg	No style named {name}	لا يوجد نمط باسم {name}
+@msg	Notes: {e}	ملاحظات: {e}
+@msg	Object States: {e}	حالات الكائن: {e}
+@msg	PDF import cancelled: the originating document has closed	أُلغي استيراد PDF لأن المستند الأصلي أُغلق
+@msg	Packaged {v0} files into {v1}	جُمعت {v0} ملفات في {v1}
+@msg	Relinked {v0}	أُعيد ربط {v0}
+@msg	Scripts: {e}	السكربتات: {e}
+@msg	Select text to apply a condition	حدد نصًا لتطبيق شرط
+@msg	Sent {v0} page(s) to {v1}	أُرسلت صفحات عددها {v0} إلى {v1}
+@msg	Table: {e}	جدول: {e}
+@msg	Tags: {e}	وسوم: {e}
+@msg	User Dictionary: {e}	قاموس المستخدم: {e}
+@msg	[None] can't be edited	لا يمكن تحرير [None]
+@msg	`basedOn` is a style name or null	يجب أن تكون قيمة `basedOn` اسم نمط أو null
+@msg	`change` required	يجب تحديد `change`
+@msg	`flatten`: high|medium|low or 36–1200 ppi	يقبل `flatten` القيم high أو medium أو low، أو دقة من 36 إلى 1200 بكسل في البوصة
+@msg	`height` required	يجب تحديد `height`
+@msg	`id` required	يجب تحديد `id`
+@msg	`index` or `name` required	يجب تحديد `index` or `name`
+@msg	`index` required	يجب تحديد `index`
+@msg	`kind`: textField|checkBox|comboBox|listBox|signature	يقبل `kind` القيم textField أو checkBox أو comboBox أو listBox أو signature
+@msg	`latex` required	يجب تحديد `latex`
+@msg	`name` required	يجب تحديد `name`
+@msg	`page` (0-based) required	المعامل `page` مطلوب؛ يبدأ ترقيمه من الصفر
+@msg	`path` or `json` required	يجب تحديد `path` or `json`
+@msg	`path` or `text` required	يجب تحديد `path` or `text`
+@msg	`path` required	يجب تحديد `path`
+@msg	`rows` and `columns` must be provided together	يجب تحديد `rows` و`columns` معًا
+@msg	`rows` × `columns` must not exceed {MAX_STEP_REPEAT_COPIES}	يجب ألا يتجاوز حاصل ضرب `rows` في `columns` القيمة {MAX_STEP_REPEAT_COPIES}
+@msg	`rule`: off|scale|reCenter|guideBased|objectBased	يقبل `rule` القيم off أو scale أو reCenter أو guideBased أو objectBased
+@msg	`space`: cmyk or rgb	يقبل `space` القيمة cmyk أو rgb
+@msg	`spread.kind` must be `doc` or `parent`	يجب أن تكون قيمة `spread.kind` هي `doc` أو `parent`
+@msg	`spread` must be a non-negative integer or a spread reference	يجب أن يكون `spread` عددًا صحيحًا غير سالب أو مرجعًا لحيّز صفحات
+@msg	`start` required	يجب تحديد `start`
+@msg	`story` required	يجب تحديد `story`
+@msg	`style` required	يجب تحديد `style`
+@msg	`text` required	يجب تحديد `text`
+@msg	`to` required	يجب تحديد `to`
+@msg	`url` required	يجب تحديد `url`
+@msg	`width` required	يجب تحديد `width`
+@msg	`words` required	يجب تحديد `words`
+@msg	`{key}` is too large for this platform	قيمة `{key}` أكبر مما تسمح به هذه المنصة
+@msg	`{key}` must be a finite number	يجب أن تكون قيمة `{key}` عددًا محدودًا
+@msg	`{key}` must be a non-negative integer	يجب أن تكون قيمة `{key}` عددًا صحيحًا غير سالب
+@msg	`{key}` must be an integer	يجب أن تكون قيمة `{key}` عددًا صحيحًا
+@msg	`{key}` must be between 0 and {MAX_GUIDE_GUTTER}	يجب أن تكون قيمة `{key}` بين 0 و{MAX_GUIDE_GUTTER}
+@msg	`{key}` must be between 1 and {MAX_STEP_REPEAT_COPIES}	يجب أن تكون قيمة `{key}` بين 1 و{MAX_STEP_REPEAT_COPIES}
+@msg	`{key}` must not exceed {MAX_GUIDE_DIVISIONS}	يجب ألا تتجاوز قيمة `{key}` العدد {MAX_GUIDE_DIVISIONS}
+@msg	`{k}`: anchor|textFrame|columnEdge|pageMargin|pageEdge	يقبل `{k}` القيم anchor أو textFrame أو columnEdge أو pageMargin أو pageEdge
+@msg	`{name}` isn't a spot ink	اللون `{name}` ليس حبرًا موضعيًا
+@msg	`{name}` isn't a valid XML name	الاسم `{name}` غير صالح في XML
+@msg	`{n}` can't go in a group	لا يمكن وضع `{n}` داخل مجموعة
+@msg	`{n}` is built in	العنصر `{n}` مضمّن في التطبيق
+@msg	`{t}` isn't a valid XML name	الاسم `{t}` غير صالح في XML
+@msg	a condition named `{name}` exists	يوجد شرط بالاسم `{name}` بالفعل
+@msg	a condition named `{t}` exists	يوجد شرط بالاسم `{t}` بالفعل
+@msg	a dash `pattern` needs a positive length	يحتاج نمط الشرطات `pattern` إلى طول موجب
+@msg	a document needs at least one layer	يحتاج المستند إلى طبقة واحدة على الأقل
+@msg	a gradient needs at least two stops	يحتاج التدرّج إلى نقطتي توقف على الأقل
+@msg	a group named `{n}` exists	توجد مجموعة بالاسم `{n}` بالفعل
+@msg	a path needs at least two anchors	يحتاج المسار إلى نقطتي ارتكاز على الأقل
+@msg	a single command may create at most {MAX_GUIDES_CREATED} guides	يمكن للأمر الواحد إنشاء {MAX_GUIDES_CREATED} دليل محاذاة على الأكثر
+@msg	a single command may create at most {max_work} items, including group contents	يمكن للأمر الواحد إنشاء {max_work} عنصرًا على الأكثر، بما فيها محتويات المجموعات
+@msg	a stop needs a color	تحتاج نقطة التوقف إلى لون
+@msg	a swatch named `{new}` exists	توجد عيّنة لون بالاسم `{new}` بالفعل
+@msg	align: {e}	المحاذاة: {e}
+@msg	all selected rows must be laid out; enlarge or thread the text frame first	يجب توزيع جميع الصفوف المحددة؛ كبّر إطار النص أو اربطه بإطار آخر أولًا
+@msg	an article named `{n}` exists	توجد مقالة بالاسم `{n}` بالفعل
+@msg	an output filename would be outside the selected directory	سيؤدي اسم ملف الإخراج إلى الحفظ خارج المجلد المحدد
+@msg	angle required	يجب تحديد الزاوية
+@msg	autoflow stopped after {max_pages} pages	توقف تدفّق النص التلقائي بعد {max_pages} صفحة
+@msg	bad GREP: {e}	تعبير GREP غير صالح: {e}
+@msg	bad `crop`: {v} (n or [t, l, b, r])	قيمة `crop` غير صالحة: {v}؛ استخدم عددًا أو [t, l, b, r]
+@msg	bad `pages`: {v}	قيمة `pages` غير صالحة: {v}
+@msg	bad color	اللون غير صالح
+@msg	bad feature tag `{tag}`	وسم ميزة الخط `{tag}` غير صالح
+@msg	bad page {n}	الصفحة {n} غير صالحة
+@msg	bad page {x}	الصفحة {x} غير صالحة
+@msg	based-on would create a cycle	سيؤدي اختيار النمط الأساسي إلى إنشاء حلقة اعتماد
+@msg	blend must be a string	يجب أن تكون قيمة blend نصًا
+@msg	books need a file system	تحتاج الكتب إلى نظام ملفات
+@msg	built-in styles can't be deleted	لا يمكن حذف الأنماط المضمّنة
+@msg	can't alias to `{to}`	لا يمكن إنشاء اسم مستعار يشير إلى `{to}`
+@msg	can't read that PDF page	تعذّرت قراءة صفحة PDF المحددة
+@msg	can't rename to `{n}`	لا يمكن تغيير الاسم إلى `{n}`
+@msg	can't rename to `{to}`	لا يمكن تغيير الاسم إلى `{to}`
+@msg	cell range out of bounds ({nr}×{nc} table)	نطاق الخلايا خارج حدود الجدول؛ أبعاده {nr}×{nc}
+@msg	clipboard is empty	الحافظة فارغة
+@msg	command `{0}` is not available right now: {1}	الأمر `{0}` غير متاح حاليًا: {1}
+@msg	could not anchor the paragraph	تعذّر تثبيت الفقرة
+@msg	degenerate source rect	مستطيل المصدر منعدم المساحة
+@msg	edit text or select a text frame	حرّر النص أو حدّد إطار نص
+@msg	empty path	المسار فارغ
+@msg	empty search	عبارة البحث فارغة
+@msg	empty spread	حيّز الصفحات فارغ
+@msg	endnote {id} has no reference in the text	لا يوجد مرجع في النص للحاشية الختامية {id}
+@msg	endnotes go in story text, not tables or footnotes	تُدرج الحواشي الختامية في النص الأساسي، خارج الجداول والحواشي السفلية
+@msg	footnote not found	لم يُعثر على الحاشية السفلية
+@msg	frame not found	لم يُعثر على الإطار
+@msg	generated offsets must stay between -{MAX_STEP_REPEAT_OFFSET} and {MAX_STEP_REPEAT_OFFSET}	يجب أن تبقى الإزاحات الناتجة بين -{MAX_STEP_REPEAT_OFFSET} و{MAX_STEP_REPEAT_OFFSET}
+@msg	give `anchor`, `paragraph` or `story` + `para`	حدّد `anchor` أو `paragraph`، أو `story` مع `para`
+@msg	give `dir` and/or `extension`	حدّد `dir` أو `extension` أو كليهما
+@msg	give `entries` or `styles`	حدّد `entries` أو `styles`
+@msg	give `pages` (1-based)	حدّد `pages`؛ يبدأ ترقيم الصفحات من 1
+@msg	give `pages` (1-based), `spread` or `all`	حدّد `pages` بترقيم يبدأ من 1، أو `spread` أو `all`
+@msg	give `path` or `base64`	حدّد `path` أو `base64`
+@msg	give `rect` or select a frame	حدّد `rect` أو اختر إطارًا
+@msg	give `story` and `index`, or put the insertion point next to an anchored object	حدّد `story` و`index`، أو ضع نقطة الإدراج بجوار كائن مثبّت
+@msg	give `story` or place the insertion point in story text	حدّد `story` أو ضع نقطة الإدراج داخل النص الأساسي
+@msg	give `topic` or select the text to index	حدّد `topic` أو اختر النص المطلوب فهرسته
+@msg	give `url`, `email` or `page`	حدّد `url` أو `email` أو `page`
+@msg	guide geometry is outside the supported range	أبعاد دليل المحاذاة خارج النطاق المدعوم
+@msg	guide geometry must be finite and within the supported range	يجب أن تكون أبعاد دليل المحاذاة محدودة وضمن النطاق المدعوم
+@msg	image and qr placeholders bind to a frame	ترتبط العناصر النائبة للصور ورموز QR بإطار
+@msg	insert failed	تعذّر الإدراج
+@msg	internal error in `{0}` (the document was kept as it was): {1}	خطأ داخلي في الأمر `{0}`؛ حُفظ المستند كما كان: {1}
+@msg	invalid composed row height	ارتفاع الصف بعد التوزيع غير صالح
+@msg	invalid name, base entry, font, scale or baseline shift	الاسم أو المدخل الأساسي أو الخط أو المقياس أو إزاحة خط الأساس غير صالح
+@msg	invalid parameters for `{cmd}`: {msg}	معاملات الأمر `{cmd}` غير صالحة: {msg}
+@msg	invalid row range	نطاق الصفوف غير صالح
+@msg	invalid total row height	الارتفاع الإجمالي للصفوف غير صالح
+@msg	lpr: {e}	lpr: {e}
+@msg	missing `dir`	المعامل `dir` مطلوب
+@msg	missing `field`	المعامل `field` مطلوب
+@msg	missing `find`	المعامل `find` مطلوب
+@msg	missing `id`	المعامل `id` مطلوب
+@msg	missing `path`	المعامل `path` مطلوب
+@msg	missing `path` (document has never been saved)	المعامل `path` مطلوب؛ لم يُحفظ هذا المستند من قبل
+@msg	missing `path` or `base64`	المعامل `path` or `base64` مطلوب
+@msg	missing `spread.index`	المعامل `spread.index` مطلوب
+@msg	missing a	المعامل `a` مطلوب
+@msg	missing anchor	يجب تحديد نقطة الارتكاز
+@msg	missing asset	يجب تحديد الأصل
+@msg	missing at	يجب تحديد موضع الإدراج
+@msg	missing b	المعامل `b` مطلوب
+@msg	missing color	يجب تحديد اللون
+@msg	missing definition	يجب تحديد التعريف
+@msg	missing direction	يجب تحديد الاتجاه
+@msg	missing family	يجب تحديد عائلة الخط
+@msg	missing format	يجب تحديد الصيغة
+@msg	missing frame	يجب تحديد الإطار
+@msg	missing from	يجب تحديد المصدر
+@msg	missing graphic	يجب تحديد الرسم
+@msg	missing height	يجب تحديد الارتفاع
+@msg	missing id	يجب تحديد المعرّف
+@msg	missing ids	يجب تحديد المعرّفات
+@msg	missing index	يجب تحديد الفهرس
+@msg	missing name	يجب تحديد الاسم
+@msg	missing or bad color	اللون غير محدد أو غير صالح
+@msg	missing page	يجب تحديد الصفحة
+@msg	missing path	يجب تحديد المسار
+@msg	missing position	يجب تحديد الموضع
+@msg	missing rect	يجب تحديد المستطيل
+@msg	missing spread	يجب تحديد حيّز الصفحات
+@msg	missing story	يجب تحديد التسلسل النصي
+@msg	missing swatch	يجب تحديد عيّنة اللون
+@msg	missing to	يجب تحديد الوجهة
+@msg	missing toFamily	يجب تحديد عائلة الخط البديلة
+@msg	missing vertical	يجب تحديد الاتجاه الرأسي
+@msg	missing width	يجب تحديد العرض
+@msg	missing word	يجب تحديد الكلمة
+@msg	multiple records on a page need one page with facing pages off	تحتاج السجلات المتعددة في الصفحة إلى مستند من صفحة واحدة مع تعطيل الصفحات المتقابلة
+@msg	nested items can't be detached	لا يمكن فصل العناصر المتداخلة
+@msg	no active document	لا يوجد مستند نشط
+@msg	no anchor	لم يُعثر على نقطة الارتكاز
+@msg	no anchor {a}	لم يُعثر على نقطة الارتكاز: {a}
+@msg	no anchored object at the insertion point	لا يوجد كائن مثبّت عند نقطة الإدراج
+@msg	no article `{name}`	لم يُعثر على المقالة: `{name}`
+@msg	no book open	لا يوجد كتاب مفتوح
+@msg	no bookmark {i}	لم يُعثر على الإشارة المرجعية: {i}
+@msg	no caret	لم يُعثر على مؤشر النص
+@msg	no cell	لم يُعثر على الخلية
+@msg	no cell style `{name}`	لم يُعثر على نمط الخلية: `{name}`
+@msg	no change there	لا يوجد تغيير في هذا الموضع
+@msg	no character style `{b}`	لم يُعثر على نمط الأحرف: `{b}`
+@msg	no character style `{name}`	لم يُعثر على نمط الأحرف: `{name}`
+@msg	no color group `{g}`	لم يُعثر على مجموعة الألوان: `{g}`
+@msg	no color group `{name}`	لم يُعثر على مجموعة الألوان: `{name}`
+@msg	no condition `{name}`	لم يُعثر على الشرط: `{name}`
+@msg	no condition `{n}`	لم يُعثر على الشرط: `{n}`
+@msg	no cross-reference format `{format}`	لم يُعثر على صيغة المرجع المتبادل: `{format}`
+@msg	no document {i}	لم يُعثر على المستند: {i}
+@msg	no endnote {id}	لم يُعثر على الحاشية الختامية: {id}
+@msg	no entries	لم يُعثر على المدخلات
+@msg	no file system on the web	نظام الملفات غير متاح في نسخة الويب
+@msg	no footnote {id}	لم يُعثر على الحاشية السفلية: {id}
+@msg	no free article name	لا يتوفر اسم غير مستخدم للمقالة
+@msg	no free group name	لا يتوفر اسم غير مستخدم للمجموعة
+@msg	no gap there	لا توجد فجوة في هذا الموضع
+@msg	no hyperlink {id}	لم يُعثر على الرابط التشعّبي: {id}
+@msg	no index	لم يُعثر على الفهرس
+@msg	no insertion point	لم يُعثر على نقطة الإدراج
+@msg	no interaction	لم يُعثر على التفاعل
+@msg	no item {i}	لم يُعثر على العنصر: {i}
+@msg	no item {v0}	لم يُعثر على العنصر: {v0}
+@msg	no layers	لم يُعثر على الطبقات
+@msg	no library open	لا توجد مكتبة مفتوحة
+@msg	no mark	لم يُعثر على العلامة
+@msg	no note {id}	لم يُعثر على الملاحظة: {id}
+@msg	no object style `{name}`	لم يُعثر على نمط الكائن: `{name}`
+@msg	no object with id {v0}	لم يُعثر على كائن بالمعرّف {v0}
+@msg	no page {page}	لم يُعثر على الصفحة: {page}
+@msg	no page {v0}	لم يُعثر على الصفحة: {v0}
+@msg	no paragraph contains `{text}`	لا توجد فقرة تحتوي على النص `{text}`
+@msg	no paragraph style `{name}`	لم يُعثر على نمط الفقرة: `{name}`
+@msg	no paragraph style `{style}`	لم يُعثر على نمط الفقرة: `{style}`
+@msg	no paragraph style `{st}`	لم يُعثر على نمط الفقرة: `{st}`
+@msg	no placeholder	لم يُعثر على العنصر النائب
+@msg	no preset `{name}`	لم يُعثر على الإعداد المسبق: `{name}`
+@msg	no records	لم يُعثر على السجلات
+@msg	no recovery folder (give `dir`)	لا يوجد مجلد استرداد؛ حدّد `dir`
+@msg	no recovery folder on the web	مجلد الاسترداد غير متاح في نسخة الويب
+@msg	no selection	لم يُعثر على التحديد
+@msg	no spread	لم يُعثر على حيّز الصفحات
+@msg	no spread {si}	لم يُعثر على حيّز الصفحات: {si}
+@msg	no state `{n}`	لم يُعثر على الحالة: `{n}`
+@msg	no state {i}	لم يُعثر على الحالة: {i}
+@msg	no story	لم يُعثر على التسلسل النصي
+@msg	no story selected	لم يُحدّد تسلسل نصي
+@msg	no story {v0}	لم يُعثر على التسلسل النصي: {v0}
+@msg	no stroke style `{name}`	لم يُعثر على نمط الحدّ: `{name}`
+@msg	no style `{b}`	لم يُعثر على النمط: `{b}`
+@msg	no style `{name}`	لم يُعثر على النمط: `{name}`
+@msg	no style `{n}`	لم يُعثر على النمط: `{n}`
+@msg	no such anchor	لم يُعثر على نقطة الارتكاز
+@msg	no such anchored object	لم يُعثر على الكائن المثبّت
+@msg	no such cross-reference	لم يُعثر على المرجع المتبادل
+@msg	no such frame	لم يُعثر على الإطار
+@msg	no such graphic	لم يُعثر على الرسم
+@msg	no such group	لم يُعثر على المجموعة
+@msg	no such guide	لم يُعثر على دليل المحاذاة
+@msg	no such item	لم يُعثر على العنصر
+@msg	no such layer	لم يُعثر على الطبقة
+@msg	no such object	لم يُعثر على الكائن
+@msg	no such page	لم يُعثر على الصفحة
+@msg	no such paragraph	لم يُعثر على الفقرة
+@msg	no such spread	لم يُعثر على حيّز الصفحات
+@msg	no such story	لم يُعثر على التسلسل النصي
+@msg	no such subpath	لم يُعثر على المسار الفرعي
+@msg	no swatch `{color}`	لم يُعثر على عيّنة اللون: `{color}`
+@msg	no swatch `{name}`	لم يُعثر على عيّنة اللون: `{name}`
+@msg	no swatch {v}	لم يُعثر على عيّنة اللون: {v}
+@msg	no table	لم يُعثر على الجدول
+@msg	no table of contents	لم يُعثر على جدول المحتويات
+@msg	no table style `{name}`	لم يُعثر على نمط الجدول: `{name}`
+@msg	no table {table}	لم يُعثر على الجدول: {table}
+@msg	no table {tid}	لم يُعثر على الجدول: {tid}
+@msg	no text	لم يُعثر على النص
+@msg	no text selected	لم يُحدّد نص
+@msg	no transform to repeat	لا يوجد تحويل لتكراره
+@msg	no variable `{name}`	لم يُعثر على المتغير: `{name}`
+@msg	not a book: {e}	الملف ليس كتابًا: {e}
+@msg	not a library: {e}	الملف ليس مكتبة: {e}
+@msg	not a multi-state object	الكائن لا يحتوي على حالات متعددة
+@msg	not a placed PDF	العنصر ليس ملف PDF مُدرجًا
+@msg	not a text frame	العنصر ليس إطار نص
+@msg	not a video or sound	العنصر ليس فيديو أو صوتًا
+@msg	not in a cell	الموضع خارج خلية
+@msg	not in footnote text	الموضع خارج نص الحاشية السفلية
+@msg	not on the path	الموضع خارج المسار
+@msg	not type on a path	العنصر ليس نصًا على مسار
+@msg	not well-formed XML: {e}	بنية XML غير صحيحة: {e}
+@msg	notes go in story text	تُدرج الملاحظات في النص الأساسي
+@msg	nothing loaded in the place cursor	لا يوجد محتوى محمّل في مؤشر الإدراج
+@msg	nothing selected	لم يُحدّد أي عنصر
+@msg	nothing to align	لا توجد عناصر لمحاذاتها
+@msg	nothing to caption	لا يوجد عنصر لإضافة تسمية توضيحية إليه
+@msg	nothing to redo	لا شيء لإعادته
+@msg	nothing to repeat	لا توجد عملية لتكرارها
+@msg	nothing to trace (the image is empty at this threshold)	لا يوجد محتوى للتتبّع؛ الصورة فارغة عند هذه العتبة
+@msg	nothing to undo	لا شيء للتراجع عنه
+@msg	only empty paths and frames can be cut	يمكن قص المسارات والإطارات الفارغة فقط
+@msg	orientation: horizontal|vertical	يقبل الاتجاه القيمة horizontal أو vertical
+@msg	package files are unavailable on the web	ملفات الحزم غير متاحة في نسخة الويب
+@msg	page insert failed	تعذّر إدراج الصفحة
+@msg	page size out of range (0 < size ≤ 216 in)	حجم الصفحة خارج النطاق؛ يجب أن يكون أكبر من صفر وألا يتجاوز 216 بوصة
+@msg	page {page} has no objects	لا تحتوي الصفحة {page} على كائنات
+@msg	parameters must be an object	يجب أن تكون المعاملات كائنًا
+@msg	place the insertion point in a table	ضع نقطة الإدراج داخل جدول
+@msg	place the insertion point in text	ضع نقطة الإدراج داخل النص
+@msg	printing isn't available on the web: export a PDF and print it	الطباعة غير متاحة في نسخة الويب؛ صدّر ملف PDF ثم اطبعه
+@msg	recovery files are unavailable on the web	ملفات الاسترداد غير متاحة في نسخة الويب
+@msg	revert isn't available on the web	الرجوع إلى النسخة المحفوظة غير متاح في نسخة الويب
+@msg	rows must be two non-negative row indices	يجب تحديد الصفوف بفهرسين صحيحين غير سالبين
+@msg	runningHeader needs `style`	تحتاج الترويسة المتغيرة runningHeader إلى `style`
+@msg	say which role to use on this frame	حدّد الدور الذي سيُستخدم لهذا الإطار
+@msg	scale too small	المقياس صغير جدًا
+@msg	select a data source	حدّد مصدر بيانات
+@msg	select a frame with a placed graphic	حدّد إطارًا يحتوي على رسم مُدرج
+@msg	select a multi-state object	حدّد كائنًا متعدد الحالات
+@msg	select a placed PDF	حدّد ملف PDF مُدرجًا
+@msg	select a text frame	حدّد إطار نص
+@msg	select a video or sound	حدّد فيديو أو صوتًا
+@msg	select an empty frame, a QR code, or give `rect`	حدّد إطارًا فارغًا أو رمز QR، أو حدّد `rect`
+@msg	select an object or give `swatch`	حدّد كائنًا أو حدّد `swatch`
+@msg	select at least three objects	حدّد ثلاثة كائنات على الأقل
+@msg	select at least two objects	حدّد كائنين على الأقل
+@msg	select objects to tag	حدّد الكائنات التي تريد إسناد وسوم إليها
+@msg	select some text	حدّد جزءًا من النص
+@msg	select text or a frame	حدّد نصًا أو إطارًا
+@msg	select text or frames first	حدّد نصًا أو إطارات أولًا
+@msg	select text outside tables	حدّد نصًا خارج الجداول
+@msg	select two or more objects (or a group)	حدّد كائنين أو أكثر، أو مجموعة
+@msg	select two or more paths	حدّد مسارين أو أكثر
+@msg	select two or more shapes	حدّد شكلين أو أكثر
+@msg	select two or more shapes on one spread (not text frames or groups)	حدّد شكلين أو أكثر في حيّز صفحات واحد، خارج إطارات النص والمجموعات
+@msg	select type on a path	حدّد نصًا على مسار
+@msg	special swatches are already listed	عيّنات الألوان الخاصة مدرجة بالفعل
+@msg	special swatches can't be deleted	لا يمكن حذف عيّنات الألوان الخاصة
+@msg	step {i} ({c}): {e}	الخطوة {i} ({c}): {e}
+@msg	stripes need `bands`: [[start, width], …] inside 0–1	تحتاج الشرائط إلى `bands` بالصيغة [[start, width], …] ضمن النطاق 0–1
+@msg	tables can't be nested in cells	لا يمكن إدراج جداول متداخلة داخل الخلايا
+@msg	temporary print file: {e}	ملف الطباعة المؤقت: {e}
+@msg	text frames can't be anchored yet	تثبيت إطارات النص غير مدعوم بعد
+@msg	text placeholders go in a story	تُدرج العناصر النائبة للنص في تسلسل نصي
+@msg	that's an end point	هذه نقطة نهاية
+@msg	the EPS has no bounding box	لا يحتوي ملف EPS على مستطيل حدود
+@msg	the PDF has {count} page(s)	عدد صفحات ملف PDF هو {count}
+@msg	the book is empty	الكتاب فارغ
+@msg	the conveyor is empty	قائمة المحتوى المُجمّع فارغة
+@msg	the document has never been saved	لم يُحفظ المستند من قبل
+@msg	the document has {n} page(s)	عدد صفحات المستند هو {n}
+@msg	the drag didn't touch the path	لم تصل عملية السحب إلى المسار
+@msg	the endnote frame lists the endnotes	يعرض إطار الحواشي الختامية قائمة الحواشي الختامية
+@msg	the graphic isn't placed	الرسم غير مُدرج
+@msg	the guide or its layer is locked or hidden	دليل المحاذاة أو طبقته مقفل أو مخفي
+@msg	the insertion point is not in a table	نقطة الإدراج خارج الجدول
+@msg	the object already holds text	يحتوي الكائن على نص بالفعل
+@msg	the object has no path	لا يحتوي الكائن على مسار
+@msg	the page has no parent	لا يوجد قالب أصل للصفحة
+@msg	the paths must be on one spread	يجب أن تكون المسارات في حيّز صفحات واحد
+@msg	the poster isn't a readable image	تعذّرت قراءة صورة الملصق
+@msg	the requested grid is too large for this platform	الشبكة المطلوبة أكبر مما تسمح به هذه المنصة
+@msg	the requested guide count is too large	عدد أدلة المحاذاة المطلوب كبير جدًا
+@msg	the requested guide count is too large for this platform	عدد أدلة المحاذاة المطلوب أكبر مما تسمح به هذه المنصة
+@msg	the selection contains a table	يحتوي التحديد على جدول
+@msg	the shapes don't overlap: nothing is left	الأشكال غير متداخلة؛ لا يوجد ناتج متبقٍ
+@msg	the snippet is empty	المقتطف فارغ
+@msg	the spread parameter has been removed	أُلغي استخدام المعامل spread
+@msg	the story has no frame	لا يحتوي التسلسل النصي على إطار
+@msg	this source has no file to update	لا يوجد ملف لتحديث مصدر البيانات هذا
+@msg	too many variables	عدد المتغيرات كبير جدًا
+@msg	type goes on empty paths, lines and shapes	يمكن وضع النص على المسارات والخطوط والأشكال الفارغة
+@msg	unknown action `{o}`	قيمة غير معروفة لخيار الإجراء: `{o}`
+@msg	unknown align `{o}`	قيمة غير معروفة لخيار المحاذاة: `{o}`
+@msg	unknown blend mode `{raw}`	قيمة غير معروفة لخيار نمط المزج: `{raw}`
+@msg	unknown case `{case}`	قيمة غير معروفة لخيار حالة الأحرف: `{case}`
+@msg	unknown command `{0}`	الأمر `{0}` غير معروف
+@msg	unknown dir `{other}`	قيمة غير معروفة لخيار الاتجاه: `{other}`
+@msg	unknown edge `{other}`	قيمة غير معروفة لخيار الحافة: `{other}`
+@msg	unknown field "{name}"	قيمة غير معروفة لخيار الحقل: "{name}"
+@msg	unknown figure style `{f}`	قيمة غير معروفة لخيار نمط الأرقام: `{f}`
+@msg	unknown fitting `{f}`	قيمة غير معروفة لخيار الملاءمة: `{f}`
+@msg	unknown format `{f}` (txt, rtf, tagged)	قيمة غير معروفة لخيار الصيغة: `{f}` (txt, rtf, tagged)
+@msg	unknown intent `{v}`	قيمة غير معروفة لخيار هدف التحويل: `{v}`
+@msg	unknown kind `{kind}`	قيمة غير معروفة لخيار النوع: `{kind}`
+@msg	unknown kind `{k}`	قيمة غير معروفة لخيار النوع: `{k}`
+@msg	unknown kind {k}	قيمة غير معروفة لخيار النوع: {k}
+@msg	unknown mode `{mode}`	قيمة غير معروفة لخيار الوضع: `{mode}`
+@msg	unknown mode `{o}`	قيمة غير معروفة لخيار الوضع: `{o}`
+@msg	unknown op `{op_s}`	قيمة غير معروفة لخيار العملية: `{op_s}`
+@msg	unknown option {k}	قيمة غير معروفة لخيار الخيار: {k}
+@msg	unknown pageLayout `{o}`	قيمة غير معروفة لخيار تخطيط الصفحات: `{o}`
+@msg	unknown pdfCrop `{k}` (crop, trim, bleed, art, media)	قيمة غير معروفة لخيار اقتصاص PDF: `{k}` (crop, trim, bleed, art, media)
+@msg	unknown position `{o}`	قيمة غير معروفة لخيار الموضع: `{o}`
+@msg	unknown position `{pos}`	قيمة غير معروفة لخيار الموضع: `{pos}`
+@msg	unknown preference {k}	قيمة غير معروفة لخيار التفضيل: {k}
+@msg	unknown preset `{name}`	قيمة غير معروفة لخيار الإعداد المسبق: `{name}`
+@msg	unknown range `{r}`	قيمة غير معروفة لخيار النطاق: `{r}`
+@msg	unknown role "{s}"	قيمة غير معروفة لخيار الدور: "{s}"
+@msg	unknown standard `{s}` (none, x4, a2b)	قيمة غير معروفة لخيار المعيار: `{s}` (none, x4, a2b)
+@msg	unknown styleConflicts `{c}` (useExisting, redefine, autoRename)	قيمة غير معروفة لخيار معالجة تعارض الأنماط: `{c}` (useExisting, redefine, autoRename)
+@msg	unknown tool `{t}`	قيمة غير معروفة لخيار الأداة: `{t}`
+@msg	unknown transform	التحويل غير معروف
+@msg	unknown type `{t}`	قيمة غير معروفة لخيار النوع: `{t}`
+@msg	unknown type `{t}` (alpha, edges)	قيمة غير معروفة لخيار النوع: `{t}` (alpha, edges)
+@msg	unknown type `{t}` (saddleStitch, twoUpConsecutive)	قيمة غير معروفة لخيار النوع: `{t}` (saddleStitch, twoUpConsecutive)
+@msg	unknown type `{t}` (stripes, dash, dot)	قيمة غير معروفة لخيار النوع: `{t}` (stripes, dash, dot)
+@msg	unknown view `{o}` (fitPage, fitWidth, actual)	قيمة غير معروفة لخيار العرض: `{o}` (fitPage, fitWidth, actual)
+@msg	unknown vj `{o}`	قيمة غير معروفة لخيار الضبط الرأسي: `{o}`
+@msg	unmerge cells that span rows first	ألغِ دمج الخلايا التي تمتد عبر عدة صفوف أولًا
+@msg	unsupported or corrupt image	الصورة غير مدعومة أو تالفة
+@msg	use file.openBytes on the web	استخدم الأمر file.openBytes في نسخة الويب
+@msg	vj: {e}	الضبط الرأسي: {e}
+@msg	{key} must be a non-negative integer	يجب أن تكون قيمة {key} عددًا صحيحًا غير سالب
+@msg	{key} must be {what} from {lo} to {hi}, not {v}	يجب أن تكون قيمة {key} من النوع {what} ضمن النطاق {lo} إلى {hi}؛ القيمة {v} غير مقبولة
+@msg	{name}: {e}	{name}: {e}
+@msg	{name}: {v0} step(s) done	{name}: عدد الخطوات المنجزة {v0}
+@msg	{path}: files can't be read on the web	{path}: قراءة الملفات غير متاحة في نسخة الويب
+@msg	{path}: no file system on the web; omit `path` to get the bytes	{path}: نظام الملفات غير متاح في نسخة الويب؛ احذف `path` للحصول على البيانات
+@msg	{path}: unsupported or corrupt image	{path}: الصورة غير مدعومة أو تالفة
+@msg	{path}: {e}	{path}: {e}
+@msg	{p}: {e}	{p}: {e}
+@msg	{v0} conflict(s): {v1}	عدد التعارضات: {v0}؛ التفاصيل: {v1}
+@msg	{v0} contributors · {v1} commits	عدد المساهمين: {v0} · التعديلات المسجّلة: {v1}
+@msg	{v0} has no parent folder	لا يوجد مجلد أصل للمسار {v0}
+@msg	{v0} is not a directory	المسار {v0} ليس مجلدًا
+@msg	{v0} must not be a symbolic link or reparse point	يجب ألا يكون المسار {v0} رابطًا رمزيًا أو نقطة إعادة تحليل
+@msg	{v0}: import cancelled while a dialog is open; choose the file again	{v0}: أُلغي الاستيراد أثناء فتح نافذة حوار؛ اختر الملف مجددًا
+@msg	{v0}: {e}	{v0}: {e}
+@msg	{v0}: {message}	{v0}: {message}
+@msg	{v0}: {v1}	{v0}: {v1}

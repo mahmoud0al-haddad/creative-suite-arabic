@@ -1,0 +1,25 @@
+SoundCraft
+Copyright (c) 2026 ArtCraft Team and the SoundCraft contributors.
+Licensed under the MIT License or the Apache License, Version 2.0, at your option
+(LICENSE-MIT, LICENSE-APACHE).
+
+The ArtCraft name, wordmark and logos in docs/brand/ are trademarks of the ArtCraft Team. They are
+not open source and are not covered by the license above; their terms are in
+docs/brand/LICENSE-brand.txt.
+
+Third-party material
+
+This product bundles third-party material under its own licenses, listed below. The per-file
+list (author, source, license) is in ATTRIBUTION.md.
+
+None: every bundled asset is original to SoundCraft. Icons are drawn in code; demo audio is
+synthesised in code. The egui default fonts (Ubuntu-Light, Hack, Noto Emoji, Emoji Icon Font) ship
+inside the egui crate under their own open licenses (see ATTRIBUTION.md).
+
+Independent Arabic/English edition modification notice — 2026-10-13
+Prepared and maintained by mahmoud0al-haddad (إعداد وصيانة النسخة العربية).
+Original upstream authors retain their copyrights; this is not an official or endorsed ArtCraft release.
+Local changes include Arabic interface catalogs, display-time diagnostics, selectable launcher language, and ordinary Arabic UI font support.
+The amended egui/epaint0.36.2 sources add Arabic shaping/bidi and logical editing/selection mappings; their MIT and Apache-2.0 notices remain in vendor/.
+Optional embedded Noto Sans Arabic is from the pinned craft-fonts input under SIL OFL1.1; its authors, source checksum and OFL text remain with build-inputs/craft-fonts.
+Installed Tahoma may be read at runtime but no proprietary system font file is distributed. ArtCraft graphical marks are excluded; original brand terms and factual upstream credit are retained.

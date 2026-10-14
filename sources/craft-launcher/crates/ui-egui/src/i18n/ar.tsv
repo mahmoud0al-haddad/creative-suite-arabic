@@ -1,0 +1,358 @@
+# Arabic (ar), Modern Standard Arabic. Complete launcher interface.
+# Logical Unicode text; shaping and bidi are performed by the text renderer.
+@msg	secure connections aren't available	الاتصالات الآمنة غير متاحة
+@msg	secure connections aren't available on this system	الاتصالات الآمنة غير متاحة على هذا النظام
+@msg	Creative Suite Launcher is restarting to finish its update. Try again once it's back.	يُعاد تشغيل مشغّل التطبيقات الإبداعية لإكمال تحديثه. أعد المحاولة بعد تشغيله.
+@msg	The download paused because the connection keeps dropping. Press Resume to continue where it stopped.	توقف التنزيل مؤقتًا بسبب تكرار انقطاع الاتصال. اضغط «استئناف» لمتابعته من حيث توقف.
+@msg	this copy of Creative Suite Launcher can't update itself; download the new version instead	لا يمكن لهذه النسخة من مشغّل التطبيقات الإبداعية تحديث نفسها؛ نزّل الإصدار الجديد.
+@msg	{name} isn't installed	التطبيق {name} غير مثبّت
+@msg	{name} {version} has no download for {platform}	لا يتوفر تنزيل للإصدار {version} من {name} لمنصة {platform}
+@msg	Creative Suite Launcher {version} has no {kind} for {platform}	لا تتوفر صيغة {kind} للإصدار {version} من مشغّل التطبيقات الإبداعية لمنصة {platform}
+@msg	it isn't a file on this computer	الملف غير موجود على هذا الجهاز
+@msg	Couldn't show it: {e}	تعذّر إظهار الملف: {e}
+@msg	Flatpak couldn't install the bundle (it needs the Flathub remote for its runtime)	تعذّر تثبيت حزمة فلاتباك؛ تحتاج بيئة تشغيلها إلى مستودع فلات هب
+@msg	Flatpak couldn't install the bundle: {e}	تعذّر تثبيت حزمة فلاتباك: {e}
+@msg	GitHub said nothing changed, but there's no saved answer	أفاد جيت هب بعدم وجود تغييرات، لكن لا توجد استجابة محفوظة
+@msg	couldn't ask for permission ({e})	تعذّر طلب الإذن ({e})
+@msg	couldn't change the startup list ({e})	تعذّر تعديل قائمة برامج بدء التشغيل ({e})
+@msg	couldn't connect: {e}	تعذّر الاتصال: {e}
+@msg	couldn't copy the AppImage ({e})	تعذّر نسخ ملف AppImage ({e})
+@msg	couldn't copy the app into ~/.local	تعذّر نسخ التطبيق إلى ~/.local
+@msg	couldn't copy the app: {reason}	تعذّر نسخ التطبيق: {reason}
+@msg	couldn't create a folder to open the disk image in ({e})	تعذّر إنشاء مجلد لفتح صورة القرص ({e})
+@msg	couldn't create {path} ({e})	تعذّر إنشاء {path} ({e})
+@msg	couldn't fetch the release's checksums ({e}). Try again	تعذّر جلب بصمات التحقق للإصدار ({e}). أعد المحاولة
+@msg	couldn't find this program ({e})	تعذّر العثور على البرنامج ({e})
+@msg	couldn't move the old copy aside ({e})	تعذّر نقل النسخة القديمة جانبًا ({e})
+@msg	couldn't open the disk image: {reason}	تعذّر فتح صورة القرص: {reason}
+@msg	couldn't put the AppImage in place ({e})	تعذّر وضع ملف AppImage في مكانه ({e})
+@msg	couldn't put the new copy in place ({e})	تعذّر وضع النسخة الجديدة في مكانها ({e})
+@msg	couldn't reach GitHub ({e})	تعذّر الاتصال بجيت هب ({e})
+@msg	couldn't reach {url} ({e})	تعذّر الاتصال بـ {url} ({e})
+@msg	couldn't read {path} ({e})	تعذّرت قراءة {path} ({e})
+@msg	couldn't record the self-update: {e}	تعذّر تسجيل التحديث الذاتي: {e}
+@msg	couldn't remove {path} ({e})	تعذّرت إزالة {path} ({e})
+@msg	couldn't replace {path} ({e})	تعذّر استبدال {path} ({e})
+@msg	couldn't save the ArtCraft API backoff: {e}	تعذّر حفظ مدة الانتظار قبل إعادة الاتصال بخدمة ArtCraft: {e}
+@msg	couldn't save the download ({e})	تعذّر حفظ التنزيل ({e})
+@msg	couldn't save the download ({e}). Is the disk full?	تعذّر حفظ التنزيل ({e}). هل القرص ممتلئ؟
+@msg	couldn't save the install record: {e}	تعذّر حفظ سجلّ التثبيت: {e}
+@msg	couldn't save the release feed: {e}	تعذّر حفظ موجز الإصدارات: {e}
+@msg	couldn't schedule the restart ({e})	تعذّرت جدولة إعادة التشغيل ({e})
+@msg	couldn't schedule the update ({e})	تعذّرت جدولة التحديث ({e})
+@msg	couldn't start Flatpak ({e})	تعذّر تشغيل فلاتباك ({e})
+@msg	couldn't start it ({e})	تعذّر تشغيل التطبيق ({e})
+@msg	couldn't start the Windows Installer ({e})	تعذّر تشغيل مثبّت ويندوز ({e})
+@msg	couldn't start {program} ({e})	تعذّر تشغيل {program} ({e})
+@msg	couldn't uninstall {id}	تعذّر إلغاء تثبيت {id}
+@msg	couldn't unpack the download ({e})	تعذّر فك ضغط الملف المنزّل ({e})
+@msg	couldn't write next to {path} ({e})	تعذّرت الكتابة بجانب {path} ({e})
+@msg	couldn't write {path} ({e})	تعذّرت كتابة {path} ({e})
+@msg	download of {url} failed: {e}	فشل التنزيل من {url}: {e}
+@msg	invalid peer certificate: UnknownIssuer	شهادة الطرف الآخر غير صالحة: جهة إصدار غير معروفة
+@msg	no config folder	لا يوجد مجلد للإعدادات
+@msg	no home folder	لا يوجد مجلد للمستخدم
+@msg	no parent folder	لا يوجد مجلد أصل
+@msg	no per-user cache folder on this system	لا يوجد مجلد تخزين مؤقت للمستخدم على هذا النظام
+@msg	no per-user data folder on this system	لا يوجد مجلد بيانات للمستخدم على هذا النظام
+@msg	not an app	ليس تطبيقًا
+@msg	the Windows Installer stopped with error {c}	توقف مثبّت ويندوز بسبب الخطأ {c}
+@msg	the download doesn't match its published checksum, so it wasn't installed	بصمة الملف المنزّل لا تطابق البصمة المنشورة، لذلك لم يُثبّت
+@msg	the file is no longer on the release page	لم يعد الملف موجودًا في صفحة الإصدار
+@msg	the launcher has no record of these files	لا يملك المشغّل سجلًا لهذه الملفات
+@msg	the system installer stopped with error {c}	توقف مثبّت النظام بسبب الخطأ {c}
+@msg	this system has no apt-get to install a Debian package with	لا تتوفر أداة apt-get على هذا النظام لتثبيت حزمة ديبيان
+@msg	{program} failed ({status})	فشل تشغيل {program} ({status})
+@msg	Access is denied. (os error 5)	تم رفض الوصول (خطأ النظام 5)
+@msg	The system cannot find the file specified. (os error 2)	تعذّر العثور على الملف المحدّد (خطأ النظام 2)
+@msg	The system cannot find the path specified. (os error 3)	تعذّر العثور على المسار المحدّد (خطأ النظام 3)
+	Launcher	مشغّل التطبيقات
+	Craft App Suite	حزمة تطبيقات Craft
+	Open Source Tools for Creatives, Makers, and Builders	أدوات مفتوحة المصدر للمبدعين والمصممين والصنّاع
+	Settings	الإعدادات
+	Check for updates	التحقق من وجود تحديثات
+	Grid	شبكة
+	Table	جدول
+	Show apps as cards	عرض التطبيقات على شكل بطاقات
+	Show apps as a table	عرض التطبيقات في جدول
+	All	الكل
+	Updates	التحديثات
+	Not installed	غير المثبّتة
+	Search apps	البحث عن التطبيقات
+	Sort	الترتيب
+	Suite order	ترتيب الحزمة
+	Name	الاسم
+	Inspired by	مستوحى من
+	Status	الحالة
+	Installed version	الإصدار المثبّت
+	Latest version	أحدث إصدار
+	Newest release	الأحدث نشرًا
+	Discord	ديسكورد
+	GitHub	جيت هب
+	Website	الموقع الإلكتروني
+	Classic apps	التطبيقات الأساسية
+	New apps	التطبيقات الجديدة
+	NEW	جديد
+	Install	تثبيت
+	Update to {v}	التحديث إلى {v}
+	Open	فتح
+	Download for {os}	التنزيل لنظام {os}
+	Download	تنزيل
+	Coming soon	قريبًا
+	Checking…	جارٍ التحقق…
+	Not available	غير متاح
+	Offline	غير متصل
+	Downloading {done} of {total}	جارٍ تنزيل {done} من {total}
+	Downloading…	جارٍ التنزيل…
+	Reconnecting…	جارٍ إعادة الاتصال…
+	Verifying…	جارٍ التحقق من سلامة الملف…
+	Installing, then restarting…	جارٍ التثبيت، ثم إعادة التشغيل…
+	Installing…	جارٍ التثبيت…
+	Removing…	جارٍ الإزالة…
+	Pause download	إيقاف التنزيل مؤقتًا
+	Cancel download	إلغاء التنزيل
+	Resume download	استئناف التنزيل
+	Discard download	حذف التنزيل
+	Release notes	ملاحظات الإصدار
+	Show in Finder	إظهار في فايندر
+	Show in Explorer	إظهار في مستكشف الملفات
+	Show in Files	إظهار في مدير الملفات
+	Reinstall	إعادة التثبيت
+	Uninstall…	إلغاء التثبيت…
+	All releases	جميع الإصدارات
+	Creative Suite Launcher {version} is available.	يتوفر الإصدار {version} من مشغّل التطبيقات الإبداعية.
+	Dismiss	تجاهل
+	Update and restart	التحديث وإعادة التشغيل
+	A new version is available. Would you like to relaunch with the updated version?	يتوفر إصدار جديد. هل تريد إعادة تشغيل التطبيق بالإصدار المحدّث؟
+	Later	لاحقًا
+	What's new	ما الجديد
+	No notes were published with this release.	لم تُنشر ملاحظات لهذا الإصدار.
+	Released {date}	نُشر في {date}
+	Open on GitHub	فتح على جيت هب
+	Close	إغلاق
+	Creative Suite Launcher {version}	مشغّل التطبيقات الإبداعية {version}
+	Only when I ask	عند طلبي فقط
+	Automatically download and install updates	تنزيل التحديثات وتثبيتها تلقائيًا
+	Notify me when an installed app has an update	إشعاري عند توفر تحديث لأحد التطبيقات المثبّتة
+	Include pre-releases (betas and release candidates)	تضمين الإصدارات التجريبية والإصدارات المرشّحة
+	Installing on Linux	التثبيت على لينكس
+	Install new apps as	صيغة تثبيت التطبيقات الجديدة
+	System package (recommended)	حزمة النظام (موصى بها)
+	Updates always use the format an app was installed with.	تستخدم التحديثات دائمًا الصيغة التي ثُبّت بها التطبيق.
+	Running in the background	التشغيل في الخلفية
+	Keep running in the tray when the window is closed	مواصلة التشغيل في منطقة الإشعارات عند إغلاق النافذة
+	Show the window on the current desktop	إظهار النافذة على سطح المكتب الحالي
+	Start Creative Suite Launcher when I log in	تشغيل مشغّل التطبيقات الإبداعية عند تسجيل الدخول
+	Community	المجتمع
+	Questions, ideas and news from the ArtCraft team	أسئلة وأفكار وأخبار من فريق ArtCraft
+	Appearance	المظهر
+	Quit Creative Suite Launcher	إنهاء مشغّل التطبيقات الإبداعية
+	Done	تم
+	Uninstall {name}?	هل تريد إلغاء تثبيت {name}؟
+	The app will be moved to the Trash. Your documents and settings stay.	سيُنقل التطبيق إلى سلة المهملات. ستبقى مستنداتك وإعداداتك محفوظة.
+	Windows will remove it like any installed program. Your documents and settings stay.	سيُزيل ويندوز التطبيق مثل أي برنامج مثبّت. ستبقى مستنداتك وإعداداتك محفوظة.
+	Your system's package manager will remove it, and may ask for your password. Your documents and settings stay.	سيُزيل مدير حزم النظام التطبيق، وقد يطلب كلمة مرورك. ستبقى مستنداتك وإعداداتك محفوظة.
+	The app will be removed. Your documents and settings stay.	سيُزال التطبيق. ستبقى مستنداتك وإعداداتك محفوظة.
+	Uninstall	إلغاء التثبيت
+	Cancel	إلغاء
+	Checked {ago}	آخر تحقق: {ago}
+	just now	الآن
+	yesterday	أمس
+	{month} {day}, {year}	{day} {month} {year}
+	Automatically	تلقائيًا
+	Every Craft app	جميع تطبيقات Craft
+	Apps on this computer	التطبيقات الموجودة على هذا الجهاز
+	Installed apps with a newer version	التطبيقات المثبّتة التي يتوفر لها إصدار أحدث
+	Apps you can install	التطبيقات المتاحة للتثبيت
+	Checked {ago} · using {sources}	آخر تحقق: {ago} · المصدر: {sources}
+	{a} and {b}	{a} و{b}
+	Join the Discord	الانضمام إلى ديسكورد
+	Learn more	معرفة المزيد
+	Minimize	تصغير
+	Maximize	تكبير
+	Restore	استعادة الحجم
+	New	جديد
+	OK	موافق
+	Open link	فتح الرابط
+	Update	تحديث
+	{name} icon	أيقونة {name}
+	Loading Creative Suite Launcher…	جارٍ تحميل مشغّل التطبيقات الإبداعية…
+	Cancel update	إلغاء التحديث
+	Stop waiting; the update can be started again later	إيقاف الانتظار؛ يمكنك بدء التحديث مجددًا لاحقًا
+	Download again	التنزيل مجددًا
+	Install cancelled	أُلغي التثبيت
+	Install cancelled. The download is kept for the next try.	أُلغي التثبيت. تم الاحتفاظ بالتنزيل للمحاولة التالية.
+	Update cancelled	أُلغي التحديث
+	Uninstall cancelled	أُلغي إلغاء التثبيت
+	Retry install	إعادة محاولة التثبيت
+	Retry update to {version}	إعادة محاولة التحديث إلى {version}
+	The download is still here. It's checked again, then installed.	ما زال الملف المنزّل محفوظًا. سيُتحقق من سلامته مجددًا، ثم يُثبّت.
+	Waiting for another app…	في انتظار تطبيق آخر…
+	Waiting for other installs…	في انتظار عمليات تثبيت أخرى…
+	Installer (.msi)	برنامج تثبيت (.msi)
+	Portable (.zip)	نسخة محمولة (.zip)
+	Disk image (.dmg)	صورة قرص (.dmg)
+	Debian package (.deb)	حزمة ديبيان (.deb)
+	RPM package (.rpm)	حزمة RPM (.rpm)
+	Flatpak bundle	حزمة فلاتباك
+	Tarball (.tar.gz)	أرشيف مضغوط (.tar.gz)
+photocraft	Image editing	تحرير الصور
+vectorcraft	Vector illustration	الرسم المتجهي
+filmcraft	Video editing, color and sound	تحرير الفيديو والألوان والصوت
+lightcraft	Photo library and raw development	مكتبة الصور ومعالجة الصور الخام
+pdfcraft	Reading, organizing and protecting PDFs	قراءة ملفات PDF وتنظيمها وحمايتها
+effectcraft	Motion graphics and visual effects	الرسوم المتحركة والمؤثرات البصرية
+designcraft	Page layout and publishing	تنسيق الصفحات والنشر
+wordcraft	Writing and document design	الكتابة وتصميم المستندات
+deckcraft	Presentations and slide shows	العروض التقديمية وعروض الشرائح
+gridcraft	Spreadsheets and data	جداول البيانات وإدارة البيانات
+cadcraft	Computer-aided design and drafting	التصميم والرسم بمساعدة الحاسوب
+soundcraft	Recording, editing and mixing audio	تسجيل الصوت وتحريره ومزجه
+month	Jan	يناير
+month	Feb	فبراير
+month	Mar	مارس
+month	Apr	أبريل
+month	May	مايو
+month	Jun	يونيو
+month	Jul	يوليو
+month	Aug	أغسطس
+month	Sep	سبتمبر
+month	Oct	أكتوبر
+month	Nov	نوفمبر
+month	Dec	ديسمبر
+	Not checked yet	لم يُتحقق بعد
+	GitHub's hourly limit was reached; full details return in {min} min	تم بلوغ الحدّ الساعي لطلبات جيت هب؛ ستتوفر التفاصيل الكاملة بعد {min} دقيقة
+	GitHub limit hit; back in {min} min	تم بلوغ حدّ طلبات جيت هب؛ يُتاح مجددًا بعد {min} دقيقة
+	Installing for {platform}	التثبيت لمنصة {platform}
+	Downloads for {platform}	التنزيلات لمنصة {platform}
+	No downloads for this system	لا توجد تنزيلات لهذا النظام
+	Join the ArtCraft community on Discord	الانضمام إلى مجتمع ArtCraft على ديسكورد
+	ArtCraft on {name}	ArtCraft على {name}
+	Couldn't open {name}: {e}	تعذّر فتح {name}: {e}
+	Download cancelled	أُلغي التنزيل
+	Available to install	متاح للتثبيت
+	Available	متاح
+	Installed · up to date	مثبّت · محدّث
+	Update available	يتوفر تحديث
+	Installed	مثبّت
+	installed	مثبّت
+	Not available here	غير متاح لهذا النظام
+	Updating…	جارٍ التحديث…
+	Update paused	التحديث متوقف مؤقتًا
+	Download paused	التنزيل متوقف مؤقتًا
+	{version} installed → {latest} released	الإصدار المثبّت: {version} ← الإصدار المنشور: {latest}
+	Version {version}	الإصدار {version}
+	{installed} installed · latest {latest}	المثبّت: {installed} · الأحدث: {latest}
+	Version {version} installed	الإصدار {version} مثبّت
+	Version {latest}	الإصدار {latest}
+	No release published yet	لم يُنشر أي إصدار بعد
+	Creative Suite Launcher	مشغّل التطبيقات الإبداعية
+	App	التطبيق
+	Latest	الأحدث
+	Released	تاريخ النشر
+	Auto	تلقائي
+	Language	اللغة
+	Ascending	تصاعدي
+	Descending	تنازلي
+	Click to reverse the order	انقر لعكس الترتيب
+	Click to sort by this column	انقر للترتيب حسب هذا العمود
+	Like {name}	مشابه لـ {name}
+	{done} of {total}	{done} من {total}
+	Downloading	جارٍ التنزيل
+	Verifying checksum…	جارٍ التحقق من بصمة الملف…
+	Resume	استئناف
+	{done} of {total} downloaded	تم تنزيل {done} من {total}
+	{done} downloaded	تم تنزيل {done}
+	Checking for updates…	جارٍ التحقق من وجود تحديثات…
+	Downloads the new version, replaces this one and opens it again	تنزيل الإصدار الجديد واستبدال الإصدار الحالي به، ثم إعادة فتح التطبيق
+	Couldn't check for updates: {f}	تعذّر التحقق من وجود تحديثات: {f}
+	Website (coming soon)	الموقع الإلكتروني (قريبًا)
+	GitHub repository	مستودع جيت هب
+	ArtCraft	ArtCraft
+	Update 1 app	تحديث تطبيق واحد
+	Update all ({count})	تحديث الكل ({count})
+	⊞  Grid	⊞  شبكة
+	☰  Table	☰  جدول
+	🔍  Search apps	🔍  البحث عن التطبيقات
+	{name} {version}	{name} {version}
+	Match system	حسب النظام
+	Dark	داكن
+	Light	فاتح
+	Full changelog	سجلّ التغييرات الكامل
+	link	رابط
+	No apps match	لا توجد تطبيقات مطابقة
+	Open Creative Suite Launcher to update.	افتح مشغّل التطبيقات الإبداعية لإجراء التحديث.
+	{name} {v} is available	يتوفر الإصدار {v} من {name}
+	{count} updates are available	عدد التحديثات المتاحة: {count}
+	These notes weren't fetched (GitHub's request limit was reached). They're on the release page.	تعذّر جلب الملاحظات بسبب بلوغ حدّ طلبات جيت هب. يمكنك قراءتها في صفحة الإصدار.
+	When on, opening the launcher from the menu bar brings its window to the desktop you're on. When off, macOS switches you to the desktop the window was on.	عند التفعيل، تظهر نافذة المشغّل على سطح المكتب الحالي عند فتحه من شريط القوائم. وعند التعطيل، ينقلك ماك إلى سطح المكتب الذي توجد عليه النافذة.
+	Couldn't change the login item: {e}	تعذّر تغيير إعداد التشغيل عند تسجيل الدخول: {e}
+column	App	التطبيق
+column	Installed	المثبّت
+column	Latest	الأحدث
+column	Released	تاريخ النشر
+filter	Installed	المثبّتة
+# Arabic cardinal forms: zero|one|two|few|many|other.
+@plural	{n} app|{n} apps	لا توجد تطبيقات|تطبيق واحد|تطبيقان|{n} تطبيقات|{n} تطبيقًا|{n} تطبيق
+@plural	{n} min ago|{n} min ago	الآن|قبل دقيقة|قبل دقيقتين|قبل {n} دقائق|قبل {n} دقيقة|قبل {n} دقيقة
+@plural	{n} h ago|{n} h ago	الآن|قبل ساعة|قبل ساعتين|قبل {n} ساعات|قبل {n} ساعة|قبل {n} ساعة
+@plural	{n} day ago|{n} days ago	اليوم|قبل يوم|قبل يومين|قبل {n} أيام|قبل {n} يومًا|قبل {n} يوم
+@msg	Couldn't open {name}: {e}	تعذّر فتح {name}: {e}
+@msg	Download cancelled	أُلغي التنزيل
+@msg	{name} updated to {version}	تم تحديث {name} إلى {version}
+@msg	{name} installed: {version}	تم تثبيت {name}: {version}
+@msg	{name} updated to {version} (this release publishes no checksum, so only its size was checked)	تم تحديث {name} إلى {version} (لا تتوفر بصمة تحقق لهذا الإصدار، لذلك تم التحقق من حجم الملف فقط)
+@msg	{name} installed: {version} (this release publishes no checksum, so only its size was checked)	تم تثبيت {name}: {version} (لا تتوفر بصمة تحقق لهذا الإصدار، لذلك تم التحقق من حجم الملف فقط)
+@msg	{name} was removed	تمت إزالة {name}
+@msg	{name} is running. Quit it, then try again.	التطبيق {name} قيد التشغيل. أغلقه، ثم أعد المحاولة.
+@id	app.install	تثبيت
+@id	app.update	التحديث إلى {v}
+@id	app.open	فتح
+@id	app.download	التنزيل لنظام {os}
+@id	app.reveal	إظهار في مدير الملفات
+@id	app.reinstall	إعادة التثبيت
+@id	app.uninstall	إلغاء التثبيت…
+@id	app.notes	ملاحظات الإصدار
+@id	app.website	الموقع الإلكتروني
+@id	app.github	مستودع جيت هب
+@id	app.releases	جميع الإصدارات
+@id	launcher.update	التحديث وإعادة التشغيل
+@id	launcher.download	تنزيل
+@id	launcher.notes	ما الجديد
+@id	launcher.dismiss	تجاهل
+@id	settings.open	الإعدادات
+@id	settings.quit	إنهاء مشغّل التطبيقات الإبداعية
+@id	view.grid	شبكة
+@id	view.table	جدول
+@id	filter.all	الكل
+@id	filter.installed	المثبّتة
+@id	filter.updates	التحديثات
+@id	filter.notinstalled	غير المثبّتة
+@id	sort.suite	ترتيب الحزمة
+@id	sort.name	الاسم
+@id	sort.inspired	مستوحى من
+@id	sort.status	الحالة
+@id	sort.installed	الإصدار المثبّت
+@id	sort.latest	أحدث إصدار
+@id	sort.released	الأحدث نشرًا
+@id	help.discord	ديسكورد
+@id	help.github	جيت هب
+@id	help.website	الموقع الإلكتروني
+@id	update.check	التحقق من وجود تحديثات
+@id	update.check_auto	التحقق من وجود تحديثات تلقائيًا
+@id	update.notify	إشعاري عند توفر تحديث لأحد التطبيقات المثبّتة
+@id	update.prereleases	تضمين الإصدارات التجريبية والإصدارات المرشّحة
+@id	linux.preferred_kind	صيغة تثبيت التطبيقات الجديدة
+@id	tray.close_to_tray	مواصلة التشغيل في منطقة الإشعارات عند إغلاق النافذة
+@id	tray.show_on_current_desktop	إظهار النافذة على سطح المكتب الحالي
+@id	tray.login_item	تشغيل مشغّل التطبيقات الإبداعية عند تسجيل الدخول
+@id	appearance.theme	المظهر
+	Show Creative Suite Launcher	إظهار مشغّل التطبيقات الإبداعية
+	Check for Updates	التحقق من وجود تحديثات
+	Visit getartcraft.com	زيارة getartcraft.com
+	ArtCraft on GitHub	ArtCraft على جيت هب
+	Join the ArtCraft Discord	الانضمام إلى ديسكورد ArtCraft
+@plural	Creative Suite Launcher · {n} update available|Creative Suite Launcher · {n} updates available	مشغّل التطبيقات الإبداعية · لا توجد تحديثات|مشغّل التطبيقات الإبداعية · يتوفر تحديث واحد|مشغّل التطبيقات الإبداعية · يتوفر تحديثان|مشغّل التطبيقات الإبداعية · تتوفر {n} تحديثات|مشغّل التطبيقات الإبداعية · يتوفر {n} تحديثًا|مشغّل التطبيقات الإبداعية · يتوفر {n} تحديث
+
+	Adobe, Photoshop, Illustrator, Premiere Pro, Lightroom, Acrobat, After Effects and InDesign are either registered trademarks or trademarks of Adobe in the United States and/or other countries. Microsoft, Word, PowerPoint and Excel are trademarks of the Microsoft group of companies. Autodesk and AutoCAD are registered trademarks or trademarks of Autodesk, Inc. Avid and Pro Tools are trademarks or registered trademarks of Avid Technology, Inc. All other trademarks are the property of their respective owners. These names are used only to describe what each Craft App is for; the Craft App Suite is independent and is not affiliated with, sponsored by or endorsed by any of these companies.	Adobe وPhotoshop وIllustrator وPremiere Pro وLightroom وAcrobat وAfter Effects وInDesign علامات تجارية أو علامات تجارية مسجّلة لشركة Adobe في الولايات المتحدة وبلدان أخرى. Microsoft وWord وPowerPoint وExcel علامات تجارية لمجموعة شركات Microsoft. Autodesk وAutoCAD علامات تجارية أو علامات تجارية مسجّلة لشركة Autodesk. Avid وPro Tools علامات تجارية أو علامات تجارية مسجّلة لشركة Avid Technology. جميع العلامات التجارية الأخرى ملك لأصحابها. تُستخدم هذه الأسماء لوصف وظيفة كل تطبيق من تطبيقات Craft فقط؛ حزمة تطبيقات Craft مستقلة، ولا تتبع أيًا من هذه الشركات ولا ترعاها أو تعتمدها أيٌ منها.
+@msg	Install this edition's complete setup to restore or update its translated applications.	ثبّت حزمة الإعداد الكاملة لهذه النسخة لاستعادة التطبيقات المعرّبة أو تحديثها.

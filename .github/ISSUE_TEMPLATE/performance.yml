@@ -1,0 +1,26 @@
+name: "بطء أو تعليق / Lag or freeze"
+description: "تحديد مشكلة أداء قابلة للتكرار / Reproducible performance problem"
+title: "[Performance] "
+body:
+  - type: input
+    id: app
+    attributes:
+      label: "التطبيق والإصدار وWindows / Application, release and Windows"
+    validations:
+      required: true
+  - type: input
+    id: hardware
+    attributes:
+      label: "CPU، RAM، GPU ومقياس الواجهة / CPU, RAM, GPU and UI scale"
+  - type: textarea
+    id: steps
+    attributes:
+      label: "خطوات ومشروع اصطناعي / Steps and synthetic project"
+      description: "اذكر هل المشكلة عند البدء أو الكتابة أو التشغيل أو التصيير؛ لا ترفق أعمالًا خاصة."
+    validations:
+      required: true
+  - type: textarea
+    id: timing
+    attributes:
+      label: "زمن أو قياس قبل/بعد / Timing or before-after measurement"
+      description: "اذكر اللغة المختارة وحجم المشروع والوقت المقاس؛ لا تُرفق إعدادات كاملة أو مفاتيح وصول."

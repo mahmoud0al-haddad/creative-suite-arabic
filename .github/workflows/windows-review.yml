@@ -1,0 +1,79 @@
+name: Manual Windows source review
+on:
+  workflow_dispatch:
+    inputs:
+      application:
+        description: Workspace to review (repeat for all thirteen before releasing)
+        type: choice
+        required: true
+        options: [craft-launcher, cadcraft, deckcraft, designcraft, effectcraft, filmcraft, gridcraft, lightcraft, pdfcraft, photocraft, soundcraft, vectorcraft, wordcraft]
+permissions:
+  contents: read
+jobs:
+  review:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, windows-2025]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 180
+    env:
+      CARGO_BUILD_JOBS: '2'
+      RUST_TEST_THREADS: '2'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Install pinned Rust components
+        shell: pwsh
+        run: |
+          rustup toolchain install 1.99.0-x86_64-pc-windows-msvc --profile minimal --component rustfmt --component clippy
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          rustup target add wasm32-unknown-unknown --toolchain 1.99.0-x86_64-pc-windows-msvc
+      - name: Install NASM for source-only crypto input
+        if: inputs.application == 'pdfcraft'
+        shell: pwsh
+        run: |
+          choco install nasm --version=2.16.03 --yes --no-progress
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $env:PATH += ';C:\Program Files\NASM'
+          'C:\Program Files\NASM' >> $env:GITHUB_PATH
+          nasm --version
+      - name: Static catalog and workspace gates
+        shell: pwsh
+        env:
+          REVIEW_APP: ${{ inputs.application }}
+        run: |
+          python scripts/check-translations.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python scripts/check-source.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          # Runner toolset versions change; alternate tools are explicit and recorded.
+          pwsh -NoProfile -File scripts/build.ps1 -Repo $env:REVIEW_APP -Action Ci -AllowDifferentTools
+      - name: Additional Light native model tests
+        if: inputs.application == 'lightcraft'
+        shell: pwsh
+        run: |
+          ./scripts/build.ps1 -Repo lightcraft -Action Cargo -AllowDifferentTools -CargoArgs @('test','--locked','-p','lightcraft-ui-egui','--features','lightcraft-engine/denoise,lightcraft-engine/sam','--lib','--','--test-threads=2')
+      - name: Focused Arabic UI and text-layout regressions
+        shell: pwsh
+        env:
+          REVIEW_APP: ${{ inputs.application }}
+        run: |
+          $package = if ($env:REVIEW_APP -eq 'craft-launcher') {'artcraft-launcher-ui-egui'} else {"$($env:REVIEW_APP)-ui-egui"}
+          ./scripts/build.ps1 -Repo $env:REVIEW_APP -Action Cargo -AllowDifferentTools -CargoArgs @('test','--locked','-p',$package,'--lib','arabic','--','--test-threads=2')
+      - name: Locked release build
+        shell: pwsh
+        env:
+          REVIEW_APP: ${{ inputs.application }}
+        run: pwsh -NoProfile -File scripts/build.ps1 -Repo $env:REVIEW_APP -AllowDifferentTools
+      - name: Summarize actual tool versions
+        if: always()
+        shell: pwsh
+        run: |
+          'Manual review only. Installer/device/native screenshot review remains separate. No release was published.' >> $env:GITHUB_STEP_SUMMARY
+          # Keep runner filesystem paths out of uploaded summaries and artifacts.
+          Get-ChildItem .build/records/*-build.json -ErrorAction SilentlyContinue | ForEach-Object {
+            $r = Get-Content $_.FullName -Raw | ConvertFrom-Json
+            "Workspace $($r.repo): Rust $($r.toolchain), MSVC $($r.msvc), SDK $($r.sdk)." >> $env:GITHUB_STEP_SUMMARY
+          }

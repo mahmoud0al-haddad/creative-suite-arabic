@@ -1,0 +1,5 @@
+.build/
+dist/
+public-payload/
+*.pdb
+__pycache__/

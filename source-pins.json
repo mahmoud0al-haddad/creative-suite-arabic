@@ -1,0 +1,118 @@
+{
+  "release_tag": "v2026.10-ar.1",
+  "toolchain": "1.99.0-x86_64-pc-windows-msvc",
+  "msvc": "14.44.35207",
+  "windows_sdk": "10.0.26100.0",
+  "repositories": [
+    {
+      "name": "cadcraft",
+      "path": "sources/cadcraft",
+      "upstream_url": "https://github.com/storytold/cadcraft.git",
+      "upstream_commit": "54ea5e743a29acd8f3178cfaa82fb74a38c2de72",
+      "upstream_version": "0.5.0"
+    },
+    {
+      "name": "deckcraft",
+      "path": "sources/deckcraft",
+      "upstream_url": "https://github.com/storytold/deckcraft.git",
+      "upstream_commit": "be14248577b92059eb2b8c0c9460cceffbc1f01d",
+      "upstream_version": "0.5.0"
+    },
+    {
+      "name": "designcraft",
+      "path": "sources/designcraft",
+      "upstream_url": "https://github.com/storytold/designcraft.git",
+      "upstream_commit": "ca343e8985dc4d92dd65cf77a8198723b5f8a9eb",
+      "upstream_version": "0.6.0"
+    },
+    {
+      "name": "effectcraft",
+      "path": "sources/effectcraft",
+      "upstream_url": "https://github.com/storytold/effectcraft.git",
+      "upstream_commit": "67434e90388b6dca4417555346fa6850b6f96033",
+      "upstream_version": "0.8.0"
+    },
+    {
+      "name": "filmcraft",
+      "path": "sources/filmcraft",
+      "upstream_url": "https://github.com/storytold/filmcraft.git",
+      "upstream_commit": "0800a8b0aa4a703ba42172f415b45a61f8d8a5e1",
+      "upstream_version": "0.6.0"
+    },
+    {
+      "name": "gridcraft",
+      "path": "sources/gridcraft",
+      "upstream_url": "https://github.com/storytold/gridcraft.git",
+      "upstream_commit": "fb3737aa0308114dc14afd1dc4960a939bc34eed",
+      "upstream_version": "0.5.0"
+    },
+    {
+      "name": "lightcraft",
+      "path": "sources/lightcraft",
+      "upstream_url": "https://github.com/storytold/lightcraft.git",
+      "upstream_commit": "76b5377868d912db69a777bda253a5b1b96b22bd",
+      "upstream_version": "0.6.0"
+    },
+    {
+      "name": "pdfcraft",
+      "path": "sources/pdfcraft",
+      "upstream_url": "https://github.com/storytold/pdfcraft.git",
+      "upstream_commit": "881682c49570b8d29d74c95fa54354190fd454a1",
+      "upstream_version": "0.6.0"
+    },
+    {
+      "name": "photocraft",
+      "path": "sources/photocraft",
+      "upstream_url": "https://github.com/storytold/photocraft.git",
+      "upstream_commit": "2d6ff3f6cc015ff4d13e1dfbdf656317ec3a3451",
+      "upstream_version": "0.7.0"
+    },
+    {
+      "name": "soundcraft",
+      "path": "sources/soundcraft",
+      "upstream_url": "https://github.com/storytold/soundcraft.git",
+      "upstream_commit": "240aa848a04811ffff75cf193e69d9d4c404ae68",
+      "upstream_version": "0.5.0"
+    },
+    {
+      "name": "vectorcraft",
+      "path": "sources/vectorcraft",
+      "upstream_url": "https://github.com/storytold/vectorcraft.git",
+      "upstream_commit": "2ac3ba2b866ad9d34b2252dd8024f73e34f4b2b8",
+      "upstream_version": "0.9.0"
+    },
+    {
+      "name": "wordcraft",
+      "path": "sources/wordcraft",
+      "upstream_url": "https://github.com/storytold/wordcraft.git",
+      "upstream_commit": "30993ffb3f3ec710e0a285865e4de731518687ae",
+      "upstream_version": "0.5.0"
+    },
+    {
+      "name": "craft-launcher",
+      "path": "sources/craft-launcher",
+      "upstream_url": "https://github.com/storytold/craft-launcher.git",
+      "upstream_commit": "c273a94a9a37c7a2d7a07fd6cc9ca44e3dcc6b9c",
+      "upstream_version": "0.2.1"
+    }
+  ],
+  "build_inputs": [
+    {
+      "name": "craft-fonts",
+      "path": "build-inputs/craft-fonts",
+      "upstreamURL": "https://github.com/storytold/craft-fonts.git",
+      "upstreamCommit": "3d9ab3a132ed0eff457e424226a435a901da30d3",
+      "files": 31,
+      "bytes": 41725854
+    },
+    {
+      "name": "aws-lc-sys-0.45.0",
+      "path": "build-inputs/aws-lc-sys-0.45.0",
+      "upstreamURL": "https://crates.io/crates/aws-lc-sys/0.45.0",
+      "upstreamCommit": "7943223c99d909bc399bdf1b856821bb04f1f3c5",
+      "files": 2003,
+      "bytes": 66675252,
+      "license": "See retained LICENSE: Apache-2.0 OR ISC and inherited notices"
+    }
+  ]
+}

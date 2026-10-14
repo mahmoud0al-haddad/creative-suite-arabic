@@ -1,0 +1,8 @@
+asset: ar.tsv
+title: Arabic interface translations
+author: Local localization contributors; shared Craft application translations attributed in ARABIC-CUSTOM-NOTES.md
+source: original translation work and permissively licensed upstream Craft application catalogs
+license: MIT OR Apache-2.0
+license-file: ../../../../LICENSE-MIT
+added: 2026-10-12 by local localization build
+notes: Logical Unicode Arabic; source keys and user data are preserved.

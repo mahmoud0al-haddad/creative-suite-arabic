@@ -1,0 +1,59 @@
+{
+  "format": "Complete modified sources and open build inputs; exact upstream commits are provenance, not unmodified source claims.",
+  "maintainer": "mahmoud0al-haddad",
+  "repositories": {
+    "cadcraft": {
+      "source": "https://github.com/storytold/cadcraft.git",
+      "commit": "54ea5e743a29acd8f3178cfaa82fb74a38c2de72"
+    },
+    "deckcraft": {
+      "source": "https://github.com/storytold/deckcraft.git",
+      "commit": "be14248577b92059eb2b8c0c9460cceffbc1f01d"
+    },
+    "designcraft": {
+      "source": "https://github.com/storytold/designcraft.git",
+      "commit": "ca343e8985dc4d92dd65cf77a8198723b5f8a9eb"
+    },
+    "effectcraft": {
+      "source": "https://github.com/storytold/effectcraft.git",
+      "commit": "67434e90388b6dca4417555346fa6850b6f96033"
+    },
+    "filmcraft": {
+      "source": "https://github.com/storytold/filmcraft.git",
+      "commit": "0800a8b0aa4a703ba42172f415b45a61f8d8a5e1"
+    },
+    "gridcraft": {
+      "source": "https://github.com/storytold/gridcraft.git",
+      "commit": "fb3737aa0308114dc14afd1dc4960a939bc34eed"
+    },
+    "lightcraft": {
+      "source": "https://github.com/storytold/lightcraft.git",
+      "commit": "76b5377868d912db69a777bda253a5b1b96b22bd"
+    },
+    "pdfcraft": {
+      "source": "https://github.com/storytold/pdfcraft.git",
+      "commit": "881682c49570b8d29d74c95fa54354190fd454a1"
+    },
+    "photocraft": {
+      "source": "https://github.com/storytold/photocraft.git",
+      "commit": "2d6ff3f6cc015ff4d13e1dfbdf656317ec3a3451"
+    },
+    "soundcraft": {
+      "source": "https://github.com/storytold/soundcraft.git",
+      "commit": "240aa848a04811ffff75cf193e69d9d4c404ae68"
+    },
+    "vectorcraft": {
+      "source": "https://github.com/storytold/vectorcraft.git",
+      "commit": "2ac3ba2b866ad9d34b2252dd8024f73e34f4b2b8"
+    },
+    "wordcraft": {
+      "source": "https://github.com/storytold/wordcraft.git",
+      "commit": "30993ffb3f3ec710e0a285865e4de731518687ae"
+    },
+    "craft-launcher": {
+      "source": "https://github.com/storytold/craft-launcher.git",
+      "commit": "c273a94a9a37c7a2d7a07fd6cc9ca44e3dcc6b9c"
+    }
+  },
+  "source_manifest": "source-manifest.json"
+}

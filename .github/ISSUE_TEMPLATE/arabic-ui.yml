@@ -1,0 +1,35 @@
+name: "خلل في العربية / Arabic interface bug"
+description: "ترجمة، اتجاه، خط أو إدخال نص / Translation, direction, font or text input"
+title: "[Arabic] "
+body:
+  - type: input
+    id: app
+    attributes:
+      label: "اسم التطبيق والإصدار / Application and release version"
+      placeholder: "EffectCraft — v2026.10-ar.1"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: "Windows، لغة الواجهة ومقياس العرض / Windows, UI language and scale"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: "خطوات إعادة المشكلة / Reproduction steps"
+      description: "استخدم مثالًا بسيطًا بلا بيانات خاصة / Use a minimal non-private example."
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: "المتوقع والنتيجة الحالية / Expected and actual behavior"
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: "شاهد آمن / Safe evidence"
+      description: "اختياري: لقطة لمثال من إنشائك، بلا مستندات خاصة أو مفاتيح تحكم أو رموز وصول أو سجلات غير منقحة."
