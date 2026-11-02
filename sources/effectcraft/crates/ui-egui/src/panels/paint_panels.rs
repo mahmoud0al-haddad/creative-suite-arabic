@@ -14,7 +14,7 @@ use crate::{EffectcraftApp, widgets};
 
 fn set(app: &mut EffectcraftApp, v: Value) {
     if let Err(e) = app.session.execute("paint.options", v) {
-        app.ui.status = e.to_string();
+        app.ui.status = crate::diagnostics::message(&e.to_string());
     }
 }
 
@@ -306,7 +306,7 @@ pub fn brushes(app: &mut EffectcraftApp, ui: &mut egui::Ui, rect: Rect) {
         if resp.on_hover_text(tip.name).clicked()
             && let Err(e) = app.session.execute("paint.brushPreset", json!({"preset": i}))
         {
-            app.ui.status = e.to_string();
+            app.ui.status = crate::diagnostics::message(&e.to_string());
         }
     }
     y += (BRUSH_PRESETS.len().div_ceil(cols)) as f32 * cell + 8.0;

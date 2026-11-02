@@ -12,8 +12,10 @@ mod cell_pictures;
 pub mod chartview;
 pub mod control;
 pub mod credits;
+mod diagnostic_display;
 pub mod dialogs;
 pub mod editor;
+pub mod fonts;
 pub mod formula_bar;
 mod formula_locale;
 pub mod grid;
@@ -21,9 +23,11 @@ pub mod i18n;
 pub mod icons;
 pub mod keymap;
 pub mod keytips;
+pub mod outline;
 pub mod panes;
 pub mod paper_view;
 pub mod pivot_pane;
+pub mod printing;
 pub mod ribbon;
 pub mod selection_glide;
 pub mod tabs;
@@ -54,7 +58,14 @@ pub struct UiState {
     pub status_bar: bool,
     /// Motion in the UI: the selection outline glides to a new selection (View ▸ Animations).
     pub animations: bool,
+    /// Enable AutoComplete for cell values (File ▸ Options ▸ Editing): typed text is completed
+    /// from the one matching entry in the same column.
+    pub autocomplete: bool,
     pub recent: Vec<String>,
+    /// One-shot keytip request for a ribbon control: set when a keytip action resolves to
+    /// [`keytips::Action::Control`], consumed (and cleared) by the control's render site.
+    #[serde(skip)]
+    pub keytip_invoke: Option<&'static str>,
     /// Interface language. English by default (so tests and headless renders never depend on the
     /// host's locale); the desktop app starts from [`i18n::Language::system`] when `ui.json` has
     /// no usable language (see [`i18n::saved_language`]). An unknown saved value reads as English
@@ -92,7 +103,9 @@ impl Default for UiState {
             formula_bar_expanded: false,
             status_bar: true,
             animations: true,
+            autocomplete: true,
             recent: vec![],
+            keytip_invoke: None,
             language: i18n::Language::En,
             interface_scale: 100,
         }
@@ -152,6 +165,10 @@ pub struct Notice {
 /// Host services the platform shell provides (file pickers, opening URLs).
 #[derive(Default)]
 pub struct Services {
+    /// Desktop: discover configured printers on a worker.
+    pub printers: Option<printing::Discover>,
+    /// Desktop: submit the PDF with the chosen settings on a worker.
+    pub print_native: Option<printing::Submit>,
     pub pick_open: Option<Box<dyn Fn() -> Option<String>>>,
     pub pick_save: Option<Box<dyn Fn(&str) -> Option<String>>>,
     /// Native picture picker (PNG/JPEG), separate from workbook opening.
@@ -167,6 +184,10 @@ pub struct Services {
     /// source spreadsheet recorded as numbers stay numbers ("Rp10,000.00" → 10000). `None` from
     /// the host pastes the plain text alone.
     pub paste_html: Option<Box<dyn FnMut() -> Option<String>>>,
+    /// Read the system clipboard's plain text for the ribbon and menu Paste commands (Cmd/Ctrl+V
+    /// gets it from egui's `Event::Paste`). `None` from the host, or no service (web), pastes
+    /// GridCraft's own clipboard.
+    pub paste_text: Option<Box<dyn FnMut() -> Option<String>>>,
     /// Web: deliver a file to the user (name, bytes).
     pub download: Option<Box<dyn Fn(&str, &[u8])>>,
     /// Web: start an asynchronous file pick; the bytes arrive later in `inbox`.
@@ -203,6 +224,8 @@ pub struct SheetApp {
     /// Dismissible info bar under the ribbon (open-time notices).
     pub notice: Option<Notice>,
     pub services: Services,
+    pub printing: printing::State,
+    print_feedback_seen: Option<printing::Feedback>,
     /// Synthetic input from agents, one batch per frame (drags need several frames).
     pub synthetic: std::collections::VecDeque<Vec<egui::Event>>,
     pub control_rx: Option<std::sync::mpsc::Receiver<ControlRequest>>,
@@ -210,6 +233,14 @@ pub struct SheetApp {
     pub perf: Perf,
     pub fonts_ready: bool,
     fonts_set: bool,
+    /// Workbook fonts bound into the current font set; a change rebinds (installed fonts only).
+    fonts_bound: Vec<String>,
+    /// The (doc uid, revision) `fonts_bound` was computed for, so the style table is walked only
+    /// when the workbook changes.
+    fonts_seen: (u64, u64),
+    /// Set while a font-set change is pending activation: skip this frame's paint, like the
+    /// startup `fonts_ready` gate (egui applies new definitions at the next pass).
+    fonts_rebind: bool,
     /// Han face order the installed fonts were built with; a language switch rebuilds the fonts
     /// only when it changes this (see `theme::HanOrder`).
     fonts_han: Option<theme::HanOrder>,
@@ -224,6 +255,14 @@ pub struct SheetApp {
     pub(crate) shots: control::Shots,
     /// Chart selected on the sheet (id).
     pub selected_chart: Option<u32>,
+    /// The system clipboard's text when GridCraft last copied without publishing to it (a
+    /// control-channel or MCP `edit.copy`/`edit.cut`). While the system clipboard still holds this
+    /// text, GridCraft's copy is the newer one and Paste uses it.
+    clipboard_text_at_copy: Option<String>,
+    /// The system clipboard's text right after GridCraft's last cut (the published text, or the
+    /// text noted for an unpublished cut); `None` after a copy, or once the clipboard is seen
+    /// holding other text. Once the cut has been pasted, Paste leaves this text alone.
+    cut_text: Option<String>,
     pub started: f64,
 }
 
@@ -241,6 +280,8 @@ impl SheetApp {
             toast: None,
             notice: None,
             services,
+            printing: Default::default(),
+            print_feedback_seen: None,
             synthetic: Default::default(),
             control_rx: None,
             grid: grid::GridState {
@@ -252,6 +293,9 @@ impl SheetApp {
             perf: Perf::default(),
             fonts_ready: false,
             fonts_set: false,
+            fonts_bound: Vec::new(),
+            fonts_seen: (0, 0),
+            fonts_rebind: false,
             fonts_han: None,
             effective_dark: false,
             desktop_theme: desktop_theme::DesktopTheme::default(),
@@ -260,12 +304,18 @@ impl SheetApp {
             keytips: keytips::KeyTips::default(),
             shots: control::Shots::default(),
             selected_chart: None,
+            clipboard_text_at_copy: None,
+            cut_text: None,
             started: now_ms(),
         }
     }
 
-    /// One-time context setup: fonts and visuals (default Han order; never reads the host locale).
+    /// One-time context setup: start cataloging the machine's fonts, then install the fonts and
+    /// visuals. Workbook-specific fonts are bound later, once the scan is done (see [`logic`]).
+    ///
+    /// [`logic`]: SheetApp::logic
     pub fn setup_context(ctx: &egui::Context, dark: bool) {
+        fonts::start_scan();
         Self::setup_context_for_language(ctx, dark, i18n::Language::En);
     }
 
@@ -275,8 +325,36 @@ impl SheetApp {
         theme::apply(ctx, dark);
     }
 
+    /// The font names the active workbook uses: every style's font plus the theme's heading/body
+    /// fonts. These are the families [`fonts`] binds an installed file for.
+    pub fn used_fonts(&self) -> Vec<String> {
+        let mut names: Vec<String> = Vec::new();
+        if let Some(d) = self.session.active() {
+            names.extend(d.wb.styles.iter().map(|(_, s)| s.font.name.clone()));
+            names.push(d.wb.theme.major_font.clone());
+            names.push(d.wb.theme.minor_font.clone());
+            // Text boxes and shapes name their own typefaces.
+            names.extend(d.wb.sheets.iter().flat_map(|sh| sh.shapes.iter().filter_map(|s| s.format.font.clone())));
+        }
+        names
+    }
+
     /// Runs an engine command (or a UI command) and handles UI requests it makes.
     pub fn run(&mut self, id: &str, params: Json) -> Result<Json, String> {
+        let r = self.run_command(id, params);
+        // This copy leaves the system clipboard alone: note what it holds, so Paste can tell
+        // that GridCraft's copy is newer while that text is still there.
+        if matches!(id, "edit.copy" | "edit.cut") && r.is_ok() {
+            self.clipboard_text_at_copy = self.system_clipboard_text();
+            self.cut_text = if id == "edit.cut" { self.clipboard_text_at_copy.clone() } else { None };
+        }
+        r
+    }
+
+    fn run_command(&mut self, id: &str, params: Json) -> Result<Json, String> {
+        if matches!(id, "file.save" | "file.saveAs" | "file.saveBytes") {
+            self.store_view_state();
+        }
         if id.starts_with("file.")
             || matches!(
                 id,
@@ -305,6 +383,13 @@ impl SheetApp {
         }
         let r = self.session.run(id, params);
         self.after_engine();
+        // The new chart is selected, as after inserting any object, so Delete removes it, not its data.
+        if id == "insert.chart"
+            && let Ok(r) = &r
+            && let Some(chart) = r.get("chart").and_then(Json::as_u64).and_then(|id| u32::try_from(id).ok())
+        {
+            self.selected_chart = Some(chart);
+        }
         if id == "file.exportPdf"
             && let Ok(r) = &r
         {
@@ -317,11 +402,14 @@ impl SheetApp {
     /// their existing internal clipboard behavior and do not write to the host clipboard.
     pub fn copy_to_clipboard(&mut self, ctx: &egui::Context, command: &str) {
         // Only ask the engine for HTML when the host can publish it.
-        let result = match self.run(command, json!({"html": self.services.copy_html.is_some()})) {
+        let result = match self.run_command(command, json!({"html": self.services.copy_html.is_some()})) {
             Ok(result) => result,
             Err(e) => return self.alert(e),
         };
         let Some(text) = result.get("text").and_then(Json::as_str) else { return };
+        // The system clipboard gets this copy, so its text decides what Paste pastes.
+        self.clipboard_text_at_copy = None;
+        self.cut_text = (command == "edit.cut").then(|| text.replace("\r\n", "\n"));
         if let Some(html) = result.get("html").and_then(Json::as_str)
             && let Some(copy_html) = &mut self.services.copy_html
         {
@@ -333,15 +421,55 @@ impl SheetApp {
         ctx.copy_text(text.to_string());
     }
 
-    /// Paste text that came from the system clipboard, with the clipboard's HTML flavour when the
-    /// host can read it.
+    /// Paste text that came from the system clipboard (Cmd/Ctrl+V, or the ribbon and menu Paste),
+    /// with the clipboard's HTML flavour when the host can read it.
+    ///
+    /// Excel pastes a cut once: after GridCraft's cut has been pasted, the system clipboard text
+    /// that came with it is not pasted again over the moved block; GridCraft's own (empty)
+    /// clipboard is pasted instead, which reports "Nothing to paste.". Other text means the
+    /// clipboard has moved on, so the cut's text is forgotten and pastes normally later.
     pub fn paste_external(&mut self, text: String) {
+        if Self::same_clipboard_text(Some(&text), self.cut_text.as_deref()) {
+            if self.session.clipboard.is_none() {
+                return self.run_or_alert("edit.paste", json!({}));
+            }
+        } else {
+            self.cut_text = None;
+        }
         let html = self.services.paste_html.as_mut().and_then(|read| read());
         let params = match html {
             Some(html) => json!({"text": text, "html": html}),
             None => json!({"text": text}),
         };
         self.run_or_alert("edit.paste", params);
+    }
+
+    /// Ribbon and menu Paste: paste the text on the system clipboard, as Cmd/Ctrl+V does. With no
+    /// text there, no host clipboard (web), or the text that was there when GridCraft last copied
+    /// without publishing, GridCraft's own clipboard is pasted.
+    pub fn paste_from_clipboard(&mut self) {
+        match self.system_clipboard_text() {
+            Some(text) if self.session.clipboard.is_none() || self.clipboard_text_at_copy.as_ref() != Some(&text) => self.paste_external(text),
+            _ => self.run_or_alert("edit.paste", json!({})),
+        }
+    }
+
+    /// The system clipboard's plain text, with the line endings of egui's `Event::Paste` text.
+    /// `None` when it holds no text or the host can't read it.
+    fn system_clipboard_text(&mut self) -> Option<String> {
+        self.services.paste_text.as_mut().and_then(|read| read()).filter(|t| !t.is_empty()).map(|t| t.replace("\r\n", "\n"))
+    }
+
+    /// Whether two clipboard texts are the same copy: trailing line breaks don't count, as in the
+    /// engine's `edit.paste`, and CRLF matches LF (egui's `Event::Paste` text may keep the host's).
+    fn same_clipboard_text(a: Option<&str>, b: Option<&str>) -> bool {
+        fn chars(t: &str) -> impl Iterator<Item = char> + '_ {
+            t.trim_end_matches(['\r', '\n']).chars().filter(|c| *c != '\r')
+        }
+        match (a, b) {
+            (Some(a), Some(b)) => chars(a).eq(chars(b)),
+            _ => false,
+        }
     }
 
     /// Web: `file.exportPdf` without a path returns the PDF as base64; hand it to the browser as a download.
@@ -365,11 +493,43 @@ impl SheetApp {
     }
 
     pub fn run_or_alert(&mut self, id: &str, params: Json) {
-        // Printing from the UI also hands the PDF to the host's print flow (web).
+        // A menu/shortcut opens the settings first; the Print page's button submits explicitly.
         if id == "file.print" {
+            if self.services.print_native.is_some() {
+                self.open_backstage(backstage::Page::Print);
+                return;
+            }
             return self.print_now(params);
         }
+        // Menu-style Export as PDF with no file named: ask where to save, like Save As does.
+        // Programmatic callers use `run` and keep getting the PDF bytes back.
+        if id == "file.exportPdf" && self.services.pick_save.is_some() && params.get("path").and_then(Json::as_str).is_none_or(str::is_empty) {
+            return self.export_pdf_with_picker(params);
+        }
         if let Err(e) = self.run(id, params) {
+            self.alert(e);
+        }
+    }
+
+    /// Asks for a `.pdf` path with the save picker, then re-runs `file.exportPdf` with it. Other
+    /// params (range, sheets, fitToPage) are kept. A cancelled picker does nothing.
+    fn export_pdf_with_picker(&mut self, mut params: Json) {
+        if !self.commit_edit(0, 0, false, false) {
+            return;
+        }
+        let title = self.session.active().map(|d| d.display_title()).unwrap_or_else(|| "Book1".into());
+        let stem = std::path::Path::new(&title).file_stem().and_then(|s| s.to_str()).unwrap_or("Book1").to_string();
+        let Some(pick) = &self.services.pick_save else { return };
+        let Some(path) = pick(&format!("{stem}.pdf")) else { return };
+        // The picker may suggest a workbook extension; the export writes a PDF.
+        let path = std::path::Path::new(&path).with_extension("pdf").to_string_lossy().into_owned();
+        match &mut params {
+            Json::Object(map) => {
+                map.insert("path".into(), Json::String(path));
+            }
+            other => *other = json!({"path": path}),
+        }
+        if let Err(e) = self.run("file.exportPdf", params) {
             self.alert(e);
         }
     }
@@ -383,29 +543,39 @@ impl SheetApp {
         }
     }
 
-    /// Runs `file.print`, builds the PDF and (where the host provides the hook — the web
-    /// build) hands the bytes straight to the browser's print flow; errors show the usual
-    /// alert. Desktop builds have no `services.print`, so this falls back to `run_or_alert`
-    /// (which still produces the PDF — just without a UI to act on the result yet).
+    /// Builds the selected sheets' print-ready PDF and hands it to the desktop worker or the
+    /// browser. Rendering errors use the usual alert; asynchronous spooler errors stay visible
+    /// on the Print page. The engine command still returns PDF bytes without submitting.
     pub fn print_now(&mut self, params: Json) {
-        match self.run("file.print", params) {
-            Ok(r) => {
-                let Some(b64) = r.get("base64").and_then(Json::as_str) else { return };
-                let Some(bytes) = gridcraft_engine::io::base64_decode(b64) else {
-                    self.message = Some(("GridCraft".into(), "Couldn't decode the generated PDF.".into()));
-                    return;
-                };
-                if let Some(print) = &self.services.print {
-                    print(&bytes);
-                }
-            }
-            Err(e) => self.alert(e),
+        if let Err(error) = self.submit_print(params) {
+            self.alert(error);
         }
+    }
+
+    fn submit_print(&mut self, params: Json) -> Result<Json, String> {
+        if self.services.print_native.is_some() && !self.printing.ready() {
+            return Err("Select an available printer in File > Print before submitting.".into());
+        }
+        let pdf = self.run("file.print", params)?;
+        let encoded = pdf.get("base64").and_then(Json::as_str).ok_or("The print command did not produce a PDF.")?;
+        let bytes = gridcraft_engine::io::base64_decode(encoded).ok_or("Couldn't decode the generated PDF.")?;
+        let len = bytes.len();
+        if let Some(submit) = &self.services.print_native {
+            self.printing.begin(submit(bytes, self.printing.settings.clone())).map_err(|_| "A print job is already being submitted.".to_owned())?;
+            self.print_feedback_seen = None;
+        } else if let Some(print) = &self.services.print {
+            print(&bytes);
+        } else {
+            return Err("Printing is unavailable here; export a PDF instead.".into());
+        }
+        Ok(json!({"printing": true, "bytes": len, "pending": self.services.print_native.is_some()}))
     }
 
     /// UI-only commands (dialogs, view toggles that aren't saved in the file).
     fn run_ui_command(&mut self, id: &str, p: &Json) -> Option<Result<Json, String>> {
         let r = match id {
+            "ui.printSettings" => printing::settings(&mut self.printing, p, self.services.printers.as_ref()),
+            "ui.printSubmit" => self.submit_print(p.clone()),
             "ui.ribbonTab" => {
                 self.ui.ribbon_tab = p.get("tab").and_then(Json::as_str).unwrap_or("Home").to_string();
                 Ok(Json::Null)
@@ -434,6 +604,10 @@ impl SheetApp {
             "view.animations" => {
                 self.ui.animations = p.get("on").and_then(Json::as_bool).unwrap_or(!self.ui.animations);
                 Ok(json!({"on": self.ui.animations}))
+            }
+            "options.autoComplete" => {
+                self.ui.autocomplete = p.get("on").and_then(Json::as_bool).unwrap_or(!self.ui.autocomplete);
+                Ok(json!({"on": self.ui.autocomplete}))
             }
             "view.interfaceScale" => {
                 // `{"percent": 125}` or `{"percent": "auto"}`; out-of-range values are clamped.
@@ -557,8 +731,9 @@ impl SheetApp {
                         let path = if std::path::Path::new(&path).extension().is_none() { format!("{path}.xlsx") } else { path };
                         self.run_or_alert("file.save", json!({"path": path}));
                     }
-                } else if let Some(dl) = &self.services.download
-                    && let Ok(r) = self.session.run("file.saveBytes", json!({"format": "xlsx"}))
+                } else if self.services.download.is_some()
+                    && let Ok(r) = self.run("file.saveBytes", json!({"format": "xlsx"}))
+                    && let Some(dl) = &self.services.download
                     && let Some(b) = r.get("base64").and_then(Json::as_str).and_then(gridcraft_engine::io::base64_decode)
                 {
                     let name = r.get("name").and_then(Json::as_str).unwrap_or("Book.xlsx").to_string();
@@ -589,15 +764,25 @@ impl SheetApp {
 
     pub fn open_path(&mut self, path: &str) {
         match self.run("file.open", json!({"path": path})) {
-            Ok(r) => {
-                self.ui.recent.retain(|p| p != path);
-                self.ui.recent.insert(0, path.to_string());
-                self.ui.recent.truncate(20);
-                self.show_open_warnings(&r);
-            }
+            Ok(r) => self.after_open(Some(path), &r),
+            // A password-protected workbook: ask for the password; the dialog opens it.
+            Err(e) if e.contains(gridcraft_engine::io::PASSWORD_REQUIRED) => self.open_dialog("openPassword", json!({"path": path})),
             Err(e) => self.message = Some(("GridCraft".into(), clean_error(&e))),
         }
         self.after_engine();
+    }
+
+    /// What follows a successful `file.open`: the workbook shows (not the Backstage), the Recent
+    /// list (for a file on disk) and the open warnings notice. Shared by File › Open, the
+    /// password dialog and the control channel.
+    pub fn after_open(&mut self, path: Option<&str>, r: &Json) {
+        self.backstage = None;
+        if let Some(path) = path {
+            self.ui.recent.retain(|p| p != path);
+            self.ui.recent.insert(0, path.to_string());
+            self.ui.recent.truncate(20);
+        }
+        self.show_open_warnings(r);
     }
 
     /// Turns the `warnings` a `file.open` result carries into an info-bar notice, choosing the
@@ -639,12 +824,45 @@ impl SheetApp {
     }
 
     pub fn view(&self) -> SheetView {
-        self.view_key().and_then(|k| self.views.get(&k).copied()).unwrap_or_default()
+        self.view_key().and_then(|k| self.views.get(&k).copied()).unwrap_or_else(|| self.saved_view())
     }
 
     pub fn view_mut(&mut self) -> Option<&mut SheetView> {
         let k = self.view_key()?;
-        Some(self.views.entry(k).or_default())
+        let saved = self.saved_view();
+        Some(self.views.entry(k).or_insert(saved))
+    }
+
+    /// The view a sheet opens with: scrolled to the file's saved first visible cell (`topLeftCell`).
+    fn saved_view(&self) -> SheetView {
+        let Some(sh) = self.session.active().and_then(|d| d.wb.active()) else { return SheetView::default() };
+        if sh.view != gridcraft_engine::model::SheetViewMode::Normal {
+            return SheetView::default();
+        }
+        let (fr, fc) = sh.freeze.unwrap_or((0, 0));
+        let top = sh.view_top_left;
+        let y = sh.row_top(top.row.max(fr)) - sh.row_top(fr);
+        let x = sh.col_left(top.col.max(fc)) - sh.col_left(fc);
+        SheetView { scroll: egui::vec2(x.max(0.0) as f32, y.max(0.0) as f32) }
+    }
+
+    /// Hands the active document's scroll positions (first visible cell per sheet) and active
+    /// cell to the engine so a save writes them (`sheetView topLeftCell`). Normal view only:
+    /// Page Layout view scrolls over pages, not cells.
+    pub fn store_view_state(&mut self) {
+        let Some(d) = self.session.active_mut() else { return };
+        let mut tops = Vec::new();
+        for (&(uid, si), v) in &self.views {
+            let Some(sh) = d.wb.sheets.get(si).filter(|sh| uid == d.uid && sh.view == gridcraft_engine::model::SheetViewMode::Normal) else {
+                continue;
+            };
+            let (fr, fc) = sh.freeze.unwrap_or((0, 0));
+            // A hair past the edge so a row that starts exactly at the scroll offset is the one found.
+            let row = sh.row_at(sh.row_top(fr) + v.scroll.y.max(0.0) as f64 + 0.01);
+            let col = sh.col_at(sh.col_left(fc) + v.scroll.x.max(0.0) as f64 + 0.01);
+            tops.push((si, CellRef::new(row, col)));
+        }
+        d.store_view(&tops);
     }
 
     /// Starts editing the active cell. `text` replaces the content (typing) or pre-fills it.
@@ -677,7 +895,7 @@ impl SheetApp {
         };
         let mut ed = editor::EditState::new(d.wb.active_sheet, at, text, replace, from_formula_bar);
         ed.locale = locale;
-        if replace && !ed.is_formula() {
+        if replace && self.ui.autocomplete && !ed.is_formula() {
             ed.completion = editor::column_completion(sh, at, &ed.text);
         }
         self.editor = Some(ed);
@@ -754,8 +972,31 @@ impl SheetApp {
         self.grid.ensure_visible = true;
     }
 
+    /// Terminal feedback also reaches the normal window when printing starts through control.
+    pub fn poll_printing(&mut self, ctx: &egui::Context) {
+        self.printing.poll(ctx);
+        if self.printing.message == self.print_feedback_seen {
+            return;
+        }
+        self.print_feedback_seen = self.printing.message.clone();
+        let Some(message @ (printing::Feedback::Submitted(_) | printing::Feedback::Failed(_) | printing::Feedback::WorkerStopped)) =
+            self.printing.message.clone()
+        else {
+            return;
+        };
+        let text = printing::feedback(&message, |label| self.ui.language.tr(label).to_owned());
+        if matches!(message, printing::Feedback::Submitted(_)) {
+            self.toast = Some((text, now_ms()));
+        } else {
+            self.alert(text);
+        }
+    }
+
     /// Per-frame logic (control channel, screenshots). Call before `ui`.
     pub fn logic(&mut self, ctx: &egui::Context) {
+        // A keytip control request lives one frame: the ribbon consumes it during `ui`, and
+        // anything that never reached a control (collapsed ribbon, tab switch) is dropped.
+        self.ui.keytip_invoke = None;
         if self.fonts_han.is_some_and(|han| han != theme::HanOrder::of(self.ui.language)) {
             self.fonts_ready = false;
             self.fonts_set = false;
@@ -767,8 +1008,29 @@ impl SheetApp {
             } else {
                 SheetApp::setup_context_for_language(ctx, self.ui.dark, self.ui.language);
                 self.fonts_set = true;
+                // The rebuilt set has no workbook fonts yet: bind them again once it is active.
+                self.fonts_bound.clear();
+                self.fonts_seen = (0, 0);
                 self.fonts_han = Some(theme::HanOrder::of(self.ui.language));
                 ctx.request_repaint();
+            }
+        } else if self.fonts_rebind {
+            // A font-set change made last frame is active now.
+            self.fonts_rebind = false;
+        } else if fonts::scan_done() {
+            // Bind the workbook's installed fonts once the background scan has finished. Adding
+            // fonts re-applies the font set, which egui activates at the next pass, so skip this
+            // frame's paint (same one-frame cost as startup). Only when the workbook changed.
+            let seen = self.session.active().map(|d| (d.uid, d.revision)).unwrap_or((0, 0));
+            if seen != self.fonts_seen {
+                let used = self.used_fonts();
+                self.fonts_seen = seen;
+                if used != self.fonts_bound {
+                    ctx.set_fonts(theme::font_definitions_with(self.ui.language, &used));
+                    self.fonts_bound = used;
+                    self.fonts_rebind = true;
+                    ctx.request_repaint();
+                }
             }
         }
         if let Some(answer) = self.desktop_theme.take_change() {
@@ -807,11 +1069,15 @@ impl SheetApp {
             .unwrap_or_default();
         for (name, bytes) in arrived {
             let b64 = gridcraft_engine::io::base64_encode(&bytes);
-            match self.run("file.open", json!({"name": name, "base64": b64})) {
+            match self.run("file.open", json!({"name": &name, "base64": &b64})) {
                 // A file picked from File › Open (web) arrives here: show it, not the Backstage.
                 Ok(r) => {
                     self.backstage = None;
                     self.show_open_warnings(&r);
+                }
+                Err(e) if e.contains(gridcraft_engine::io::PASSWORD_REQUIRED) => {
+                    self.backstage = None;
+                    self.open_dialog("openPassword", json!({"name": name, "base64": b64}));
                 }
                 Err(e) => self.message = Some(("GridCraft".into(), clean_error(&e))),
             }
@@ -831,7 +1097,8 @@ impl SheetApp {
     /// Lays out the whole window.
     pub fn ui(&mut self, ui: &mut egui::Ui) {
         let ctx = ui.ctx().clone();
-        if !self.fonts_ready {
+        self.poll_printing(&ctx);
+        if !self.fonts_ready || self.fonts_rebind {
             ctx.request_repaint();
             return;
         }
@@ -890,6 +1157,7 @@ impl SheetApp {
             && self.session.active().is_some_and(|d| d.is_dirty() && d.path.as_deref().is_some_and(|p| p.ends_with(".xlsx")))
         {
             self.grid.last_autosave = now;
+            self.store_view_state();
             let _ = self.session.run("file.save", json!({}));
         }
         // Window title.
@@ -920,21 +1188,27 @@ impl SheetApp {
             // Leave pointer cancellation to the popup so clicking a menu item still works.
             egui::Popup::close_all(ctx);
         }
-        // The legacy Edit/Format paths lead to the same existing Home menus. Switch once, when
-        // the prefix changes, not every frame (that would reset a tab the user picked meanwhile).
-        let after = self.keytips.prefix();
-        if after != before.as_deref() && matches!(after, Some("E" | "O" | "OC")) {
-            self.run_or_alert("ui.ribbonTab", json!({"tab": "Home"}));
-            self.ui.ribbon_collapsed = false;
-        }
         for action in actions {
             match action {
-                keytips::Action::Home => {
-                    self.run_or_alert("ui.ribbonTab", json!({"tab": "Home"}));
+                keytips::Action::Tab(tab) => {
+                    self.run_or_alert("ui.ribbonTab", json!({"tab": tab}));
                     self.ui.ribbon_collapsed = false;
                 }
+                keytips::Action::Command(id @ ("edit.copy" | "edit.cut")) => self.copy_to_clipboard(ctx, id),
+                keytips::Action::Command("edit.paste") => self.paste_from_clipboard(),
                 keytips::Action::Command(id) => self.run_or_alert(id, json!({})),
                 keytips::Action::Dialog(name) => self.open_dialog(name, json!({})),
+                // Reserved sequence: fires silently while its command is missing. When the
+                // command lands in the catalog it goes live with no table edit.
+                keytips::Action::Pending(id) => {
+                    if gridcraft_engine::find_command(id).is_some() {
+                        self.run_or_alert(id, json!({}));
+                    }
+                }
+                // Route to the ribbon control that owns this keytip: it opens its dropdown or
+                // runs its click handler with the right params (the engine command alone would
+                // be missing them).
+                keytips::Action::Control(id) => self.ui.keytip_invoke = Some(id),
             }
         }
     }

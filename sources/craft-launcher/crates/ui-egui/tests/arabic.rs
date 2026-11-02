@@ -19,9 +19,13 @@ const NOW: i64 = 1_791_500_000;
 struct Fake {
     events: Vec<Event>,
     clock: Rc<Cell<i64>>,
+    suite: bool,
 }
 
 impl Backend for Fake {
+    fn integrated_suite(&self) -> bool {
+        self.suite
+    }
     fn send(&mut self, _command: Command) {}
     fn poll(&mut self) -> Vec<Event> {
         std::mem::take(&mut self.events)
@@ -80,8 +84,12 @@ fn events() -> Vec<Event> {
 }
 
 fn harness(view: ViewMode) -> Harness<'static, Option<LauncherUi>> {
+    harness_suite(view, false)
+}
+
+fn harness_suite(view: ViewMode, suite: bool) -> Harness<'static, Option<LauncherUi>> {
     artcraft_launcher_ui_egui::i18n::set_test_lang(artcraft_launcher_ui_egui::i18n::Lang::EN);
-    let mut backend = Some(Fake { events: events(), clock: Rc::new(Cell::new(NOW)) });
+    let mut backend = Some(Fake { events: events(), clock: Rc::new(Cell::new(NOW)), suite });
     let settings =
         Settings { view, notify: false, language: "ar".into(), theme: artcraft_launcher_ui_egui::theme::ThemeChoice::Dark, ..Settings::default() };
     Harness::builder().with_size(egui::vec2(1180.0, 900.0)).with_theme(egui::Theme::Dark).build_ui_state(
@@ -104,6 +112,15 @@ fn snapshot(h: &mut Harness<'_, Option<LauncherUi>>, name: &str) {
     let Some(dir) = std::env::var_os("ARTCRAFT_LAUNCHER_SNAPSHOTS") else { return };
     let img = h.render().unwrap();
     img.save(std::path::Path::new(&dir).join(format!("{name}.png"))).unwrap();
+}
+
+#[test]
+fn arabic_suite_update_heading_and_status_do_not_overlap() {
+    let mut h = harness_suite(ViewMode::Grid, true);
+    h.run_steps(8);
+    let heading = h.get_by_label("تحديثات النسخة العربية من GitHub").rect();
+    let status = h.get_by_label("التحقق من تحديثات الحزمة العربية الكاملة").rect();
+    assert!(!heading.intersects(status), "Arabic update text overlaps: {heading:?} / {status:?}");
 }
 
 #[test]

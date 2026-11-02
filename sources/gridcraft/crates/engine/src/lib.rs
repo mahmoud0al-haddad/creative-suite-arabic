@@ -13,6 +13,8 @@ pub mod cmd;
 pub mod display;
 pub mod fill;
 pub mod io;
+pub mod links;
+pub mod outline;
 pub mod paper;
 pub mod pivot;
 pub mod pivot_calc;
@@ -28,7 +30,7 @@ use gridcraft_model::Workbook;
 use serde::Serialize;
 use serde_json::Value as Json;
 
-pub use cmd::{CommandInfo, CommandSpec, command_specs, find_command};
+pub use cmd::{CommandInfo, CommandSpec, command_specs, find_command, register_test_command};
 pub use gridcraft_calc as calc;
 pub use gridcraft_core as core;
 pub use gridcraft_formula as formula;
@@ -107,6 +109,9 @@ pub struct DocState {
     pub sheet_selections: Vec<Selection>,
     /// Allow Edit Ranges unlocked with their password in this session: (sheet name, title).
     pub unlocked_ranges: Vec<(String, String)>,
+    /// The format `path`'s content was recognised as when its extension doesn't name one (an
+    /// XLSX called `budget.dat`): Save writes it back in that format.
+    pub content_kind: Option<io::FileKind>,
 }
 
 static NEXT_UID: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
@@ -131,6 +136,7 @@ impl DocState {
             title,
             sheet_selections: vec![],
             unlocked_ranges: vec![],
+            content_kind: None,
         }
     }
     pub fn is_dirty(&self) -> bool {
@@ -138,6 +144,35 @@ impl DocState {
     }
     pub fn sheet_index(&self) -> usize {
         self.wb.active_sheet
+    }
+    /// Records the view state that is saved with the file (`sheetView topLeftCell`, the active
+    /// cell): the first visible cell of the scrolling area per sheet index in `tops`, and the
+    /// active sheet's active cell. View state never makes the workbook dirty.
+    pub fn store_view(&mut self, tops: &[(usize, CellRef)]) {
+        let active = self.selection.active;
+        let si = self.wb.active_sheet;
+        let changed = tops.iter().any(|(i, c)| self.wb.sheets.get(*i).is_some_and(|sh| sh.view_top_left != *c))
+            || self.wb.sheets.get(si).is_some_and(|sh| sh.view_active != active);
+        if !changed {
+            return;
+        }
+        let dirty = self.is_dirty();
+        let wb = Arc::make_mut(&mut self.wb);
+        for (i, c) in tops {
+            if let Some(sh) = wb.sheets.get_mut(*i)
+                && sh.view_top_left != *c
+            {
+                Arc::make_mut(sh).view_top_left = *c;
+            }
+        }
+        if let Some(sh) = wb.sheets.get_mut(si)
+            && sh.view_active != active
+        {
+            Arc::make_mut(sh).view_active = active;
+        }
+        if !dirty {
+            self.saved = self.wb.clone();
+        }
     }
     pub fn display_title(&self) -> String {
         self.path

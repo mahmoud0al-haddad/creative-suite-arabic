@@ -23,3 +23,8 @@ Local changes include Arabic interface catalogs, display-time diagnostics, selec
 The amended egui/epaint0.36.2 sources add Arabic shaping/bidi and logical editing/selection mappings; their MIT and Apache-2.0 notices remain in vendor/.
 Optional embedded Noto Sans Arabic is from the pinned craft-fonts input under SIL OFL1.1; its authors, source checksum and OFL text remain with build-inputs/craft-fonts.
 Installed Tahoma may be read at runtime but no proprietary system font file is distributed. ArtCraft graphical marks are excluded; original brand terms and factual upstream credit are retained.
+
+The optional PDF document reader uses craft-pdf and Hayro-syntax 0.7.2, MIT OR Apache-2.0.
+The shared patched syntax source is centralized in storytold/craft-libs, transferred from
+PdfCraft revision 9ed3abe4907a127d36b12fbfeee71d7e26248da1. This parser-only use embeds no
+Hayro fonts, CMaps or image codecs; EffectCraft keeps its existing fonts and drawing filters.

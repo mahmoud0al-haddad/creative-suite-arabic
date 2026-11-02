@@ -55,10 +55,12 @@ fn borders(preset: &str) -> Shortcut {
 
 /// The shortcut for a key press in the grid, if any. `physical` is the key's position on a US
 /// layout (as Excel matches Ctrl+Shift+4 rather than the `$` character); `mac` selects the Excel
-/// for Mac variants where they differ.
+/// for Mac variants where they differ. Navigation keys go by the logical key: with Num Lock off
+/// the numpad's arrows and Page Down report the digit keys (Num6, Num3) as their physical keys.
 pub fn lookup(key: Key, physical: Option<Key>, m: Modifiers, mac: bool) -> Option<Shortcut> {
     use Key::*;
-    let k = physical.unwrap_or(key);
+    let navigation = matches!(key, ArrowLeft | ArrowRight | ArrowUp | ArrowDown | PageUp | PageDown | Home | End | Insert | Delete);
+    let k = if navigation { key } else { physical.unwrap_or(key) };
     // Control itself (Excel for Mac also uses Control for these), Ctrl on Windows / Cmd on Mac,
     // and Alt/Option alone.
     let ctrl = m.ctrl && !m.alt;
@@ -108,6 +110,11 @@ pub fn lookup(key: Key, physical: Option<Key>, m: Modifiers, mac: bool) -> Optio
         Period if cmd && s => run("home.increaseFontSize"),
         Comma if cmd && s => run("home.decreaseFontSize"),
         Space if cmd && s => run("edit.selectAll"),
+        // Shift+Space selects the row; Ctrl+Space (Windows) / Control+Space (Excel for Mac) the
+        // column. Cmd+Space stays free: it is the macOS Spotlight shortcut.
+        Space if plain && s => run("selection.row"),
+        Space if !mac && cmd && !s => run("selection.column"),
+        Space if mac && ctrl && !m.command && !s => run("selection.column"),
         Home if cmd && s => Shortcut::ExtendToStart,
         End if cmd && s => Shortcut::ExtendToEnd,
         Home if plain && s => Shortcut::ExtendToRowStart,
@@ -172,12 +179,14 @@ pub(crate) fn dispatch(app: &mut SheetApp, ctx: &egui::Context, key: Key, physic
         }
         Shortcut::Dialog(name, params) => app.open_dialog(name, params),
         Shortcut::Date | Shortcut::Time => {
-            let now = gridcraft_engine::calc::now_serial();
-            let (value, format) = if shortcut == Shortcut::Date { (now.floor(), "m/d/yyyy") } else { (now.fract(), "h:mm AM/PM") };
             let text = app
                 .session
                 .active()
-                .map(|d| gridcraft_engine::display::format(&gridcraft_engine::core::Value::Number(value), format, &d.wb).text)
+                .map(|d| {
+                    let now = gridcraft_engine::core::date::serial_in_system(d.wb.date_system, gridcraft_engine::calc::now_serial());
+                    let (value, format) = if shortcut == Shortcut::Date { (now.floor(), "m/d/yyyy") } else { (now.fract(), "h:mm AM/PM") };
+                    gridcraft_engine::display::format(&gridcraft_engine::core::Value::Number(value), format, &d.wb).text
+                })
                 .unwrap_or_default();
             edit_with(app, text);
         }
@@ -205,12 +214,16 @@ pub(crate) fn dispatch(app: &mut SheetApp, ctx: &egui::Context, key: Key, physic
             let dc = if shortcut == Shortcut::ScreenRight { cols } else { -cols };
             let _ = app.session.run("selection.move", json!({"dr": 0, "dc": dc, "extend": m.shift}));
             app.grid.ensure_visible = true;
+            app.grid.reveal_moving_end = m.shift;
         }
         Shortcut::Edit => app.begin_edit(None, false),
         Shortcut::ContextMenu => app.grid.context_menu = Some(geo.cell_rect(sh, active).center()),
         Shortcut::DropDown => {
             if sh.validations.iter().any(|d| d.in_cell_dropdown && d.ranges.iter().any(|r| r.contains(active))) {
                 app.grid.list_picker = Some(active);
+            } else if sh.has_filter_button(active) {
+                let at = geo.mirror_pos(crate::grid::filter_button_rect(geo, sh, active).center());
+                app.grid.filter_menu = Some((active.col, active.row, at));
             }
         }
         Shortcut::Zoom(step) => {
@@ -236,4 +249,5 @@ fn extend(app: &mut SheetApp, anchor: CellRef, active: CellRef, to: CellRef) {
         d.selection.anchor = anchor;
     }
     app.grid.ensure_visible = true;
+    app.grid.reveal_moving_end = true;
 }

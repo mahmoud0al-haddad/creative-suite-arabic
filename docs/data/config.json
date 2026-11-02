@@ -13,20 +13,20 @@
     {
       "app": "photocraft",
       "title": "PhotoCraft",
-      "image": "assets/screenshots/photocraft-ar.png",
+      "image": null,
       "altAr": "واجهة PhotoCraft باللغة العربية",
       "altEn": "PhotoCraft interface in Arabic",
-      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
-      "descriptionEn": "Arabic interface from the independent modified build."
+      "descriptionAr": "لقطة الإصدار الجديد قيد المراجعة.",
+      "descriptionEn": "Updated version screenshot under review."
     },
     {
       "app": "vectorcraft",
       "title": "VectorCraft",
-      "image": "assets/screenshots/vectorcraft-ar.png",
+      "image": null,
       "altAr": "واجهة VectorCraft باللغة العربية",
       "altEn": "VectorCraft interface in Arabic",
-      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
-      "descriptionEn": "Arabic interface from the independent modified build."
+      "descriptionAr": "لقطة الإصدار الجديد قيد المراجعة.",
+      "descriptionEn": "Updated version screenshot under review."
     },
     {
       "app": "filmcraft",
@@ -34,71 +34,71 @@
       "image": "assets/screenshots/filmcraft-ar.png",
       "altAr": "واجهة FilmCraft باللغة العربية",
       "altEn": "FilmCraft interface in Arabic",
-      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
-      "descriptionEn": "Arabic interface from the independent modified build."
+      "descriptionAr": "واجهة عربية من الإصدار 0.9.0 المراجع.",
+      "descriptionEn": "Reviewed Arabic interface, version 0.9.0."
     },
     {
       "app": "lightcraft",
       "title": "LightCraft",
-      "image": "assets/screenshots/lightcraft-ar.png",
+      "image": null,
       "altAr": "واجهة LightCraft باللغة العربية",
       "altEn": "LightCraft interface in Arabic",
-      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
-      "descriptionEn": "Arabic interface from the independent modified build."
+      "descriptionAr": "لقطة الإصدار الجديد قيد المراجعة.",
+      "descriptionEn": "Updated version screenshot under review."
     },
     {
       "app": "effectcraft",
       "title": "EffectCraft",
-      "image": "assets/screenshots/effectcraft-ar.png",
+      "image": null,
       "altAr": "واجهة EffectCraft باللغة العربية",
       "altEn": "EffectCraft interface in Arabic",
-      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
-      "descriptionEn": "Arabic interface from the independent modified build."
+      "descriptionAr": "لقطة الإصدار الجديد قيد المراجعة.",
+      "descriptionEn": "Updated version screenshot under review."
     },
     {
       "app": "designcraft",
       "title": "DesignCraft",
-      "image": "assets/screenshots/designcraft-ar.png",
+      "image": null,
       "altAr": "واجهة DesignCraft باللغة العربية",
       "altEn": "DesignCraft interface in Arabic",
-      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
-      "descriptionEn": "Arabic interface from the independent modified build."
+      "descriptionAr": "لقطة الإصدار الجديد قيد المراجعة.",
+      "descriptionEn": "Updated version screenshot under review."
     },
     {
       "app": "pdfcraft",
       "title": "PdfCraft",
-      "image": "assets/screenshots/pdfcraft-ar.png",
+      "image": null,
       "altAr": "واجهة PdfCraft باللغة العربية",
       "altEn": "PdfCraft interface in Arabic",
-      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
-      "descriptionEn": "Arabic interface from the independent modified build."
+      "descriptionAr": "لقطة الإصدار الجديد قيد المراجعة.",
+      "descriptionEn": "Updated version screenshot under review."
     },
     {
       "app": "wordcraft",
       "title": "WordCraft",
-      "image": "assets/screenshots/wordcraft-ar.png",
+      "image": null,
       "altAr": "واجهة WordCraft باللغة العربية",
       "altEn": "WordCraft interface in Arabic",
-      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
-      "descriptionEn": "Arabic interface from the independent modified build."
+      "descriptionAr": "لقطة الإصدار الجديد قيد المراجعة.",
+      "descriptionEn": "Updated version screenshot under review."
     },
     {
       "app": "deckcraft",
       "title": "DeckCraft",
-      "image": "assets/screenshots/deckcraft-ar.png",
+      "image": null,
       "altAr": "واجهة DeckCraft باللغة العربية",
       "altEn": "DeckCraft interface in Arabic",
-      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
-      "descriptionEn": "Arabic interface from the independent modified build."
+      "descriptionAr": "لقطة الإصدار الجديد قيد المراجعة.",
+      "descriptionEn": "Updated version screenshot under review."
     },
     {
       "app": "gridcraft",
       "title": "GridCraft",
-      "image": "assets/screenshots/gridcraft-ar.png",
+      "image": null,
       "altAr": "واجهة GridCraft باللغة العربية",
       "altEn": "GridCraft interface in Arabic",
-      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
-      "descriptionEn": "Arabic interface from the independent modified build."
+      "descriptionAr": "لقطة الإصدار الجديد قيد المراجعة.",
+      "descriptionEn": "Updated version screenshot under review."
     },
     {
       "app": "cadcraft",
@@ -106,8 +106,8 @@
       "image": "assets/screenshots/cadcraft-ar.png",
       "altAr": "واجهة CadCraft باللغة العربية",
       "altEn": "CadCraft interface in Arabic",
-      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
-      "descriptionEn": "Arabic interface from the independent modified build."
+      "descriptionAr": "واجهة عربية من الإصدار 0.8.0 المراجع.",
+      "descriptionEn": "Reviewed Arabic interface, version 0.8.0."
     },
     {
       "app": "soundcraft",
@@ -115,8 +115,18 @@
       "image": "assets/screenshots/soundcraft-ar.png",
       "altAr": "واجهة SoundCraft باللغة العربية",
       "altEn": "SoundCraft interface in Arabic",
-      "descriptionAr": "واجهة عربية من النسخة المعدّلة المستقلة.",
-      "descriptionEn": "Arabic interface from the independent modified build."
+      "descriptionAr": "واجهة عربية من الإصدار 0.8.0 المراجع.",
+      "descriptionEn": "Reviewed Arabic interface, version 0.8.0."
+    },
+    {
+      "app": "figcraft",
+      "title": "FigCraft",
+      "image": null,
+      "altAr": "واجهة FigCraft باللغة العربية",
+      "altEn": "FigCraft interface in Arabic",
+      "descriptionAr": "لقطة الإصدار الجديد قيد المراجعة.",
+      "descriptionEn": "Updated version screenshot under review."
     }
-  ]
+  ],
+  "upstreamSnapshot": "2026-10-19"
 }

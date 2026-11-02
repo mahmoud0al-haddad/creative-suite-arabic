@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory)][ValidateSet('craft-launcher','vectorcraft','lightcraft','photocraft','wordcraft','designcraft','effectcraft','gridcraft','deckcraft','cadcraft','soundcraft','filmcraft','pdfcraft')][string]$Repo,
+    [Parameter(Mandatory)][ValidateSet('craft-launcher','vectorcraft','lightcraft','photocraft','wordcraft','designcraft','effectcraft','gridcraft','deckcraft','cadcraft','soundcraft','filmcraft','figcraft','pdfcraft')][string]$Repo,
     [ValidateSet('Release','Ci','Cargo')][string]$Action='Release',
     [string]$SourceRoot=(Split-Path -Parent $PSScriptRoot),
     [string]$FontsDir,
@@ -65,6 +65,9 @@ $env:INCLUDE="$taskMsvc/include;$SdkRoot/Include/$SdkVersion/ucrt;$SdkRoot/Inclu
 $env:CRAFT_FONTS_DIR=$taskFonts
 $env:CARGO_BUILD_JOBS="$Jobs"
 $env:RUST_TEST_THREADS='2'
+$env:CARGO_INCREMENTAL='0'
+$env:CARGO_PROFILE_DEV_DEBUG='0'
+$env:CARGO_PROFILE_TEST_DEBUG='0'
 if (!$TargetDir) { $TargetDir=Join-Path $taskRoot ".build/$Repo" }
 $env:CARGO_TARGET_DIR=[IO.Path]::GetFullPath($TargetDir)
 if ($Offline) { $env:CARGO_NET_OFFLINE='true' }
@@ -74,6 +77,11 @@ $taskArgs=switch ($Action) {
     'Release' {@('build','--locked','--release','--target','x86_64-pc-windows-msvc','-p',$taskPackage)}
     'Ci' {@('run','--locked','-p','xtask','--target-dir',(Join-Path $taskRoot ".build/xtask/$Repo"),'--','ci')}
     'Cargo' {if (!$CargoArgs.Count) {throw '-Action Cargo requires -CargoArgs.'};$CargoArgs}
+}
+if ($Action -eq 'Release' -or $taskArgs -contains '--release' -or $taskArgs -contains '-r') {
+    . (Join-Path $PSScriptRoot 'release-paths.ps1')
+    Set-CreativeSuiteReleasePaths -WorkspaceRoot $taskRoot
+    if ($Repo -eq 'pdfcraft') { Set-CreativeSuiteAwsLcReleasePaths -WorkspaceRoot $taskRoot }
 }
 $taskPlan=[ordered]@{repo=$Repo;source=$taskRepo;toolchain=$Toolchain;msvc=(Split-Path $taskMsvc -Leaf);sdk=$SdkVersion;fonts=$taskFonts;target=$env:CARGO_TARGET_DIR;args=@($taskArgs);offline=[bool]$Offline}
 if ($Plan) { $taskPlan | ConvertTo-Json -Depth 4; exit 0 }

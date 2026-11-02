@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
 use crate::WordApp;
+use crate::options::MeasureExt;
 use crate::theme::{Tokens, regular, semibold};
 
 #[derive(Clone, Debug, Serialize)]
@@ -16,6 +17,9 @@ pub enum InsertDialog {
     Columns(ColumnsForm),
     Symbol(SymbolForm),
     Field(FieldForm),
+    SmartArt(crate::dialogs_smart_art::SmartArtForm),
+    ChartType(crate::dialogs_chart::ChartTypeForm),
+    ChartData(crate::dialogs_chart::ChartDataForm),
 }
 
 impl InsertDialog {
@@ -24,6 +28,10 @@ impl InsertDialog {
             InsertDialog::Columns(_) => "columns",
             InsertDialog::Symbol(_) => "symbol",
             InsertDialog::Field(_) => "field",
+            InsertDialog::SmartArt(_) => "insertSmartArt",
+            InsertDialog::ChartType(f) if f.change => "changeChartType",
+            InsertDialog::ChartType(_) => "insertChart",
+            InsertDialog::ChartData(_) => "chartData",
         }
     }
 
@@ -33,17 +41,27 @@ impl InsertDialog {
             InsertDialog::Columns(_) => "Columns",
             InsertDialog::Symbol(_) => "Symbol",
             InsertDialog::Field(_) => "Field",
+            InsertDialog::SmartArt(_) => "Insert SmartArt",
+            InsertDialog::ChartType(f) if f.change => "Change Chart Type",
+            InsertDialog::ChartType(_) => "Insert Chart",
+            InsertDialog::ChartData(_) => "Edit Data",
         }
     }
 }
 
-/// The dialog `ui.dialog` opens by `name`: `columns`, `symbol`, `specialCharacters` or `field`.
+/// The dialog `ui.dialog` opens by `name`: `columns`, `symbol`, `specialCharacters`, `field`,
+/// `insertChart`, `changeChartType` or `chartData` (the last two for the selected chart), or
+/// `insertSmartArt`.
 pub fn open(name: &str, app: &WordApp) -> Option<InsertDialog> {
     Some(match name {
         "columns" => InsertDialog::Columns(ColumnsForm::read(app)),
         "symbol" => InsertDialog::Symbol(SymbolForm::new(app, 0)),
         "specialCharacters" => InsertDialog::Symbol(SymbolForm::new(app, 1)),
         "field" => InsertDialog::Field(FieldForm::new(app)),
+        "insertSmartArt" => InsertDialog::SmartArt(crate::dialogs_smart_art::SmartArtForm::new(app)),
+        "insertChart" => InsertDialog::ChartType(crate::dialogs_chart::ChartTypeForm::new(app, false)?),
+        "changeChartType" => InsertDialog::ChartType(crate::dialogs_chart::ChartTypeForm::new(app, true)?),
+        "chartData" => InsertDialog::ChartData(crate::dialogs_chart::ChartDataForm::new(app)?),
         _ => return None,
     })
 }
@@ -54,11 +72,14 @@ pub fn body(app: &mut WordApp, ui: &mut Ui, d: &mut InsertDialog) -> bool {
         InsertDialog::Columns(f) => columns_ui(app, ui, f),
         InsertDialog::Symbol(f) => symbol_ui(app, ui, f),
         InsertDialog::Field(f) => field_ui(app, ui, f),
+        InsertDialog::SmartArt(f) => crate::dialogs_smart_art::picker_ui(app, ui, f),
+        InsertDialog::ChartType(f) => crate::dialogs_chart::type_ui(app, ui, f),
+        InsertDialog::ChartData(f) => crate::dialogs_chart::data_ui(app, ui, f),
     }
 }
 
 /// OK / Cancel (or another OK label); returns (ok, cancel). `ok_enabled` greys OK out.
-fn buttons(ui: &mut Ui, ok: &str, cancel: &str, ok_enabled: bool) -> (bool, bool) {
+pub(crate) fn buttons(ui: &mut Ui, ok: &str, cancel: &str, ok_enabled: bool) -> (bool, bool) {
     let mut r = (false, false);
     ui.add_space(8.0);
     ui.horizontal(|ui| {
@@ -66,7 +87,7 @@ fn buttons(ui: &mut Ui, ok: &str, cancel: &str, ok_enabled: bool) -> (bool, bool
             if ui.button(tl!(cancel)).clicked() || ui.input(|i| i.key_pressed(egui::Key::Escape)) {
                 r.1 = true;
             }
-            let okb = ui.add_enabled(ok_enabled, egui::Button::new(egui::RichText::new(tl!(ok)).color(Color32::WHITE)).fill(crate::theme::APP_COLOR));
+            let okb = ui.add_enabled(ok_enabled, crate::widgets::primary_button(ui, tl!(ok)));
             if okb.clicked() || (ok_enabled && ui.input(|i| i.key_pressed(egui::Key::Enter))) {
                 r.0 = true;
             }
@@ -101,7 +122,7 @@ pub struct ColumnsForm {
 
 impl ColumnsForm {
     fn k() -> f32 {
-        wordcraft_geom::Unit::default().pt_per_unit()
+        crate::options::unit().pt_per_unit()
     }
 
     pub fn read(app: &WordApp) -> ColumnsForm {
@@ -332,7 +353,7 @@ fn columns_preview(ui: &mut Ui, f: &ColumnsForm, t: &Tokens) {
 
 fn columns_ui(app: &mut WordApp, ui: &mut Ui, f: &mut ColumnsForm) -> bool {
     let t = Tokens::get(ui.ctx());
-    let unit = wordcraft_geom::Unit::default();
+    let unit = crate::options::unit();
     ui.set_width(420.0);
     ui.label(egui::RichText::new(tl!("Presets")).font(semibold(12.5)));
     let current = f.current_preset();
@@ -376,13 +397,12 @@ fn columns_ui(app: &mut WordApp, ui: &mut Ui, f: &mut ColumnsForm) -> bool {
                         let editable = i == 0 || !f.equal;
                         ui.label(format!("{}:", i + 1));
                         if let Some(c) = f.cols.get_mut(i) {
-                            let w =
-                                egui::DragValue::new(&mut c.0).speed(0.01).range(ColumnsForm::min_w()..=max).suffix(unit.suffix()).max_decimals(2);
+                            let w = egui::DragValue::new(&mut c.0).speed(0.01).range(ColumnsForm::min_w()..=max).measure(unit).max_decimals(2);
                             if ui.add_enabled(editable, w).changed() {
                                 changed = Some(i);
                             }
                             if i + 1 < n {
-                                let s = egui::DragValue::new(&mut c.1).speed(0.01).range(0.0..=max).suffix(unit.suffix()).max_decimals(2);
+                                let s = egui::DragValue::new(&mut c.1).speed(0.01).range(0.0..=max).measure(unit).max_decimals(2);
                                 if ui.add_enabled(editable, s).changed() {
                                     changed = Some(i);
                                 }
@@ -603,7 +623,7 @@ impl SymbolForm {
         self.chars = face.chars().into_iter().map(|(c, _)| c).filter(|c| !c.is_control() && !(0xD800..=0xDFFF).contains(&(*c as u32))).collect();
         self.chars_of = Some(family);
         // Keep the selection when the new font has it; otherwise its first character.
-        if !self.selected.is_some_and(|c| self.chars.binary_search(&c).is_ok()) {
+        if self.selected.is_none_or(|c| self.chars.binary_search(&c).is_err()) {
             self.selected = self.chars.iter().copied().find(|c| *c > ' ').or(self.chars.first().copied());
         }
         self.sync_code();
@@ -903,6 +923,8 @@ pub enum FieldKind {
     Sequence,
     Merge,
     Toc,
+    /// STYLEREF: a style and its search and number switches.
+    Style,
     Plain,
 }
 
@@ -924,8 +946,19 @@ pub const FIELDS: &[(&str, &str, &str)] = &[
     ("SEQ", "Numbering", "A numbered sequence (figures, tables…)"),
     ("PAGEREF", "Links and References", "Page on which a bookmarked passage falls"),
     ("REF", "Links and References", "Copy of the text a bookmark marks"),
+    ("STYLEREF", "Links and References", "Text of the nearest paragraph with a given style (running headers)"),
     ("TOC", "Index and Tables", "A table of contents"),
     ("MERGEFIELD", "Mail Merge", "A mail merge field"),
+];
+
+/// STYLEREF's options (ECMA-376 §17.16.5.59): switch letter and label.
+pub const STYLEREF_SWITCHES: &[(char, &str)] = &[
+    ('l', "Take the last match on the page"),
+    ('n', "Show its list number"),
+    ('r', "Show its number relative to this field"),
+    ('w', "Show its number with all higher levels"),
+    ('t', "Number only, without the label's words"),
+    ('p', "Add whether it is above or below"),
 ];
 
 /// The categories, in list order ("(All)" first).
@@ -973,6 +1006,7 @@ pub fn field_kind(name: &str) -> FieldKind {
         "SEQ" => FieldKind::Sequence,
         "MERGEFIELD" => FieldKind::Merge,
         "TOC" => FieldKind::Toc,
+        "STYLEREF" => FieldKind::Style,
         _ => FieldKind::Plain,
     }
 }
@@ -988,8 +1022,13 @@ pub struct FieldForm {
     pub date_format: String,
     /// `\*` value for number fields (empty = none).
     pub number_format: String,
-    /// Bookmark (REF, PAGEREF), sequence name (SEQ) or merge field (MERGEFIELD).
+    /// Bookmark (REF, PAGEREF), sequence name (SEQ), merge field (MERGEFIELD) or style name
+    /// (STYLEREF).
     pub target: String,
+    /// STYLEREF switches, as their letters (`l` search from the bottom of the page, `n`
+    /// paragraph number, `r` relative context, `w` full context, `t` suppress non-numbers,
+    /// `p` above/below).
+    pub style_switches: String,
     /// Keep the formatting applied to the result when it updates (`\* MERGEFORMAT`).
     pub preserve: bool,
     /// Field Codes: type the code directly.
@@ -999,6 +1038,9 @@ pub struct FieldForm {
     bookmarks: Vec<String>,
     #[serde(skip)]
     merge_fields: Vec<String>,
+    /// Paragraph and character style names, for STYLEREF.
+    #[serde(skip)]
+    styles: Vec<String>,
 }
 
 impl FieldForm {
@@ -1017,6 +1059,21 @@ impl FieldForm {
             code: String::new(),
             bookmarks,
             merge_fields: app.session.merge.headers.clone(),
+            style_switches: String::new(),
+            styles: {
+                let mut v: Vec<String> = app
+                    .session
+                    .doc
+                    .styles
+                    .styles
+                    .iter()
+                    .filter(|s| matches!(s.kind, wordcraft_doc::StyleKind::Paragraph | wordcraft_doc::StyleKind::Character) && !s.hidden)
+                    .map(|s| s.name.clone())
+                    .collect();
+                v.sort_by_key(|n| n.to_lowercase());
+                v.dedup();
+                v
+            },
         };
         f.select("DATE");
         f
@@ -1030,8 +1087,16 @@ impl FieldForm {
             FieldKind::Bookmark => self.bookmarks.first().cloned().unwrap_or_default(),
             FieldKind::Sequence => "Figure".into(),
             FieldKind::Merge => self.merge_fields.first().cloned().unwrap_or_default(),
+            FieldKind::Style => self
+                .styles
+                .iter()
+                .find(|n| n.eq_ignore_ascii_case("Heading 1"))
+                .or(self.styles.first())
+                .cloned()
+                .unwrap_or_else(|| "Heading 1".into()),
             _ => String::new(),
         };
+        self.style_switches.clear();
         if field_kind(name) == FieldKind::Date {
             self.date_format = if name == "TIME" { "h:mm am/pm" } else { "M/d/yyyy" }.into();
         }
@@ -1057,6 +1122,14 @@ impl FieldForm {
                 }
             }
             FieldKind::Toc => s.push_str(" \\o \"1-3\" \\h \\z \\u"),
+            FieldKind::Style if !target.is_empty() => {
+                s.push_str(&format!(" \"{}\"", target.replace(['"', '\\'], "")));
+                for (c, _) in STYLEREF_SWITCHES {
+                    if self.style_switches.contains(*c) {
+                        s.push_str(&format!(" \\{c}"));
+                    }
+                }
+            }
             _ => {}
         }
         if matches!(field_kind(&self.name), FieldKind::Number | FieldKind::Sequence) && !self.number_format.is_empty() {
@@ -1222,6 +1295,24 @@ fn field_options(ui: &mut Ui, f: &mut FieldForm, t: &Tokens) {
                 });
             }
         }
+        FieldKind::Style => {
+            ui.label(tl!("Style name:"));
+            egui::ComboBox::from_id_salt("field_style").selected_text(f.target.clone()).width(200.0).show_ui(ui, |ui| {
+                for n in &f.styles {
+                    ui.selectable_value(&mut f.target, n.clone(), n);
+                }
+            });
+            ui.add_space(4.0);
+            for (c, label) in STYLEREF_SWITCHES {
+                let mut on = f.style_switches.contains(*c);
+                if ui.checkbox(&mut on, tl!(label)).changed() {
+                    f.style_switches.retain(|x| x != *c);
+                    if on {
+                        f.style_switches.push(*c);
+                    }
+                }
+            }
+        }
         FieldKind::Toc | FieldKind::Plain => {
             ui.label(egui::RichText::new(tl!("This field has no options.")).small().color(t.text_dim));
         }
@@ -1303,6 +1394,10 @@ mod tests {
         f.select("REF");
         f.target = "intro".into();
         assert_eq!(f.instruction(), r"REF intro \h");
+        f.select("STYLEREF");
+        assert_eq!(f.target, "Heading 1");
+        f.style_switches = "pl".into();
+        assert_eq!(f.instruction(), r#"STYLEREF "Heading 1" \l \p"#);
         f.select("MERGEFIELD");
         f.target = "First Name".into();
         assert_eq!(f.params().unwrap(), json!({"instr": r#"MERGEFIELD "First Name""#, "result": "«First Name»"}));

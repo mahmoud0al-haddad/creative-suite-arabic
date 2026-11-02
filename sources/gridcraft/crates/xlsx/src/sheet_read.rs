@@ -9,6 +9,7 @@ use gridcraft_formula::Expr;
 use gridcraft_model::{
     AutoFilter, Cell, CfOperator, CfRule, CfValueKind, Comment, CondFormat, EditRange, ErrorStyle, FilterCriterion, Formula, Hyperlink, LineInfo,
     Orientation, PasswordHash, Sheet, SheetProtection, Sparkline, SparklineKind, Table, TableColumn, TotalsFn, Validation, ValidationKind,
+    XmlColumnPr,
 };
 
 use crate::IoError;
@@ -60,6 +61,7 @@ pub fn read_sheet(cx: &mut Ctx<'_>, part: &str, name: &str) -> Result<Sheet, IoE
     drop(bytes);
 
     let mut fit_to_page = false;
+    cx.cf_ext_ids.clear();
     for e in &root.children {
         match e.name.as_str() {
             "sheetPr" => {
@@ -104,7 +106,7 @@ pub fn read_sheet(cx: &mut Ctx<'_>, part: &str, name: &str) -> Result<Sheet, IoE
                     }
                 }
             }
-            "hyperlinks" => read_hyperlinks(e, &rels, &mut sheet),
+            "hyperlinks" => read_hyperlinks(cx, name, e, &rels, &mut sheet),
             "autoFilter" => sheet.autofilter = read_autofilter(cx, e),
             "printOptions" => {
                 sheet.print.gridlines = e.flag("gridLines", false);
@@ -137,17 +139,29 @@ pub fn read_sheet(cx: &mut Ctx<'_>, part: &str, name: &str) -> Result<Sheet, IoE
                 }
             }
             "headerFooter" => {
-                sheet.print.header = e.child("oddHeader").map(|h| h.text.clone()).unwrap_or_default();
-                sheet.print.footer = e.child("oddFooter").map(|h| h.text.clone()).unwrap_or_default();
+                let pr = &mut sheet.print;
+                for (tag, slot) in [
+                    ("oddHeader", &mut pr.header),
+                    ("oddFooter", &mut pr.footer),
+                    ("evenHeader", &mut pr.even_header),
+                    ("evenFooter", &mut pr.even_footer),
+                    ("firstHeader", &mut pr.first_header),
+                    ("firstFooter", &mut pr.first_footer),
+                ] {
+                    // Excel caps each at 255 characters; a hostile file can't make them huge.
+                    *slot = e.child(tag).map(|h| h.text.chars().take(255).collect()).unwrap_or_default();
+                }
+                pr.different_first = e.flag("differentFirst", false);
+                pr.different_odd_even = e.flag("differentOddEven", false);
+                pr.hf_scale_with_doc = e.flag("scaleWithDoc", true);
+                pr.hf_align_with_margins = e.flag("alignWithMargins", true);
             }
             "rowBreaks" => sheet.print.row_breaks = e.kids("brk").filter_map(|b| b.attr_u32("id")).filter(|&r| r > 0 && r < MAX_ROWS).collect(),
             "colBreaks" => sheet.print.col_breaks = e.kids("brk").filter_map(|b| b.attr_u32("id")).filter(|&c| c > 0 && c < MAX_COLS).collect(),
             "sheetProtection" if e.flag("sheet", false) => {
-                if e.attr("password").is_some() || e.attr("hashValue").is_some() {
-                    cx.warn(format!("sheet \"{name}\": the protection password was not imported"));
-                }
                 sheet.protection = Some(SheetProtection {
-                    password_hash: None,
+                    password: read_password(e, ""),
+                    legacy_password_hash: None,
                     select_locked: !e.flag("selectLockedCells", false),
                     select_unlocked: !e.flag("selectUnlockedCells", false),
                     format_cells: !e.flag("formatCells", true),
@@ -172,7 +186,7 @@ pub fn read_sheet(cx: &mut Ctx<'_>, part: &str, name: &str) -> Result<Sheet, IoE
                     if let Some(rel) = tp.attr("id").and_then(|id| rels.iter().find(|r| r.id == id)) {
                         let target = rel.target.clone();
                         if let Some(x) = cx.optional_xml(&target)?
-                            && let Some(mut t) = read_table(&x)
+                            && let Some(mut t) = read_table(cx, &x)
                         {
                             t.id = cx.next_object_id();
                             sheet.tables.push(t);
@@ -208,6 +222,35 @@ pub fn read_sheet(cx: &mut Ctx<'_>, part: &str, name: &str) -> Result<Sheet, IoE
     Ok(sheet)
 }
 
+/// A protection password hash: the iterated attributes (`algorithmName`, `hashValue`,
+/// `saltValue`, `spinCount`) or the legacy 16-bit `password`, each name preceded by `prefix`
+/// (`workbook` gives `workbookHashValue`…). One that can't be read keeps a hash that never
+/// matches, so what it protects stays locked rather than open.
+pub(crate) fn read_password(e: &El, prefix: &str) -> Option<PasswordHash> {
+    let attr = |base: &str| e.attr(&password_attr(prefix, base));
+    if attr("algorithmName").is_some() || attr("hashValue").is_some() {
+        return Some(PasswordHash::Iterated {
+            algorithm: attr("algorithmName").unwrap_or("").to_string(),
+            hash: attr("hashValue").unwrap_or("").to_string(),
+            salt: attr("saltValue").unwrap_or("").to_string(),
+            spin_count: e.attr_u32(&password_attr(prefix, "spinCount")).unwrap_or(0),
+        });
+    }
+    attr("password").map(|h| match u16::from_str_radix(h.trim(), 16) {
+        Ok(h) => PasswordHash::Legacy(h),
+        Err(_) => PasswordHash::Iterated { algorithm: String::new(), hash: String::new(), salt: String::new(), spin_count: 0 },
+    })
+}
+
+/// `base` preceded by `prefix` in camel case: ("workbook", "hashValue") → `workbookHashValue`.
+pub(crate) fn password_attr(prefix: &str, base: &str) -> String {
+    let mut chars = base.chars();
+    match chars.next() {
+        Some(c) if !prefix.is_empty() => format!("{prefix}{}{}", c.to_ascii_uppercase(), chars.as_str()),
+        _ => base.to_string(),
+    }
+}
+
 /// Allow Edit Ranges. A range whose password can't be read keeps a hash that never matches
 /// (or an unsupported algorithm), so it stays locked rather than open.
 fn read_protected_ranges(e: &El, sheet: &mut Sheet) {
@@ -216,20 +259,7 @@ fn read_protected_ranges(e: &El, sheet: &mut Sheet) {
         if ranges.is_empty() {
             continue;
         }
-        let password = if p.attr("algorithmName").is_some() || p.attr("hashValue").is_some() {
-            Some(PasswordHash::Iterated {
-                algorithm: p.attr("algorithmName").unwrap_or("").to_string(),
-                hash: p.attr("hashValue").unwrap_or("").to_string(),
-                salt: p.attr("saltValue").unwrap_or("").to_string(),
-                spin_count: p.attr_u32("spinCount").unwrap_or(0),
-            })
-        } else {
-            p.attr("password").map(|h| match u16::from_str_radix(h.trim(), 16) {
-                Ok(h) => PasswordHash::Legacy(h),
-                // Unreadable: keep it locked.
-                Err(_) => PasswordHash::Iterated { algorithm: String::new(), hash: String::new(), salt: String::new(), spin_count: 0 },
-            })
-        };
+        let password = read_password(p, "");
         let title = p.attr("name").unwrap_or("").to_string();
         sheet.edit_ranges.push(EditRange { title, ranges, password, security_descriptor: p.attr("securityDescriptor").map(str::to_string) });
     }
@@ -256,6 +286,10 @@ fn read_views(e: &El, sheet: &mut Sheet) {
             let rows = p.attr_f64("ySplit").unwrap_or(0.0).clamp(0.0, (MAX_ROWS - 1) as f64) as u32;
             if rows > 0 || cols > 0 {
                 sheet.freeze = Some((rows, cols));
+                // With frozen panes the scroll position is the scrolling pane's first cell.
+                if let Some(c) = p.attr("topLeftCell").and_then(CellRef::parse) {
+                    sheet.view_top_left = c;
+                }
             }
         }
         active_pane = p.attr("activePane");
@@ -422,7 +456,8 @@ fn read_cell(cx: &mut Ctx<'_>, sheet: &mut Sheet, st: &mut RowState, c: &El, pos
 }
 
 fn read_formula(cx: &mut Ctx<'_>, st: &mut RowState, f: &El, pos: CellRef, dynamic: bool) -> Option<Formula> {
-    let text = f.text.trim();
+    let model = from_file(f.text.trim());
+    let text = model.as_str();
     match f.attr("t").unwrap_or("normal") {
         "shared" => {
             let si = f.attr_u32("si")?;
@@ -508,7 +543,7 @@ pub fn parse_iso_datetime(s: &str, sys: DateSystem) -> Option<f64> {
 }
 
 pub fn parse_sqref(s: Option<&str>) -> Vec<RangeRef> {
-    s.unwrap_or("").split_whitespace().filter_map(RangeRef::parse).take(10_000).collect()
+    s.unwrap_or("").split_whitespace().filter_map(RangeRef::parse).collect()
 }
 
 fn cf_op(s: Option<&str>) -> CfOperator {
@@ -563,6 +598,9 @@ fn read_cf(cx: &mut Ctx<'_>, e: &El, sheet: &mut Sheet) {
         let formulas: Vec<String> = r.kids("formula").map(|f| from_file(f.text.trim())).collect();
         let f0 = formulas.first().cloned().unwrap_or_default();
         let text = r.attr("text").unwrap_or("").to_string();
+        // The x14 id that links a data bar to its Excel 2010 extension (solid fill lives there).
+        let ext_id =
+            r.child("extLst").and_then(|l| l.kids("ext").find_map(|x| x.child("id"))).map(|i| i.text.trim().to_string()).filter(|i| !i.is_empty());
         let rule = match r.attr("type").unwrap_or("") {
             "cellIs" => CfRule::CellIs { op: cf_op(r.attr("operator")), a: f0, b: formulas.get(1).cloned(), style },
             "expression" => CfRule::Expression { formula: f0, style },
@@ -616,6 +654,9 @@ fn read_cf(cx: &mut Ctx<'_>, e: &El, sheet: &mut Sheet) {
                 continue;
             }
         };
+        if let Some(id) = ext_id {
+            cx.cf_ext_ids.push((id, sheet.cond_formats.len()));
+        }
         sheet.cond_formats.push(CondFormat {
             ranges: ranges.clone(),
             rule,
@@ -676,11 +717,13 @@ fn read_validation(v: &El) -> Option<Validation> {
     })
 }
 
-fn read_hyperlinks(e: &El, rels: &[Rel], sheet: &mut Sheet) {
+fn read_hyperlinks(cx: &mut Ctx<'_>, name: &str, e: &El, rels: &[Rel], sheet: &mut Sheet) {
     let mut cells = 0u64;
     for h in e.kids("hyperlink") {
         let Some(range) = h.attr("ref").and_then(RangeRef::parse) else { continue };
         let mut target = h.attr("id").and_then(|id| rels.iter().find(|r| r.id == id)).map(|r| r.target.clone()).unwrap_or_default();
+        // A relationship is a file or web page; a bare `location` is a place in this workbook.
+        let external = !target.is_empty();
         if let Some(loc) = h.attr("location").filter(|l| !l.is_empty()) {
             if target.is_empty() {
                 target = loc.trim_start_matches('#').to_string();
@@ -691,9 +734,10 @@ fn read_hyperlinks(e: &El, rels: &[Rel], sheet: &mut Sheet) {
         if target.is_empty() {
             continue;
         }
-        let link = Hyperlink { target, tooltip: h.attr("tooltip").map(str::to_string) };
+        let link = Hyperlink { target, tooltip: h.attr("tooltip").map(str::to_string), external };
         for c in range.iter() {
             if cells >= MAX_HYPERLINK_CELLS {
+                cx.warn(format!("sheet \"{name}\": hyperlinks past the first {MAX_HYPERLINK_CELLS} cells were dropped"));
                 return;
             }
             cells += 1;
@@ -745,6 +789,9 @@ pub fn read_autofilter(cx: &mut Ctx<'_>, e: &El) -> Option<AutoFilter> {
         } else if let Some(c) = fc.child("colorFilter") {
             let Some(dxf) = c.attr_u32("dxfId").and_then(|i| cx.dxfs.get(i as usize)) else { continue };
             if c.flag("cellColor", true) { FilterCriterion::FillColor(dxf.fill.fg) } else { FilterCriterion::FontColor(dxf.font.color) }
+        } else if let Some(i) = fc.child("iconFilter") {
+            let Some(set) = i.attr("iconSet") else { continue };
+            FilterCriterion::Icon { set: set.to_string(), id: i.attr_u32("iconId") }
         } else {
             continue;
         };
@@ -753,7 +800,7 @@ pub fn read_autofilter(cx: &mut Ctx<'_>, e: &El) -> Option<AutoFilter> {
     Some(AutoFilter { range, criteria })
 }
 
-pub fn read_table(x: &El) -> Option<Table> {
+pub fn read_table(cx: &mut Ctx<'_>, x: &El) -> Option<Table> {
     let range = x.attr("ref").and_then(RangeRef::parse)?;
     let name = x.attr("displayName").or_else(|| x.attr("name")).unwrap_or("Table").to_string();
     let header_row = x.attr_u32("headerRowCount").unwrap_or(1) > 0;
@@ -785,12 +832,24 @@ pub fn read_table(x: &El) -> Option<Table> {
                         totals,
                         totals_label,
                         formula: c.child("calculatedColumnFormula").map(|f| from_file(f.text.trim())),
+                        unique_name: c.attr("uniqueName").map(str::to_string),
+                        xml: c.child("xmlColumnPr").and_then(|x| {
+                            Some(XmlColumnPr {
+                                map_id: x.attr_u32("mapId")?,
+                                xpath: x.attr("xpath")?.to_string(),
+                                data_type: x.attr("xmlDataType").unwrap_or("string").to_string(),
+                                denormalized: x.flag("denormalized", false),
+                            })
+                        }),
                     }
                 })
                 .collect()
         })
         .unwrap_or_default();
     let si = x.child("tableStyleInfo");
+    // Only XML tables are kept as such: a query table's definition hangs off the table part, which
+    // is rewritten, so it would lose it.
+    let xml_table = x.attr("tableType") == Some("xml");
     Some(Table {
         id: x.attr_u32("id").unwrap_or(0),
         name,
@@ -804,6 +863,9 @@ pub fn read_table(x: &El) -> Option<Table> {
         first_col: si.is_some_and(|s| s.flag("showFirstColumn", false)),
         last_col: si.is_some_and(|s| s.flag("showLastColumn", false)),
         filter_button: x.child("autoFilter").is_some(),
+        filter: x.child("autoFilter").and_then(|e| read_autofilter(cx, e)).map(|af| af.criteria).unwrap_or_default(),
+        table_type: xml_table.then(|| "xml".to_string()),
+        connection_id: x.attr_u32("connectionId").filter(|_| xml_table),
     })
 }
 
@@ -916,7 +978,23 @@ fn read_ext(cx: &mut Ctx<'_>, e: &El, sheet: &mut Sheet) {
                         }
                     }
                 }
-                "conditionalFormattings" => cx.warn("some Excel 2010 conditional format extensions were skipped"),
+                "conditionalFormattings" => {
+                    let mut skipped = false;
+                    for r in c.kids("conditionalFormatting").flat_map(|f| f.kids("cfRule")) {
+                        let idx = r.attr("id").and_then(|id| cx.cf_ext_ids.iter().find(|(i, _)| i == id)).map(|(_, n)| *n);
+                        match (idx.and_then(|n| sheet.cond_formats.get_mut(n)), r.child("dataBar")) {
+                            (Some(CondFormat { rule: CfRule::DataBar { gradient, .. }, .. }), Some(db)) => {
+                                *gradient = db.flag("gradient", true);
+                                // Only the fill style is modelled; borders, lengths, axis or negative colours are lost.
+                                skipped |= db.attrs.iter().any(|(k, _)| k != "gradient") || db.children.iter().any(|k| k.name != "cfvo");
+                            }
+                            _ => skipped = true,
+                        }
+                    }
+                    if skipped {
+                        cx.warn("some Excel 2010 conditional format extensions were skipped");
+                    }
+                }
                 _ => {}
             }
         }
@@ -935,5 +1013,13 @@ mod tests {
         assert_eq!(parse_iso_datetime("06:00:00", DateSystem::D1900), Some(0.25));
         assert_eq!(parse_iso_datetime("garbage", DateSystem::D1900), None);
         assert_eq!(parse_iso_datetime("2024-13-01", DateSystem::D1900), None);
+    }
+
+    #[test]
+    fn sqref_keeps_more_than_ten_thousand_ranges() {
+        let sq = (1..=12_000).map(|r| format!("A{r}")).collect::<Vec<_>>().join(" ");
+        let ranges = parse_sqref(Some(&sq));
+        assert_eq!(ranges.len(), 12_000);
+        assert_eq!(ranges.last().copied(), RangeRef::parse("A12000"));
     }
 }

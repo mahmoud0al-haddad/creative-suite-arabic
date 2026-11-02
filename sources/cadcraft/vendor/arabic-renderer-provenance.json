@@ -34,7 +34,7 @@
     "epaint/src/text/fonts.rs": "8789e9093b52ac6fd8bd4171adec01802b32ec148ed302057396bd4659ff03d5",
     "epaint/src/text/index.rs": "7328065322c01027f46d307ed8c92772985faccc9ecddb1118ab0e098119d1bb",
     "epaint/src/text/mod.rs": "0e0fcac681cb744db8330d4c027f9114ff39d6ae3b6dc26bebde37c5bcbfecb9",
-    "epaint/src/text/text_layout.rs": "96389972a72c49dbcc9ddace31801dd00843efa6de9c5a68dd014584782942fe",
+    "epaint/src/text/text_layout.rs": "4064cc0867ebf73d6a725e140af79e3be99f476d1a6556d7a2e6517ab9be58e5",
     "epaint/src/text/text_layout_types.rs": "52758095795a07ad524f7ae02e356cd91bae0a7446bd744c846a61a148ea2255",
     "epaint/src/texture_atlas.rs": "25d90783fc1b217b9e43a8077443956c4101facdca7009c6a0dd45d0228e603e",
     "epaint/src/texture_handle.rs": "24594a572ba4b72d303d9c9860cc5a1bd5d2b63642b9803112821dc6187e3c71",
@@ -121,7 +121,7 @@
     "egui/src/sense.rs": "b1e30541693ab2502ea372bd79af27aff9c31ac754105a350c9bbebab39c7420",
     "egui/src/style.rs": "bcdd522585dfd4ede7136bc1b6aec8e1d9149c0579fcccd54f68e7aa79eb8725",
     "egui/src/text_selection/accesskit_text.rs": "eaf1372240eb7d952b0b1f99dd887c2002e106cf10ebe38c97cb89d44ae992a3",
-    "egui/src/text_selection/cursor_range.rs": "213d256aaf861f1beb1564bf0d8870ecb1cd0e857d8d80568f8344417061bf28",
+    "egui/src/text_selection/cursor_range.rs": "cf562e1c0c07912d86f2418a61703ee1a1fcbd1d24fc244c67c98d54f8a0074d",
     "egui/src/text_selection/label_text_selection.rs": "ab90cbb6f15f70a2356fce5277e1800444752056e7721393549471bbcd8a552e",
     "egui/src/text_selection/mod.rs": "09d2771a59ed56a0070ed26799d07ce7ddca05de5603f9092dfcf9bfd781e502",
     "egui/src/text_selection/text_cursor_state.rs": "b0747ca3e7153ce2db87564eace25bb308a4359141ba3ac7cfe9d56ae5f65a8e",
@@ -155,5 +155,6 @@
     "egui/src/widgets/text_edit/output.rs": "f1960e60d4c4f76c31dd4fddd6c9e648ff9e5057425775786bf41475be673705",
     "egui/src/widgets/text_edit/state.rs": "f8bb974af87487bbdf38a9987c75b0f6c0d272562d61659aca48dc3b20eed590",
     "egui/src/widgets/text_edit/text_buffer.rs": "d5a3651491854d9008aa7fe8aca3dff61bf0eca0f13250238ee752b7a65cdf11"
-  }
+  },
+  "selection_update": "2026-10-15: same-row bidi selection collapses to its visual endpoint; Hebrew joins the bidi guard. Ordinary LTR and multirow selection logic remains upstream."
 }

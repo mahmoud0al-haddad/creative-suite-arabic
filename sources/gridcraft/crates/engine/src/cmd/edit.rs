@@ -150,6 +150,7 @@ pub(crate) fn input_to_cell(input: &str, sheet: usize, at: CellRef, wb: &mut gri
         }
         let expr = parsed.map_err(|e| EngineError::Other(format!("There's a problem with this formula: {e}")))?;
         let expr = wb.name_call_case(expr);
+        check_arg_counts(&expr)?;
         let mut cell = Cell::formula(Formula::from_expr(expr));
         cell.style = style;
         // Formulas whose result is a date/time get a format from functions like TODAY().
@@ -190,17 +191,36 @@ pub(crate) fn input_to_cell(input: &str, sheet: usize, at: CellRef, wb: &mut gri
     Ok(Some(Cell { value: parsed.value, formula: None, style }))
 }
 
+/// Like Excel, a formula that calls a built-in function with too few or too many arguments is
+/// refused when it's entered, rather than stored to show `#VALUE!`. Functions the registry doesn't
+/// hold (special forms like LET, LAMBDA, OFFSET, INDIRECT, SUBTOTAL), defined LAMBDA names and
+/// unknown functions are skipped.
+fn check_arg_counts(expr: &gridcraft_formula::Expr) -> Result<()> {
+    let mut bad = None;
+    expr.walk(&mut |e| {
+        if bad.is_none()
+            && let gridcraft_formula::Expr::Call(name, args) = e
+            && let Some(spec) = gridcraft_functions::lookup(name)
+            && !spec.accepts(args.len())
+        {
+            let few = args.len() < spec.min_args;
+            bad = Some(format!("{} has too {} arguments. Use {}", spec.name, if few { "few" } else { "many" }, spec.signature));
+        }
+    });
+    match bad {
+        Some(msg) => Err(EngineError::Other(msg)),
+        None => Ok(()),
+    }
+}
+
 fn cell_set(s: &mut Session, p: &Json) -> Result<Json> {
     let sheet = target_sheet(s, p)?;
     let at = match cell_param_on(s, p, "cell", sheet)? {
         Some(c) => c,
         None => s.doc()?.selection.active,
     };
-    let input = str_param(p, "input")
-        .or_else(|| str_param(p, "value"))
-        .map(str::to_string)
-        .or_else(|| p.get("value").map(json_to_input))
-        .ok_or_else(|| bad("cell.set", "missing `input` (or `value`)"))?;
+    // Both spellings take a string, number or boolean, as typed (#697).
+    let input = p.get("input").or_else(|| p.get("value")).map(json_to_input).ok_or_else(|| bad("cell.set", "missing `input` (or `value`)"))?;
     let array = bool_param(p, "array").unwrap_or(false);
     let d = s.doc()?;
     if let Some(sh) = d.wb.sheet(sheet)
@@ -210,10 +230,17 @@ fn cell_set(s: &mut Session, p: &Json) -> Result<Json> {
     {
         return Err(EngineError::Other(m));
     }
+    let active_sheet = s.doc()?.wb.active_sheet;
     edit(s, |cx| {
         if array {
-            // Legacy Ctrl+Shift+Enter array formula over the selection.
-            let range = cx.sel.current();
+            // Legacy Ctrl+Shift+Enter array formula over the selection, when the selection holds
+            // the cell; a cell elsewhere (or on another sheet) gets a one-cell array.
+            let selected = cx.sel.current();
+            let range = if sheet == active_sheet && selected.contains(at) { selected } else { RangeRef::cell(at) };
+            // A table header can't hold an array's value, and a table resizes under it.
+            if !range.is_single() && cx.wb.sheet(sheet).is_some_and(|sh| sh.tables.iter().any(|t| t.range.intersects(&range))) {
+                return Err(EngineError::Other("Multi-cell array formulas aren't allowed in tables.".into()));
+            }
             let mut cell = input_to_cell(&input, sheet, range.start, &mut cx.wb)?.unwrap_or_default();
             if let Some(f) = cell.formula.as_mut() {
                 std::sync::Arc::make_mut(f).array = Some(range);
@@ -390,14 +417,7 @@ fn selection_move(s: &mut Session, p: &Json) -> Result<Json> {
     let Some(sheet) = d.wb.active() else { return Err(EngineError::NoDocument) };
     let sel = &mut d.selection;
     // Extension moves the far corner, not the active cell.
-    let from = if extend {
-        let r = sel.current();
-        let far_row = if sel.anchor.row == r.start.row { r.end.row } else { r.start.row };
-        let far_col = if sel.anchor.col == r.start.col { r.end.col } else { r.start.col };
-        CellRef::new(far_row, far_col)
-    } else {
-        sel.active
-    };
+    let from = if extend { sel.moving_end() } else { sel.active };
     // Skip hidden rows/columns and step over merged areas.
     let mut to = if jmp {
         jump(sheet, from, dr.signum(), dc.signum())
@@ -483,7 +503,7 @@ fn select_col(s: &mut Session, _: &Json) -> Result<Json> {
     Ok(json!({"selection": d.selection.a1()}))
 }
 
-fn go_to(s: &mut Session, p: &Json) -> Result<Json> {
+pub(super) fn go_to(s: &mut Session, p: &Json) -> Result<Json> {
     let Some(reference) = str_param(p, "reference").or_else(|| str_param(p, "range")) else { return Err(bad("edit.goTo", "missing `reference`")) };
     // A defined name or table?
     let d = s.doc()?;
@@ -578,6 +598,7 @@ fn undo(s: &mut Session, p: &Json) -> Result<Json> {
     let steps = u32_param(p, "steps").unwrap_or(1).max(1);
     let d = s.doc_mut()?;
     let mut label = String::new();
+    let now = d.wb.clone();
     for _ in 0..steps {
         let Some(e) = d.undo.pop() else { break };
         let cur = crate::HistoryEntry { label: e.label.clone(), wb: d.wb.clone(), selection: d.selection.clone() };
@@ -586,6 +607,7 @@ fn undo(s: &mut Session, p: &Json) -> Result<Json> {
         d.wb = e.wb;
         d.selection = e.selection;
     }
+    super::extra::keep_watch_list(&now, &mut d.wb);
     d.calc.rebuild(&d.wb);
     d.revision += 1;
     Ok(json!({"undone": label}))
@@ -595,6 +617,7 @@ fn redo(s: &mut Session, p: &Json) -> Result<Json> {
     let steps = u32_param(p, "steps").unwrap_or(1).max(1);
     let d = s.doc_mut()?;
     let mut label = String::new();
+    let now = d.wb.clone();
     for _ in 0..steps {
         let Some(e) = d.redo.pop() else { break };
         let cur = crate::HistoryEntry { label: e.label.clone(), wb: d.wb.clone(), selection: d.selection.clone() };
@@ -603,6 +626,7 @@ fn redo(s: &mut Session, p: &Json) -> Result<Json> {
         d.wb = e.wb;
         d.selection = e.selection;
     }
+    super::extra::keep_watch_list(&now, &mut d.wb);
     d.calc.rebuild(&d.wb);
     d.revision += 1;
     Ok(json!({"redone": label}))
@@ -972,7 +996,9 @@ fn paste_special(s: &mut Session, p: &Json) -> Result<Json> {
                                     e
                                 };
                                 let mut moved = Formula::from_expr(e);
-                                moved.array = f.array;
+                                // The array range moves with its formula.
+                                let (dr, dc) = (dest.row as i64 - sc.row as i64, dest.col as i64 - sc.col as i64);
+                                moved.array = f.array.and_then(|a| Some(RangeRef::new(a.start.offset(dr, dc)?, a.end.offset(dr, dc)?)));
                                 return Some(std::sync::Arc::new(moved));
                             }
                             let moved =
@@ -1075,6 +1101,20 @@ fn paste_special(s: &mut Session, p: &Json) -> Result<Json> {
                                 }
                             }
                         }
+                        // The copied cell's validation rule replaces whatever rule the destination had.
+                        if !link && matches!(what, What::All | What::AllExceptBorders | What::Validation) {
+                            let rule = src_sheet.validations.iter().find(|dv| dv.ranges.iter().any(|r| r.contains(sc))).cloned();
+                            let sh = cx.sheet_mut(dest_sheet)?;
+                            super::data::remove_validation_cells(&mut sh.validations, &[RangeRef::new(dest, dest)]);
+                            if let Some(mut dv) = rule {
+                                // Relative references move with the rule, as pasted formulas do.
+                                let first = dv.ranges.first().map_or(sc, |r| r.start);
+                                dv.f1 = super::data::move_rule_formula(&dv.f1, first, dest);
+                                dv.f2 = dv.f2.map(|f| super::data::move_rule_formula(&f, first, dest));
+                                dv.ranges = vec![RangeRef::new(dest, dest)];
+                                sh.validations.push(dv);
+                            }
+                        }
                         match what {
                             What::Comments => {
                                 if let Some(cm) = src_sheet.comments.get(&sc).cloned() {
@@ -1139,6 +1179,10 @@ fn paste_special(s: &mut Session, p: &Json) -> Result<Json> {
 
 /// Applies a reference adjustment to every cell formula and defined name in the workbook.
 pub(crate) fn rewrite_all_formulas(wb: &mut gridcraft_model::Workbook, target: &str, e: &gridcraft_formula::adjust::Edit) {
+    use gridcraft_formula::adjust::Edit;
+    // Rows and columns inserted or deleted on the target sheet move its legacy array ranges too
+    // (a cut moves its arrays itself).
+    let moves_arrays = matches!(e, Edit::Insert { .. } | Edit::Delete { .. } | Edit::InsertCells { .. } | Edit::DeleteCells { .. });
     for si in 0..wb.sheets.len() {
         let host = wb.sheets.get(si).map(|s| s.name.clone()).unwrap_or_default();
         let keys: Vec<(CellRef, std::sync::Arc<Formula>)> =
@@ -1146,16 +1190,21 @@ pub(crate) fn rewrite_all_formulas(wb: &mut gridcraft_model::Workbook, target: &
         if keys.is_empty() {
             continue;
         }
+        let on_target = moves_arrays && host.eq_ignore_ascii_case(target);
         let Some(sheet) = wb.sheet_mut(si) else { continue };
         for (c, f) in keys {
             let Some(expr) = f.expr() else { continue };
             let new = gridcraft_formula::adjust::adjust(expr, &host, target, e);
             let text = gridcraft_formula::print(&new);
-            if text != f.text
+            let array = match f.array {
+                Some(a) if on_target => super::sheet::map_range(a, e),
+                a => a,
+            };
+            if (text != f.text || array != f.array)
                 && let Some(cell) = sheet.cells.get_mut(c)
             {
                 let mut nf = Formula::from_expr(new);
-                nf.array = f.array;
+                nf.array = array;
                 cell.formula = Some(std::sync::Arc::new(nf));
             }
         }
@@ -1197,6 +1246,9 @@ fn clear(s: &mut Session, p: &Json, what: &str) -> Result<Json> {
             };
             let cells: Vec<(CellRef, Cell)> =
                 cx.wb.sheet(sheet).map(|sh| sh.cells.iter_range(r).map(|(c, x)| (c, x.clone())).collect()).unwrap_or_default();
+            // Report every stored cell we touch, even beyond a million coordinates in a sparse
+            // selection. Removed formula anchors must also reach calc so their spills disappear.
+            cx.changed.extend(cells.iter().map(|(c, _)| (sheet, *c)));
             let mut cells = cells;
             if what == "contents" {
                 for (_, cell) in cells.iter_mut() {
@@ -1235,10 +1287,24 @@ fn clear(s: &mut Session, p: &Json, what: &str) -> Result<Json> {
                 sh.hyperlinks.retain(|c, _| !r.contains(*c));
             }
             if matches!(what, "all" | "formats") {
-                sh.merges.retain(|m| !r.contains_range(m));
-            }
-            for c in r.iter().take(1_000_000) {
-                cx.changed.push((sheet, c));
+                let mut unmerged = false;
+                sh.merges.retain(|m| {
+                    let keep = !r.contains_range(m);
+                    unmerged |= !keep;
+                    keep
+                });
+                if unmerged {
+                    // An empty merge can block a spill without storing any cells in this range.
+                    // As in Unmerge, retry blocked formula anchors that could reach the freed area.
+                    let reach = RangeRef::new(CellRef::new(0, 0), r.end);
+                    let blocked: Vec<_> = sh
+                        .cells
+                        .iter_range(reach)
+                        .filter(|(_, cell)| cell.formula.is_some() && cell.value == Value::Error(gridcraft_core::CellError::Spill))
+                        .map(|(c, _)| (sheet, c))
+                        .collect();
+                    cx.changed.extend(blocked);
+                }
             }
         }
         Ok(Json::Null)
@@ -1539,6 +1605,23 @@ mod tests {
     use super::*;
 
     #[test]
+    fn cell_set_takes_numbers_for_input_and_value() {
+        // #697: a JSON number for `input` used to clear the cell instead of entering it.
+        let mut s = Session::new();
+        s.new_workbook();
+        s.execute("cell.set", json!({"cell": "A1", "input": 123.5})).unwrap();
+        s.execute("cell.set", json!({"cell": "A2", "value": 77})).unwrap();
+        s.execute("cell.set", json!({"cell": "A3", "input": true})).unwrap();
+        s.execute("cell.set", json!({"cell": "A4", "input": "=A1+A2"})).unwrap();
+        let get = |s: &mut Session, a: &str| s.execute("cell.get", json!({"cell": a})).unwrap();
+        assert_eq!(get(&mut s, "A1")["value"], json!(123.5));
+        assert_eq!(get(&mut s, "A2")["value"], json!(77.0));
+        assert_eq!(get(&mut s, "A3")["value"], json!(true));
+        assert_eq!(get(&mut s, "A4")["value"], json!(200.5));
+        assert!(s.execute("cell.set", json!({"cell": "A5"})).is_err());
+    }
+
+    #[test]
     fn legacy_array_entry() {
         let mut s = Session::new();
         s.new_workbook();
@@ -1552,6 +1635,22 @@ mod tests {
         assert_eq!(get(&mut s, "C4")["text"], "#N/A");
         let bar = s.doc().unwrap().wb.active().unwrap().cell(CellRef::parse("C2").unwrap()).map(|c| c.bar_text());
         assert_eq!(bar.as_deref(), Some("{=B2:B3*2}"));
+    }
+
+    #[test]
+    fn an_array_entered_outside_the_selection_covers_only_its_cell() {
+        // Found by the command-sequence fuzzer: the array took the selection's range even with
+        // `cell` elsewhere (or on another sheet), so its formula sat outside its own range and the
+        // selected cells were wiped.
+        let mut s = Session::new();
+        s.new_workbook();
+        s.execute("cell.set", json!({"cell": "K20", "input": "keep"})).unwrap();
+        s.execute("selection.set", json!({"range": "K20:K22"})).unwrap();
+        s.execute("cell.set", json!({"cell": "H5", "input": "=1+1", "array": true})).unwrap();
+        let sh = s.doc().unwrap().wb.active().unwrap();
+        let f = sh.cell(CellRef::parse("H5").unwrap()).and_then(|c| c.formula.clone()).unwrap();
+        assert_eq!(f.array, Some(RangeRef::parse("H5").unwrap()));
+        assert_eq!(sh.value(CellRef::parse("K20").unwrap()), Value::text("keep"));
     }
 
     #[test]

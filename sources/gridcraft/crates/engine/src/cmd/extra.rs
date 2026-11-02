@@ -15,7 +15,7 @@ pub fn specs() -> Vec<CommandSpec> {
             "Add Chart Element",
             ["Chart Design", "Chart Layouts"],
             None,
-            "{chart?, element: title|legend|dataLabels|gridlines|axisTitles|smooth, on?: bool, position?: bottom|top|left|right}",
+            "{chart?, element: title|legend|dataLabels|gridlines|axisTitles|smooth|trendline, on?: bool, position?: bottom|top|left|right; trendline: series?: index (default all), type?: linear|exponential|linearForecast|movingAverage|logarithmic|power|polynomial, order?: 2..6, period?: 2..255, forward?, backward?, displayEquation?, displayRSquared?}",
             has_doc,
             add_element
         ),
@@ -316,10 +316,66 @@ fn add_element(s: &mut Session, p: &Json) -> Result<Json> {
                     s.smooth = on;
                 }
             }
+            "trendline" => {
+                let only = u32_param(p, "series").map(|i| i as usize);
+                if only.is_some_and(|i| i >= c.series.len()) {
+                    return Err(bad("chart.addElement", "no such series"));
+                }
+                let targets: Vec<usize> = (0..c.series.len()).filter(|i| only.is_none_or(|o| o == *i)).collect();
+                if !on {
+                    for i in targets {
+                        if let Some(se) = c.series.get_mut(i) {
+                            se.trendlines.clear();
+                        }
+                    }
+                    return Ok(());
+                }
+                let t = trendline_param(p)?;
+                let eligible: Vec<usize> =
+                    targets.into_iter().filter(|i| gridcraft_chart::supports_trendline(gridcraft_chart::series_plot_kind(c, *i))).collect();
+                if eligible.is_empty() {
+                    return Err(bad("chart.addElement", "trendlines need a 2-D column, bar, line, area, scatter or bubble series"));
+                }
+                for i in eligible {
+                    if let Some(se) = c.series.get_mut(i) {
+                        se.trendlines.push(t.clone());
+                    }
+                }
+            }
             other => return Err(bad("chart.addElement", format!("unknown element `{other}`"))),
         }
         Ok(())
     })
+}
+
+/// The trendline described by `chart.addElement`'s trendline parameters (Excel's Add Chart
+/// Element ▸ Trendline choices, plus the Format Trendline options).
+fn trendline_param(p: &Json) -> Result<Trendline> {
+    let num = |k: &str| f64_param(p, k).filter(|v| v.is_finite() && *v >= 0.0).unwrap_or(0.0);
+    let mut t = Trendline {
+        forward: num("forward"),
+        backward: num("backward"),
+        display_equation: bool_param(p, "displayEquation").unwrap_or(false),
+        display_r_squared: bool_param(p, "displayRSquared").unwrap_or(false),
+        ..Trendline::default()
+    };
+    t.kind = match str_param(p, "type").unwrap_or("linear") {
+        "linear" => TrendlineKind::Linear,
+        // Excel's Linear Forecast: a linear trendline projected two periods ahead.
+        "linearForecast" => {
+            if t.forward == 0.0 {
+                t.forward = 2.0;
+            }
+            TrendlineKind::Linear
+        }
+        "exponential" => TrendlineKind::Exponential,
+        "logarithmic" => TrendlineKind::Logarithmic,
+        "power" => TrendlineKind::Power,
+        "polynomial" => TrendlineKind::Polynomial(u32_param(p, "order").unwrap_or(2).clamp(2, 6) as u8),
+        "movingAverage" => TrendlineKind::MovingAverage(u32_param(p, "period").unwrap_or(2).clamp(2, 255)),
+        other => return Err(bad("chart.addElement", format!("unknown trendline type `{other}`"))),
+    };
+    Ok(t)
 }
 
 fn quick_layout(s: &mut Session, p: &Json) -> Result<Json> {
@@ -421,6 +477,7 @@ fn select_data(s: &mut Session, p: &Json) -> Result<Json> {
     with_chart(s, p, move |c| {
         if let Some((series, source, by_rows)) = rebuilt {
             c.series = series;
+            super::insert::scatter_x_from_first(c.kind, &mut c.series);
             c.source = Some(source);
             c.by_rows = by_rows;
         }
@@ -644,6 +701,12 @@ fn stash_get(wb: &Workbook, key: &str) -> Json {
         .unwrap_or(json!({}))
 }
 
+/// Like `stash_get`, for the name-keyed lists (views, scripts): a stored value that is not a JSON object is treated as empty.
+fn stash_map(wb: &Workbook, key: &str) -> Json {
+    let v = stash_get(wb, key);
+    if v.is_object() { v } else { json!({}) }
+}
+
 fn stash_set(wb: &mut Workbook, key: &str, v: &Json) {
     let text = v.to_string();
     let formula = format!("\"{}\"", text.replace('"', "\"\""));
@@ -651,9 +714,22 @@ fn stash_set(wb: &mut Workbook, key: &str, v: &Json) {
     wb.names.push(DefinedName { name: key.into(), scope: None, formula, comment: String::new(), hidden: true });
 }
 
+/// The Watch Window list isn't an edit (Excel doesn't undo it): undo and redo keep the current
+/// list when they swap in another snapshot of the workbook.
+pub(crate) fn keep_watch_list(from: &Workbook, to: &mut std::sync::Arc<Workbook>) {
+    let find = |wb: &Workbook| wb.names.iter().find(|n| n.name == WATCH_NAME).cloned();
+    let keep = find(from);
+    if keep == find(to) {
+        return;
+    }
+    let wb = std::sync::Arc::make_mut(to);
+    wb.names.retain(|n| n.name != WATCH_NAME);
+    wb.names.extend(keep);
+}
+
 fn custom_views(s: &mut Session, p: &Json) -> Result<Json> {
     let d = s.doc()?;
-    let mut views = stash_get(&d.wb, VIEWS_NAME);
+    let mut views = stash_map(&d.wb, VIEWS_NAME);
     if let Some(name) = str_param(p, "save") {
         let sh = d.wb.active().ok_or(EngineError::NoDocument)?;
         views[name] = json!({"sheet": d.wb.active_sheet, "selection": d.selection.a1(), "zoom": sh.zoom, "freeze": sh.freeze});
@@ -672,6 +748,17 @@ fn custom_views(s: &mut Session, p: &Json) -> Result<Json> {
         }
         if let Some(z) = v["zoom"].as_u64() {
             s.execute("view.zoom", json!({"percent": z}))?;
+        }
+        if let Some(f) = v.get("freeze") {
+            let freeze = match (f[0].as_u64(), f[1].as_u64()) {
+                (Some(r), Some(c)) => u32::try_from(r).ok().zip(u32::try_from(c).ok()),
+                _ => None,
+            };
+            edit(s, |cx| {
+                let si = cx.sheet_index();
+                cx.sheet_mut(si)?.freeze = freeze;
+                Ok(())
+            })?;
         }
     } else if let Some(name) = str_param(p, "delete") {
         if let Some(o) = views.as_object_mut() {
@@ -742,7 +829,7 @@ fn table_resize(s: &mut Session, p: &Json) -> Result<Json> {
         let sheet = cx.sheet_mut(si)?;
         let headers: Vec<String> = (r.start.col..=r.end.col).map(|c| sheet.value(CellRef::new(r.start.row, c)).display()).collect();
         let t = sheet.tables.get_mut(ti).ok_or_else(|| bad("table", "gone"))?;
-        if r.start.row != t.range.start.row {
+        if r.start.row != t.range.start.row || !r.intersects(&t.range) {
             return Err(EngineError::Other(
                 "The headers must remain in the same row, and the resulting table range must overlap the original table range.".into(),
             ));
@@ -751,7 +838,14 @@ fn table_resize(s: &mut Session, p: &Json) -> Result<Json> {
         for (i, h) in headers.iter().enumerate() {
             let name = if h.is_empty() { format!("Column{}", i + 1) } else { h.clone() };
             let existing = t.columns.iter().find(|c| c.name.eq_ignore_ascii_case(&name)).cloned();
-            cols.push(existing.unwrap_or(TableColumn { name, totals: TotalsFn::None, totals_label: None, formula: None }));
+            cols.push(existing.unwrap_or(TableColumn {
+                name,
+                totals: TotalsFn::None,
+                totals_label: None,
+                formula: None,
+                unique_name: None,
+                xml: None,
+            }));
         }
         t.columns = cols;
         t.range = r;
@@ -868,7 +962,7 @@ fn new_script(s: &mut Session, p: &Json) -> Result<Json> {
         return Err(bad("automate.newScript", "`commands` must be an array"));
     }
     edit(s, |cx| {
-        let mut all = stash_get(&cx.wb, SCRIPTS_NAME);
+        let mut all = stash_map(&cx.wb, SCRIPTS_NAME);
         all[name.as_str()] = cmds.clone();
         stash_set(&mut cx.wb, SCRIPTS_NAME, &all);
         Ok(json!({"name": name}))
@@ -907,7 +1001,7 @@ fn run_script(s: &mut Session, p: &Json) -> Result<Json> {
 fn delete_script(s: &mut Session, p: &Json) -> Result<Json> {
     let name = str_param(p, "name").ok_or_else(|| bad("automate.deleteScript", "missing `name`"))?.to_string();
     edit(s, |cx| {
-        let mut all = stash_get(&cx.wb, SCRIPTS_NAME);
+        let mut all = stash_map(&cx.wb, SCRIPTS_NAME);
         if let Some(o) = all.as_object_mut() {
             o.remove(&name);
         }
@@ -982,8 +1076,13 @@ fn toggle_checkbox(s: &mut Session, p: &Json) -> Result<Json> {
     })
 }
 
+/// Copy of the params that is always a JSON object, so keys can be assigned; any other JSON value counts as no params (like null).
+fn object_params(p: &Json) -> Json {
+    Json::Object(p.as_object().cloned().unwrap_or_default())
+}
+
 fn theme_colors(s: &mut Session, p: &Json) -> Result<Json> {
-    let mut params = p.clone();
+    let mut params = object_params(p);
     if params.get("name").is_none() {
         params["name"] = json!(s.doc()?.wb.theme.name.clone());
     }
@@ -1004,7 +1103,7 @@ fn background(s: &mut Session, p: &Json) -> Result<Json> {
             Ok(Json::Null)
         });
     }
-    let mut params = p.clone();
+    let mut params = object_params(p);
     params["alt"] = json!("Sheet background");
     params["at"] = json!("A1");
     s.execute("insert.picture", params)
@@ -1020,7 +1119,7 @@ fn draw_border(s: &mut Session, p: &Json) -> Result<Json> {
         "outline" => "outside",
         _ => "all",
     };
-    let mut params = p.clone();
+    let mut params = object_params(p);
     params["preset"] = json!(preset);
     s.execute("home.borders", params)
 }

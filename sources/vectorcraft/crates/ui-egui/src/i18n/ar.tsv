@@ -1544,7 +1544,7 @@ lighting	Light	فاتح
 	Fill Color	لون التعبئة
 	Fill New Type Objects With Placeholder Text	تعبئة عناصر النص الجديدة بنص مؤقت
 	Fill Rule	قاعدة التعبئة
-	Fill: click for swatches, Shift-click for the color mixer	التعبئة: انقر لعينات الألوان، وانقر مع Shift لمازج الألوان
+	Fill: click for swatches, Shift-click for the color mixer	التعبئة: انقر لعرض عينات الألوان، وانقر مع Shift لعرض مازج الألوان
 	Find and Replace…	بحث واستبدال…
 	Find Font	البحث عن خط
 	Find Font…	البحث عن خط…
@@ -2915,7 +2915,7 @@ lighting	Light	فاتح
 	Stroke options	خيارات الحد
 	Transform options	خيارات التحويل
 	Stroke Weight	سماكة الحد
-	Stroke: click for swatches, Shift-click for the color mixer	الحد: انقر لعينات الألوان، وانقر مع Shift لمازج الألوان
+	Stroke: click for swatches, Shift-click for the color mixer	الحد: انقر لعرض عينات الألوان، وانقر مع Shift لعرض مازج الألوان
 	Style Attributes	سمات النمط
 	Style Attributes (Entity References)	سمات النمط (مراجع الكيانات)
 	Styling:	الأنماط:
@@ -4982,3 +4982,1195 @@ lighting	Light	فاتح
 @msg	{name}: {e}	خطأ {name}: {e}
 @msg	{target} is the file this document was read from, and reading it left things out ({what}): writing over it would lose them for good. Write another file instead, or pass acknowledgeLoss: true to replace it anyway	الملف {target} هو مصدر هذا المستند، وقد أُهملت عناصر عند قراءته ({what})؛ ستفقدها نهائيًا بالكتابة فوقه. اكتب ملفًا آخر، أو مرّر acknowledgeLoss: true لاستبداله مع ذلك
 @msg	{ty} brushes need selected art (or params.{k})	تتطلب فرش {ty} عملًا فنيًا محددًا أو params.{k}
+
+# Reviewed exact reuse for the newest official release
+	16 bit	16 بت
+	24 bit	24 بت
+	24 bits/pixel	24 بت/بكسل
+	32 bits/pixel	32 بت/بكسل
+	8 bit	8 بت
+	Absolute Colorimetric	قياسي مطلق
+	Adaptive	تكيفي
+	All Layers	جميع الطبقات
+	All Slices	جميع الشرائح
+	Any except extracting pages	أي شيء عدا استخراج الصفحات
+	Arrow	سهم
+	Art & Illustration	فن ورسم توضيحي
+	Artistic	فني
+	Ascent	الصعود
+	Auto Size	حجم تلقائي
+	Bar	شرطة
+	Barbed	مسنن
+	Basic	أساسي
+	Bicubic	ثنائي التكعيب
+	Black & White	أبيض وأسود
+	Bracket	قوس
+	Brown	بني
+	Cap Height	ارتفاع الأحرف الكبيرة
+	Chevron	شارة سهم
+	Command	أمر
+	Composite	تركيب
+	Cool	بارد
+	Copyright and Contact Info	حقوق النشر ومعلومات الاتصال
+	Copyrighted	محفوظ الحقوق
+	Cross	علامة خطأ
+	Diffusion	انتشار
+	Double Bar	خط مزدوج
+	Exact	دقيق
+	Feather	تلاشي الحواف
+	Film & Video	فيلم وفيديو
+	First Baseline	خط الأساس الأول
+	Freeform	شكل حر
+	Gray	رمادي
+	Gray Gamma 2.2	رمادي غاما 2.2
+	Group Selection	تحديد المجموعة
+	Hand	يد
+	Hexagon	سداسي
+	High Contrast	تباين عالٍ
+	High Resolution	دقة عالية
+	High resolution	دقة عالية
+	Highlight Area	مساحة الإضاءات
+	Justify	ضبط
+	Keyboard Shortcuts	اختصارات لوحة المفاتيح
+	Lasso	لاسو
+	Legal	قانوني
+	Length:	طول:
+	Linear	خطي
+	Low Resolution	دقة منخفضة
+	Measure	قياس
+	Medium Resolution	دقة متوسطة
+	Mesh	شبكة
+	Minimum	الحد الأدنى
+	Mobile	جوال
+	Monochromatic	أحادي اللون
+	Monochrome	أحادي اللون
+	No Dither	بدون تنقيط
+	OpenType	OpenType
+	Orange	برتقالي
+	Oval	شكل بيضاوي
+	PRs	طلبات السحب
+	Pen	قلم
+	Perceptual	إدراكي
+	Pink	وردي
+	Pixel	بكسل
+	Plus	زائد
+	Preserve	الحفاظ
+	Press keys…	اضغط على المفاتيح…
+	Public Domain	ملكية عامة
+	Purple	بنفسجي
+	RGB	RGB
+	Ratio	نسبة
+	Relative Colorimetric	قياسي نسبي
+	Reset to Defaults	إعادة الضبط إلى القيم الافتراضية
+	Roman	روماني
+	Rotate View	تدوير العرض
+	Save Selection	حفظ التحديد
+	Selective	انتقائي
+	Shortcut	اختصار
+	Slash	شرطة مائلة
+	Stacked	مكدس
+	Subset	مجموعة جزئية
+	Symbol	رمز
+	Tabloid	تابلويد
+	Tool	أداة
+	Triangle	مثلث
+	Twirl	لف
+	Unknown	غير معروف
+	Use Default	استخدام الافتراضي
+	Warm	دافئ
+	X:	س:
+	Y:	ص:
+	sRGB IEC61966-2.1	sRGB IEC61966-2.1
+	x Height	ارتفاع x
+@msg	disk full	القرص ممتلئ
+
+# Reviewed exact reuse for the newest official release
+effect	Horizontal	أفقي
+effect	Points	نقاط
+effect	Regular	عادي
+effect	Vertical	عمودي
+file-filter	Flattener presets	إعدادات التسطيح المسبقة
+file-filter	Print presets	إعدادات الطباعة المسبقة
+file-filter	Templates	القوالب
+gradient-kind	Radial	شعاعي
+mark-style	Japanese	اليابانية
+theme	Appearance	مظهر
+
+# Manually reviewed additions for the newest official release
+	1 Layer	طبقة واحدة
+	1 bit	1 بت
+	16 Colors	16 لونًا
+	16 bits/pixel	16 بت/بكسل
+	2-Up	عرض ثنائي
+	256 Colors	256 لونًا
+	2K Cinema	سينما 2K
+	2up	عرض ثنائي
+	3 Colors	3 ألوان
+	32 bit	32 بت
+	4 bit	4 بت
+	4-Up	عرض رباعي
+	4K Cinema	سينما 4K
+	4K UHD	4K UHD
+	4up	عرض رباعي
+	6 Colors	6 ألوان
+	8 Colors	8 ألوان
+	8K UHD	8K UHD
+	@{login}: {prs}, {commits}, +{added} / −{deleted} lines (Δ {delta}), +{binary_added} / −{binary_deleted} binary assets, {first} – {last}	@{login}: ‏{prs}، {commits}، +{added} / −{deleted} سطر (Δ {delta})، +{binary_added} / −{binary_deleted} مورد ثنائي، {first} – {last}
+	A3	A3
+	A4	A4
+	A5	A5
+	A6	A6
+	All Affected Objects	كل الكائنات المتأثرة
+	All Rasterized Regions	كل المناطق المحوّلة إلى نقطية
+	All shortcuts reset to defaults.	أُعيدت جميع الاختصارات إلى الإعدادات الافتراضية.
+	Alt+Click	Alt+نقر
+	Alt+Drag	Alt+سحب
+	Analogous	ألوان متجاورة
+	Analogous 2	ألوان متجاورة 2
+	Anchors	نقاط ارتكاز
+	Area Type	نص منطقة
+	Arrow (open)	سهم (مفتوح)
+	Art Optimized	محسّن للرسومات
+	Art and Bright Colors	رسومات وألوان زاهية
+	B4	B4
+	B5	B5
+	Baseline (Standard)	أساسي (قياسي)
+	Baseline Optimized	أساسي محسّن
+	Black Outline	حد أسود
+	Bloat	انتفاخ
+	Bounding Box	مربع إحاطة
+	Branding	هوية بصرية
+	Business Card 3.5 × 2 in	بطاقة أعمال 3.5 × 2 بوصة
+	Business Card 85 × 55 mm	بطاقة أعمال 85 × 55 مم
+	CRLF (Windows)	CRLF ‏(Windows)
+	Choose the file to relink each linked file to. Files with the size and contents saved with the link come first.	اختر الملف الذي سيُعاد ربط كل ملف مرتبط به. تظهر أولًا الملفات المطابقة للحجم والمحتوى المحفوظين في الرابط.
+	Circle (open)	دائرة (مفتوحة)
+	Click, then press the new shortcut (Esc cancels)	انقر، ثم اضغط الاختصار الجديد (Esc للإلغاء)
+	Clip Group	مجموعة قص
+	Color Table (4 colors)	جدول الألوان (4 ألوان)
+	Column Width:	عرض العمود:
+	Commenting, filling in form fields and signing	التعليق وتعبئة حقول النماذج والتوقيع
+	Complementary	ألوان متكاملة
+	Complementary 2	ألوان متكاملة 2
+	Complete	كامل
+	Compound	مركّب
+	Compound 2	مركّب 2
+	Concave	مقعّر
+	Concentric Dividers:	فواصل متحدة المركز:
+	Convert to Global	تحويل إلى لون عام
+	Convert to destination	تحويل إلى الوجهة
+	Convert to destination (preserve numbers)	تحويل إلى الوجهة (الحفاظ على القيم العددية)
+	Copy into the document's folder	نسخ إلى مجلد المستند
+	Current Colors	الألوان الحالية
+	Current Colors (0)	الألوان الحالية (0)
+	Custom Scale	مقياس مخصص
+	DWG (use DXF)	DWG (استخدم DXF)
+	Default Graphic Style	نمط رسومي افتراضي
+	Delete Design	حذف التصميم
+	Diamond (open)	معيّن (مفتوح)
+	Differences from VectorCraft Default:	الاختلافات عن إعداد VectorCraft الافتراضي:
+	Differences from [Default]:	الاختلافات عن [الافتراضي]:
+	Direct Selection	تحديد مباشر
+	Distance:	المسافة:
+	Do Not Scale	عدم تغيير المقياس
+	Don't Relink	عدم إعادة الربط
+	Don't include profiles	عدم تضمين ملفات التعريف
+	Dot Gain 15%	زيادة حجم النقطة 15%
+	Dot on Bar	نقطة على شريط
+	Double Arrow	سهم مزدوج
+	Double Slash	شرطة مائلة مزدوجة
+	Down (right reading)	لأسفل (قراءة صحيحة)
+	Drop	قطرة
+	Envelope	غلاف التشويه
+	Envelope #10	ظرف رقم 10
+	Envelope DL	ظرف DL
+	Even	متساوٍ
+	Expand 1 Selected	توسيع كائن واحد محدد
+	Expand Object	توسيع الكائن
+	Expanded Patterns	أنماط موسّعة
+	Filling in form fields and signing	تعبئة حقول النماذج والتوقيع
+	Film Grain…	حبيبات الفيلم…
+	Find Linked Files	البحث عن الملفات المرتبطة
+	Find Linked Files in Folder…	البحث عن الملفات المرتبطة في مجلد…
+	Fit to Page	ملاءمة الصفحة
+	Fork	شوكة
+	GIF, 128 colours	GIF، ‏128 لونًا
+	Go to Conflict	الانتقال إلى التعارض
+	Graph Design	تصميم الرسم البياني
+	Graph Marker	علامة الرسم البياني
+	Graphic Styles (4)	أنماط رسومية (4)
+	Greeting Card	بطاقة تهنئة
+	Grey	رمادي
+	Grid Repeat	تكرار شبكي
+	Guide	دليل
+	Gutter:	الفاصل:
+	HDTV 1080p	HDTV ‏1080p
+	HDTV 720p	HDTV ‏720p
+	HTML and Images	HTML وصور
+	Half Arrow (left)	نصف سهم (يسار)
+	Half Arrow (right)	نصف سهم (يمين)
+	Half Circle	نصف دائرة
+	Harmony Rules	قواعد تناغم الألوان
+	Heavy Ink	حبر كثيف
+	Hexagon (open)	سداسي (مفتوح)
+	High Contrast 2	تباين عالٍ 2
+	High Contrast 3	تباين عالٍ 3
+	High Fidelity Photo	صورة عالية الدقة في التتبع
+	Horizontal & Vertical Align Center	محاذاة للوسط أفقيًا وعموديًا
+	Image Trace (Make and Expand)	تتبع الصورة (إنشاء وتوسيع)
+	Images Only	صور فقط
+	Import Data…	استيراد بيانات…
+	Imported. Press OK to keep the imported set.	تم الاستيراد. اضغط موافق للاحتفاظ بالمجموعة المستوردة.
+	Include all profiles	تضمين جميع ملفات التعريف
+	Include destination profile	تضمين ملف تعريف الوجهة
+	Include tagged source profiles	تضمين ملفات تعريف المصدر الموسومة
+	Inserting, deleting and rotating pages	إدراج الصفحات وحذفها وتدويرها
+	Joins:	الوصلات:
+	Keeps the document editable: VectorCraft reopens the PDF with nothing lost. For files you'll edit again.	يبقي المستند قابلًا للتحرير: يعيد VectorCraft فتح PDF دون فقد محتوى. للملفات التي ستُحرر مجددًا.
+	Kite	طائرة ورقية
+	LF (macOS, Linux)	LF ‏(macOS، Linux)
+	Lab Spot Colors	ألوان موضعية بنظام Lab
+	Landscape (flipped)	أفقي (مقلوب)
+	Language Level 2	مستوى اللغة 2
+	Language Level 3	مستوى اللغة 3
+	Leaf	ورقة نبات
+	Left Complement	مكمّل يسار
+	Legends in Wedges	وسيلة الإيضاح داخل القطاعات
+	Letterhead A4	ورقة مراسلات A4
+	Letterhead Letter	ورقة مراسلات Letter
+	Line Art	رسم خطي
+	Logo 1000×1000	شعار 1000×1000
+	Low Fidelity Photo	صورة منخفضة الدقة في التتبع
+	Low resolution (150 ppi)	دقة منخفضة (150 بكسل/بوصة)
+	Make Text Wrap	تفعيل التفاف النص
+	Maximize Editability	تعظيم قابلية التحرير
+	Menu Commands	أوامر القوائم
+	Mirror Repeat	تكرار معكوس
+	Muted	ألوان هادئة
+	Negative	سالب
+	New Design	تصميم جديد
+	No Legend	بدون وسيلة إيضاح
+	No Slices	بدون شرائح
+	No conversion	بدون تحويل
+	No downsampling	بدون خفض الدقة
+	None (Color Preview)	بدون (معاينة الألوان)
+	Number of Decimals:	عدد المنازل العشرية:
+	Outlined Strokes	حدود محوّلة إلى مسارات
+	Outlined Text	نص محوّل إلى مسارات
+	PDF 1.7	PDF ‏1.7
+	Page Cover 1640×624	غلاف صفحة 1640×624
+	Part of ArtCraft. MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono, Noto Sans SC (OFL). Icons: Lucide (ISC) + VectorCraft.	المصدر الأصلي من ArtCraft. ‏MIT OR Apache-2.0. الخطوط: Source Sans 3، Inter، JetBrains Mono، Noto Sans SC ‏(OFL). الأيقونات: Lucide ‏(ISC) وVectorCraft.
+	Paste Design	لصق التصميم
+	Pattern Swatches	عينات الأنماط
+	Pentagram	نجمة خماسية
+	Phone 360×800	هاتف 360×800
+	Phone 375×667	هاتف 375×667
+	Phone 375×812	هاتف 375×812
+	Phone 393×852	هاتف 393×852
+	Phone 412×915	هاتف 412×915
+	Phone 430×932	هاتف 430×932
+	Photo Low Fidelity	صورة منخفضة الدقة في التتبع
+	Placed Document	مستند موضوع
+	Points:	النقاط:
+	Portrait (flipped)	عمودي (مقلوب)
+	Positive	موجب
+	Poster 18 × 24 in	ملصق 18 × 24 بوصة
+	Poster 24 × 36 in	ملصق 24 × 36 بوصة
+	Preserve Appearance	الحفاظ على المظهر
+	Preserve Tints	الحفاظ على درجات اللون
+	Preset {number}	إعداد مسبق {number}
+	Print & Proof	الطباعة والبروفة
+	Printing & Proofing	الطباعة وإعداد البروفة
+	Profile Cover 1500×500	غلاف ملف شخصي 1500×500
+	Pucker	انكماش
+	RECENT (1)	الأخيرة (1)
+	Radial Dividers:	فواصل شعاعية:
+	Radial Repeat	تكرار شعاعي
+	Rasterized Complex Regions	مناطق معقدة محوّلة إلى نقطية
+	Release Image Trace	إلغاء تتبع الصورة
+	Release Text Wrap	إلغاء التفاف النص
+	Remove the shortcut	إزالة الاختصار
+	Reset Automation	إعادة ضبط الأتمتة
+	Reset Essentials Classic	إعادة ضبط الأساسيات الكلاسيكية
+	Reset Layout	إعادة ضبط التخطيط
+	Reset Painting	إعادة ضبط الرسم
+	Reset Printing and Proofing	إعادة ضبط الطباعة وإعداد البروفة
+	Reset Ruler Origin	إعادة ضبط أصل المسطرة
+	Reset Tracing	إعادة ضبط التتبع
+	Reset Typography	إعادة ضبط تنسيق النص
+	Reset Web	إعادة ضبط الويب
+	Restricted Colors	ألوان محدودة
+	Reverse Triangle	مثلث معكوس
+	Right Complement	مكمّل يمين
+	Ruler Origin	أصل المسطرة
+	Run Length	ترميز بطول التتابع
+	SVG 1.1	SVG ‏1.1
+	Same file	الملف نفسه
+	Same size	الحجم نفسه
+	Scale Tints	تحجيم درجات اللون
+	Scale X:	المقياس X:
+	Scale Y:	المقياس Y:
+	Scallop	حافة صدفيّة
+	Scissors	مقص
+	Select Segments	تحديد المقاطع
+	Select Unused	تحديد غير المستخدم
+	Selected Slices	الشرائح المحددة
+	Selected Styles Only (0)	الأنماط المحددة فقط (0)
+	Selected Swatches Only (0)	العينات المحددة فقط (0)
+	Separations	فصل الألوان
+	Set:	المجموعة:
+	Shades	درجات لونية
+	Shades of Gray	درجات الرمادي
+	Shear:	القص:
+	Shift+Click	Shift+نقر
+	Shift+Drag	Shift+سحب
+	Shrink Text to Fit	تصغير النص ليلائم
+	Silhouettes	صور ظلية
+	Simplified Chinese	الصينية المبسطة
+	Simulate	محاكاة
+	Simulate prints overprints as Overprint Preview shows them; separations always keep them. A preset flattens transparency before printing (PostScript files always flatten it).	تطبع المحاكاة تراكب الطباعة كما تعرضه معاينة تراكب الطباعة؛ يحتفظ فصل الألوان به دائمًا. يسطّح الإعداد المسبق الشفافية قبل الطباعة (ملفات PostScript تسطّحها دائمًا).
+	Sketched Art	رسم تخطيطي
+	Social	تواصل اجتماعي
+	Social Landscape Post 1200×630	منشور اجتماعي أفقي 1200×630
+	Social Portrait Post 1080×1350	منشور اجتماعي عمودي 1080×1350
+	Social Story 1080×1920	قصة اجتماعية 1080×1920
+	Social Tall Post 1000×1500	منشور اجتماعي طويل 1000×1500
+	Sort by Hue	ترتيب بحسب الصبغة
+	Sort by Luminance	ترتيب بحسب النصوع
+	Sort by Popularity	ترتيب بحسب الشيوع
+	Spectrum	طيف
+	Split Complementary	ألوان متكاملة منقسمة
+	Spot Colors (0)	ألوان موضعية (0)
+	Square (open)	مربع (مفتوح)
+	Square 8 × 8 in	مربع 8 × 8 بوصة
+	Standard Legend	وسيلة إيضاح قياسية
+	Subsample	خفض أخذ العينات
+	Sunshine	سطوع الشمس
+	Swallowtail	ذيل سنونو
+	Switch x/y	تبديل x/y
+	TIFF (8-bit Color)	TIFF (لون 8 بت)
+	TIFF (Black & White)	TIFF (أسود وأبيض)
+	Tablet 1024×1366	جهاز لوحي 1024×1366
+	Tablet 1024×768	جهاز لوحي 1024×768
+	Tablet 768×1024	جهاز لوحي 768×1024
+	Tablet 800×1280	جهاز لوحي 800×1280
+	Tablet 820×1180	جهاز لوحي 820×1180
+	Tablet 834×1194	جهاز لوحي 834×1194
+	Tag	بطاقة
+	Tag (open)	بطاقة (مفتوحة)
+	Technical Drawing	رسم تقني
+	Tetrad	مجموعة ألوان رباعية
+	Tetrad 2	مجموعة ألوان رباعية 2
+	Tetrad 3	مجموعة ألوان رباعية 3
+	Text Displayed in Cell	النص المعروض في الخلية
+	Tile Imageable Areas	توزيع مناطق الطباعة على صفحات
+	Touch Type	تحرير حروف النص منفردة
+	Transparent Objects	كائنات شفافة
+	Transpose	تبديل الصفوف والأعمدة
+	Triad	مجموعة ألوان ثلاثية
+	Triad 2	مجموعة ألوان ثلاثية 2
+	Triad 3	مجموعة ألوان ثلاثية 3
+	Triangle (open)	مثلث (مفتوح)
+	Triangle to Bar	مثلث إلى شريط
+	True Colors	ألوان حقيقية
+	Type Optimized	محسّن للنص
+	UTF-16 (Unicode)	UTF-16 ‏(Unicode)
+	Unsorted	غير مرتب
+	Up (right reading)	لأعلى (قراءة صحيحة)
+	Variation	تباين
+	VectorCraft	VectorCraft
+	VectorCraft Default	إعداد VectorCraft الافتراضي
+	VectorCraft Defaults	إعدادات VectorCraft الافتراضية
+	VectorCraft Generic CMYK (SWOP-like)	CMYK عام من VectorCraft (مشابه لـ SWOP)
+	VectorCraft Swatches (.vcswatches)	عينات VectorCraft ‏(.vcswatches)
+	Vertical Align	محاذاة عمودية
+	Vertical Area Type	نص منطقة عمودي
+	Vertical Type	نص عمودي
+	Vertical Type on a Path	نص عمودي على مسار
+	Video 1920×1080	فيديو 1920×1080
+	Video 3840×2160	فيديو 3840×2160
+	Video Banner 2560×1440	لافتة فيديو 2560×1440
+	Video Thumbnail 1280×720	صورة مصغرة للفيديو 1280×720
+	Visible & Printable Layers	طبقات ظاهرة وقابلة للطباعة
+	Visible Layers	طبقات ظاهرة
+	Vivid	ألوان زاهية
+	Watch 184×224	ساعة 184×224
+	Watch 198×242	ساعة 198×242
+	Web 1024×768	ويب 1024×768
+	Web 1280×720	ويب 1280×720
+	Web 1280×800	ويب 1280×800
+	Web 1366×768	ويب 1366×768
+	Web 1440×900	ويب 1440×900
+	Web 1600×900	ويب 1600×900
+	WebP	WebP
+	Working RGB	مساحة عمل RGB
+	Wrinkle	تجعيد
+	[Custom]	[مخصص]
+	[Default]	[افتراضي]
+	[High Quality Print]	[طباعة عالية الجودة]
+	[High Resolution]	[دقة عالية]
+	[Low Resolution]	[دقة منخفضة]
+	[Medium Resolution]	[دقة متوسطة]
+	[PDF/X-1a:2001]	[PDF/X-1a:2001]
+	[PDF/X-3:2002]	[PDF/X-3:2002]
+	[PDF/X-4:2010]	[PDF/X-4:2010]
+	[Press Quality]	[جودة المطبعة]
+	[Smallest File Size]	[أصغر حجم ملف]
+	[VectorCraft Default]	[إعداد VectorCraft الافتراضي]
+	of	من
+	▾ Default Actions	▾ الإجراءات الافتراضية
+	⚠ {chord} was already used by {names} — it has been removed there.	⚠ استُخدم {chord} من قبل بواسطة {names} — وأُزيل منها.
+@id	file.close	إغلاق
+@id	pathfinder.add	اتحاد
+@msg	No linked files to look for	لا توجد ملفات مرتبطة للبحث عنها
+@msg	Relinked {n} image(s); {name} couldn't be relinked: {reason}	أُعيد ربط {n} صورة؛ تعذرت إعادة ربط {name}: {reason}
+@msg	every numbered name for {name} is taken in the document's folder	جميع الأسماء المرقّمة لـ {name} مستخدمة في مجلد المستند
+@msg	give corners of the path: anchors between two straight sides	حدد زوايا المسار: نقاط ارتكاز بين جانبين مستقيمين
+@msg	the compressed file unpacks to more than VectorCraft reads ({_1} MB of document, {_2} MB per image)	يتجاوز حجم الملف بعد فك الضغط ما يقرأه VectorCraft ‏({_1} ميغابايت للمستند، {_2} ميغابايت لكل صورة)
+@msg	the document is too large to save compressed ({0}): save it with Use Compression off	المستند كبير جدًا لحفظه مضغوطًا ({0}): احفظه مع إيقاف استخدام الضغط
+@msg	the file stopped being read (please report this bug)	توقفت قراءة الملف (يرجى الإبلاغ عن هذا الخلل)
+@msg	this kind of brush has no options dialog yet	لا يوجد مربع حوار خيارات لهذا النوع من الفرش بعد
+@plural	{n} PR|{n} PRs	لا طلبات دمج ({n})|طلب دمج واحد ({n})|طلبا دمج ({n})|{n} طلبات دمج|{n} طلب دمج|{n} طلب دمج
+@plural	{n} commit|{n} commits	لا إيداعات ({n})|إيداع واحد ({n})|إيداعان ({n})|{n} إيداعات|{n} إيداعًا|{n} إيداع
+@plural	{n} shortcut is assigned more than once|{n} shortcuts are assigned more than once	لا اختصارات مكررة التعيين ({n})|اختصار واحد مكرر التعيين ({n})|اختصاران مكررا التعيين ({n})|{n} اختصارات مكررة التعيين|{n} اختصارًا مكرر التعيين|{n} اختصار مكرر التعيين
+diagnostics	render	تصيير
+diagnostics	ui	واجهة المستخدم
+file-filter	All placeable files	كل الملفات القابلة للوضع
+file-filter	All readable files	كل الملفات القابلة للقراءة
+file-filter	PDF presets	إعدادات PDF المسبقة
+file-filter	PDF-compatible .ai	ملفات .ai المتوافقة مع PDF
+file-filter	SVG Compressed	SVG مضغوط
+file-filter	Swatch libraries	مكتبات العينات اللونية
+file-filter	VectorCraft Template	قالب VectorCraft
+@msg	Switch x/y is for scatter graphs	تبديل x/y مخصص للرسوم البيانية المبعثرة
+@msg	UI thread must not submit	يجب ألا يرسل خيط واجهة المستخدم المهمة
+@msg	`design` is a design name, or null for the default marker	`design` اسم تصميم، أو null للعلامة الافتراضية
+@msg	`new` is a design name, or true	`new` اسم تصميم، أو true
+@msg	`to` is the design's new name	`to` الاسم الجديد للتصميم
+@msg	`{key}` is a design name	`{key}` اسم تصميم
+@msg	`{key}` is a design name or a list of them	`{key}` اسم تصميم أو قائمة أسماء تصاميم
+@msg	a design holds at most {_1} objects	الحد الأقصى للكائنات في التصميم {_1}
+@msg	a design needs a name	يحتاج التصميم إلى اسم
+@msg	a document keeps at most {_1} graph designs	الحد الأقصى لتصاميم الرسوم البيانية في المستند {_1}
+@msg	a graph has at most {_1} series, so it transposes with at most that many categories	الحد الأقصى لسلاسل الرسم البياني {_1}؛ لذلك يتطلب تبديل الصفوف والأعمدة ألا يتجاوز عدد الفئات ذلك الحد
+@msg	copying a file isn't available on the web	نسخ الملف غير متاح على الويب
+@msg	no design named `{name}`	لا يوجد تصميم باسم `{name}`
+@msg	no design named `{n}`	لا يوجد تصميم باسم `{n}`
+@msg	no design named `{old}`	لا يوجد تصميم باسم `{old}`
+@msg	object is not a path	الكائن ليس مسارًا
+@msg	printing must not write a document	يجب ألا تكتب الطباعة في المستند
+@msg	queue refused this job	رفض الطابور هذه المهمة
+@msg	segment does not exist	المقطع غير موجود
+@msg	select the art for the design	حدد العمل الفني للتصميم
+@msg	the app is gone	أُغلق التطبيق
+@msg	the design is too big to draw at every data point of this graph	التصميم كبير جدًا لرسمه عند كل نقطة بيانات في هذا الرسم البياني
+@msg	there is already a design named `{name}`	يوجد بالفعل تصميم باسم `{name}`
+@msg	there is already a design named `{to}`	يوجد بالفعل تصميم باسم `{to}`
+@msg	unknown pieLegend `{v}` (none, standard or wedges)	قيمة pieLegend غير معروفة: `{v}` ‏(none أو standard أو wedges)
+@msg	unknown piePosition `{v}` (even, ratio or stacked)	قيمة piePosition غير معروفة: `{v}` ‏(even أو ratio أو stacked)
+@msg	unknown pieSort `{v}` (none, all or first)	قيمة pieSort غير معروفة: `{v}` ‏(none أو all أو first)
+@msg	{doc} has no folder	لا يوجد مجلد لـ {doc}
+
+# Reviewed exact reuse for the newest official release
+	Auto Color	لون تلقائي
+	Back	رجوع
+	Both sides	الوجهان
+	Checked	محدد
+	Classic	كلاسيكي
+	Depth	عمق
+	Distance	مسافة
+	Front	الأمام
+	Gutter	هامش داخلي
+	Inside	داخلي
+	Length	الطول
+	Outside	خارجي
+	Presets	الإعدادات المسبقة
+	Ready	جاهز
+	Shortcuts	الاختصارات
+	Skew:	الإمالة:
+	Softness	النعومة
+	Taper	التضييق التدريجي
+	Total:	الإجمالي:
+	Twist	التواء
+	Volume	الحجم
+3d	Bevel	مشطوف
+3d	Cap	نهاية الخط
+3d	Hollow	مجوّف
+3d	Rounded	مستدير
+3d	Solid	متصل
+imageTrace	Outline	مخطط
+
+# Reviewed additions for the 2026-10-15 official release integration
+	A later row takes this shortcut	يستخدم صف لاحق هذا الاختصار
+	Add Guides	إضافة أدلة
+	Add to the Current Shortcuts	إضافة إلى الاختصارات الحالية
+	Ambient Light	الإضاءة المحيطة
+	Auto Grouping	التجميع التلقائي
+	Bevel Inside	شطف للداخل
+	Bevel Shape	شكل الشطف
+	Bevel both sides	شطف الجانبين
+	Bottom Left:	أسفل اليسار:
+	Bottom Right:	أسفل اليمين:
+	Bracket never closed	قوس لم يُغلق
+	Can't export “{name}”.	تعذر تصدير «{name}».
+	Can't save “{name}”.	تعذر حفظ «{name}».
+	Changes the reference app's preferences	يغير تفضيلات التطبيق المرجعي
+	Check Script	فحص البرنامج النصي
+	Check Script…	فحص البرنامج النصي…
+	Click, then press the key this code stands for (Esc cancels)	انقر، ثم اضغط المفتاح الذي يمثله هذا الرمز (Esc للإلغاء)
+	Closing bracket with no opening one	قوس إغلاق بلا قوس فتح
+	Coloring Controls	عناصر التحكم في التلوين
+	Comment not closed	تعليق لم يُغلق
+	Compiled or not text	ملف مترجم برمجيًا أو غير نصي
+	Compiled script: ask its author for the .jsx file	برنامج نصي مترجم برمجيًا: اطلب من مؤلفه ملف .jsx
+	Copy Report	نسخ التقرير
+	Cove	مقعر
+	Create Compound Path From Ellipses	إنشاء مسار مركب من الأشكال البيضاوية
+	Directives	التوجيهات
+	Document model	نموذج المستند
+	Draw Mode Controls	عناصر التحكم في وضع الرسم
+	Drawer menu	قائمة اللوحة الجانبية
+	Each entry of the file is matched to a VectorCraft tool, command or panel. Check the matches and answer what is left.	يُطابق كل إدخال في الملف مع أداة أو أمر أو لوحة في VectorCraft. راجع المطابقات وحدد ما تبقى.
+	Enhanced	محسن
+	Fill Grid	ملء الشبكة
+	Fill and Stroke Controls	عناصر التحكم في التعبئة والحد
+	Forget Import Matches	نسيان مطابقات الاستيراد
+	High Quality Print	طباعة عالية الجودة
+	Ignore Color	تجاهل اللون
+	Import Matches	مطابقات الاستيراد
+	Import Shortcut Set	استيراد مجموعة اختصارات
+	Import Shortcut Set…	استيراد مجموعة اختصارات…
+	In VectorCraft	في VectorCraft
+	In the File	في الملف
+	Includes	ملفات التضمين
+	Includes itself	يضمّن نفسه
+	Isometric Bottom	متساوي القياس من الأسفل
+	Isometric Left	متساوي القياس من اليسار
+	Isometric Right	متساوي القياس من اليمين
+	Isometric Top	متساوي القياس من الأعلى
+	Keys	المفاتيح
+	Light behind the object	الضوء خلف الكائن
+	Line {line}	السطر {line}
+	Line {line}: {name}: {status}	السطر {line}: {name}: {status}
+	Load EPS into Clipboard	تحميل EPS إلى الحافظة
+	Loads native code	يحمّل تعليمات برمجية أصلية
+	Menu commands	أوامر القوائم
+	Mixed line endings	نهايات أسطر مختلطة
+	Names the script builds as it runs: {count}	الأسماء التي ينشئها البرنامج النصي أثناء تشغيله: {count}
+	Needs Attention Only	ما يحتاج إلى مراجعة فقط
+	Needs a choice	يحتاج إلى اختيار
+	Needs a key	يحتاج إلى مفتاح
+	Needs dialogs	يحتاج إلى مربعات حوار
+	Needs features only the reference app has	يحتاج إلى ميزات متاحة في التطبيق المرجعي فقط
+	Needs files	يحتاج إلى ملفات
+	Needs menu commands	يحتاج إلى أوامر قوائم
+	Needs nothing beyond plain JavaScript	لا يحتاج إلى شيء سوى JavaScript العادية
+	Needs the document model	يحتاج إلى نموذج المستند
+	Needs the script language's own objects or directives	يحتاج إلى كائنات لغة البرمجة النصية نفسها أو توجيهاتها
+	Nesting too deep to follow	التداخل أعمق من أن يُتتبع
+	No equivalent	لا يوجد مكافئ
+	Not a script for the reference app	ليس برنامجًا نصيًا للتطبيق المرجعي
+	Not followed: outside the script's folder	لم يُتتبع: خارج مجلد البرنامج النصي
+	Not read	لم يُقرأ
+	Not read: a limit was reached	لم يُقرأ: تم بلوغ أحد الحدود
+	Not valid UTF-8: unreadable bytes were replaced	ترميز UTF-8 غير صالح: استُبدلت البايتات غير المقروءة
+	Object types: {names}	أنواع الكائنات: {names}
+	Off-Axis Back	خلفي مائل عن المحور
+	Off-Axis Bottom	سفلي مائل عن المحور
+	Off-Axis Front	أمامي مائل عن المحور
+	Off-Axis Left	أيسر مائل عن المحور
+	Off-Axis Right	أيمن مائل عن المحور
+	Off-Axis Top	علوي مائل عن المحور
+	Ogee	منحنى مزدوج
+	Opens files in other apps	يفتح الملفات في تطبيقات أخرى
+	Opens network connections	يفتح اتصالات بالشبكة
+	Outside the document	خارج المستند
+	PDF/X-1a:2001	معيار PDF/X-1a:2001
+	PDF/X-3:2002	معيار PDF/X-3:2002
+	PDF/X-4:2010	معيار PDF/X-4:2010
+	Precise Cursors	مؤشرات دقيقة
+	Press Quality	جودة المطابع
+	Press a key…	اضغط مفتاحًا…
+	Problems	المشكلات
+	Read Shortcut Set File	قراءة ملف مجموعة الاختصارات
+	Reads or sets environment variables	يقرأ متغيرات البيئة أو يضبطها
+	Regular expression not closed	تعبير نمطي لم يُغلق
+	Remember Import Matches	تذكر مطابقات الاستيراد
+	Remember My Choices	تذكر اختياراتي
+	Report copied	نُسخ التقرير
+	Reset all 3D settings to their defaults.	إعادة جميع إعدادات الأبعاد الثلاثة إلى قيمها الافتراضية.
+	Runs code the checker can't read	يشغل تعليمات برمجية لا يستطيع الفاحص قراءتها
+	Same item as a later row	العنصر نفسه في صف لاحق
+	Scale X	التحجيم أفقيًا
+	Scale Y	التحجيم رأسيًا
+	Screen Mode Controls	عناصر التحكم في وضع الشاشة
+	Select two or more objects, or a group	حدد كائنين أو أكثر، أو مجموعة
+	Sends messages to other apps	يرسل رسائل إلى تطبيقات أخرى
+	Single Corner Radius	نصف قطر موحد للزوايا
+	Smallest File Size	أصغر حجم للملف
+	Some lists were cut short at their limit.	اقتُصرت بعض القوائم على حدها الأقصى.
+	Start from VectorCraft Defaults	البدء من إعدادات VectorCraft الافتراضية
+	Step	درجة
+	String not closed	سلسلة نصية لم تُغلق
+	Symbol Options	خيارات الرمز
+	Symbol Options…	خيارات الرمز…
+	Syntax newer than ES3	صياغة برمجية أحدث من ES3
+	Template literal not closed	قالب نصي لم يُغلق
+	The file is too large to read in full, so only its first part is listed.	الملف أكبر من أن يُقرأ كاملًا، لذلك أُدرج الجزء الأول منه فقط.
+	The file writes keys and modifiers as codes. Check the proposed meanings and answer the codes that are not known yet.	يسجل الملف المفاتيح ومفاتيح التعديل على هيئة رموز. راجع المعاني المقترحة وحدد معاني الرموز غير المعروفة بعد.
+	Too large to check	أكبر من أن يُفحص
+	Toolbar: Show Controls	شريط الأدوات: إظهار عناصر التحكم
+	Tools take a single key (optionally with Shift)	تستخدم الأدوات مفتاحًا واحدًا (مع Shift اختياريًا)
+	Top Left:	أعلى اليسار:
+	Top Right:	أعلى اليمين:
+	Transform Objects	تحويل الكائنات
+	Unknown directive	توجيه غير معروف
+	Use Outside Rectangle As Frame	استخدام المستطيل الخارجي كإطار
+	VectorCraft read this script without running it.	قرأ VectorCraft هذا البرنامج النصي دون تشغيله.
+	Writes, moves or deletes files	يكتب الملفات أو ينقلها أو يحذفها
+	XML literal not closed	نص XML مضمن لم يُغلق
+	from the format's public description	وفق الوصف العام لصيغة الملف
+	from your earlier imports	من عمليات الاستيراد السابقة
+	line {line}	السطر {line}
+	lines {lines}	الأسطر {lines}
+	not known yet	غير معروف بعد
+	{file}, line {line}	{file}، السطر {line}
+	{ready} of {total} ready	{ready} من {total} جاهز
+3d	Space	المسافة
+@msg	An object takes one 3D effect. Edit the existing effect's options, or remove it first.	يقبل الكائن تأثيرًا ثلاثي الأبعاد واحدًا. حرر خيارات التأثير الحالي أو أزله أولًا.
+@msg	Copied the script report	نُسخ تقرير البرنامج النصي
+@msg	Offset Path: the offset leaves nothing of the selected paths (an inset larger than the shapes)	إزاحة المسار: لا تترك الإزاحة شيئًا من المسارات المحددة (الإزاحة الداخلية أكبر من الأشكال)
+@msg	The 3D surface is too complex; simplify the shape	السطح ثلاثي الأبعاد معقد جدًا؛ بسّط الشكل
+@msg	The shape is too complex for a 3D effect	الشكل معقد جدًا لتأثير ثلاثي الأبعاد
+@msg	This shortcut file is in a form VectorCraft can't read.	صيغة ملف الاختصارات هذا غير قابلة للقراءة في VectorCraft.
+@msg	an image of {w} × {h} pixels is too large to draw	الصورة بحجم {w} × {h} بكسل أكبر من أن تُرسم
+@msg	area type in frames too short for a line of the font it shows in got taller frames ({_1}): their type wouldn't show otherwise	زِيد ارتفاع إطارات نصوص المساحات التي كانت أقصر من سطر بالخط المعروض ({_1})؛ إذ لم يكن نصها ليظهر بخلاف ذلك
+@msg	control must be fillStroke, coloring, drawMode or screenMode	يجب أن يكون control إحدى القيم fillStroke أو coloring أو drawMode أو screenMode
+@msg	give a fraction `t` from 0 to 1	قدم كسرًا `t` بين 0 و1
+@msg	give the path `id`	قدم معرّف المسار `id`
+@msg	invalid stroke widths	عروض الحدود غير صالحة
+@msg	linked pictures show the low-resolution preview saved in the file until their files are found: relink them in the Links panel	تعرض الصور المرتبطة المعاينة منخفضة الدقة المحفوظة في الملف حتى العثور على ملفاتها: أعد ربطها في لوحة الروابط
+@msg	not a shortcut set: the text doesn't start with a slash name and an opening brace	ليست مجموعة اختصارات: لا يبدأ النص باسم مسبوق بشرطة مائلة وقوس معقوف مفتوح
+@msg	object has no weighted stroke	ليس للكائن حد ذو أوزان
+@msg	objects can't be nested more than 32 deep	لا يمكن أن يزيد عمق تداخل الكائنات عن 32 مستوى
+@msg	the SVG's elements are nested more than {0} deep	يتجاوز عمق تداخل عناصر SVG عدد {0} مستوى
+@msg	the art on them differs from the page's in {_1}% of it: they come from its editing data all the same	يختلف الرسم عليها عن رسم الصفحة في {_1}% منه، لكنها مأخوذة من بيانات تحريرها رغم ذلك
+@msg	unknown control `{name}`: fillStroke, coloring, drawMode or screenMode	عنصر التحكم `{name}` غير معروف: fillStroke أو coloring أو drawMode أو screenMode
+@msg	unknown parameter `{key}`; did you mean `{near}`?	المعامل `{key}` غير معروف؛ هل تقصد `{near}`؟
+@msg	unknown parameter `{key}`; the command takes no parameters	المعامل `{key}` غير معروف؛ لا يقبل الأمر أي معاملات
+@msg	unknown parameter `{key}`; the command takes: {keys}	المعامل `{key}` غير معروف؛ يقبل الأمر: {keys}
+@msg	{label} currently requires a path or compound path. Convert type, images and groups to paths first.	يتطلب {label} حاليًا مسارًا أو مسارًا مركبًا. حوّل النصوص والصور والمجموعات إلى مسارات أولًا.
+@msg	{label} requires a shape with at least two anchors	يتطلب {label} شكلًا بنقطتي ارتساء على الأقل
+@msg	{path}: not a file	{path}: ليس ملفًا
+@plural	agrees with {n} default shortcut|agrees with {n} default shortcuts	لا يطابق أي اختصار افتراضي ({n})|يطابق اختصارًا افتراضيًا واحدًا ({n})|يطابق اختصارين افتراضيين ({n})|يطابق {n} اختصارات افتراضية|يطابق {n} اختصارًا افتراضيًا|يطابق {n} اختصار افتراضي
+@plural	{n} part of the file wasn't read|{n} parts of the file weren't read	لم يُقرأ أي جزء من الملف ({n})|لم يُقرأ جزء واحد من الملف ({n})|لم يُقرأ جزآن من الملف ({n})|لم تُقرأ {n} أجزاء من الملف|لم يُقرأ {n} جزءًا من الملف|لم يُقرأ {n} جزء من الملف
+@msg	3D effects require finite coordinates within 100 million points	تتطلب التأثيرات ثلاثية الأبعاد إحداثيات منتهية ضمن 100 مليون نقطة
+@msg	The 3D projection is not finite	الإسقاط ثلاثي الأبعاد غير منتهٍ
+@msg	The shape contains invalid coordinates	يتضمن الشكل إحداثيات غير صالحة
+@msg	`kind` is one of {_1}	`kind` إحدى القيم {_1}
+@msg	`{what}` is longer than {MAX_TEXT} bytes	`{what}` أطول من {MAX_TEXT} بايت
+@msg	at most {MAX_MATCHES} matches are kept	يُحتفظ بحد أقصى قدره {MAX_MATCHES} مطابقة
+@msg	each match needs `kind`	تحتاج كل مطابقة إلى `kind`
+@msg	each match needs a `name`	تحتاج كل مطابقة إلى `name`
+@msg	editingData must be true, false or "always"	يجب أن يكون editingData إحدى القيم true أو false أو "always"
+@msg	the data isn't an EPS or PostScript picture	البيانات ليست صورة EPS أو PostScript
+@msg	type objects can't be isolated	لا يمكن عزل الكائنات النصية
+@msg	unknown OpenType feature `{t}` (liga, calt, dlig, smcp, frac, onum, tnum, ordn, swsh, ss01–ss20, salt, titl, pnum, lnum, sups, subs; prefix - to turn off)	ميزة OpenType `{t}` غير معروفة (liga، calt، dlig، smcp، frac، onum، tnum، ordn، swsh، ss01–ss20، salt، titl، pnum، lnum، sups، subs؛ أضف البادئة - لتعطيلها)
+	Accent Color	لون التمييز
+	Angular	زاوي
+	Automate	أتمتة
+	Batch…	دفعة…
+	Clear All	مسح الكل
+	Darkness	القتامة
+	Dimension	قياس
+	Dot	نقطة
+	Edge Only	الحواف فقط
+	Export Presets	إعدادات التصدير المسبقة
+	Filter	مرشح
+	Flatten	تسطيح
+	Groups	المجموعات
+	Halftone Pattern	نمط الألوان النصفية
+	Hidden	مخفي
+	Images	صور
+	Insert	إدراج
+	Locked	مقفل
+	Modern	حديث
+	Omit	حذف
+	Overlay Edge	تراكب الحواف
+	Override Action "Save" Commands	تجاوز أوامر "حفظ" الإجراء
+	Pattern Type	نوع النمط
+	Set as Default	تعيين كافتراضي
+	Sketch	رسم تخطيطي
+	Start at:	بدء الترقيم من:
+	Text:	النص:
+	Violet	بنفسجي
+	letters	حروف
+	 cancels  |  Double-click the tool for options	 للإلغاء  |  انقر الأداة نقرًا مزدوجًا لعرض خياراتها
+	 out from a highlighted edge to place its dimension  |  	 إلى الخارج من حافة مميزة لوضع خط قياسها  |  
+	A File per Object	ملف لكل عنصر
+	A legacy .ai file holds one artboard: each artboard you check is saved as a separate file.	يحتوي ملف .ai القديم على لوحة رسم واحدة؛ تُحفظ كل لوحة تحددها في ملف مستقل.
+	After First:	بعد الأول:
+	All in One Folder	الكل في مجلد واحد
+	Amber	كهرماني
+	Arrange Intertwine Area	ترتيب منطقة التداخل
+	Artboard or Item Name	اسم لوحة الرسم أو العنصر
+	Away from the Line	بعيدًا عن الخط
+	Before Last:	قبل الأخير:
+	Between Line and Object	بين الخط والعنصر
+	Blur Mode	وضع التمويه
+	By Artboard or Item	حسب لوحة الرسم أو العنصر
+	By Format	حسب التنسيق
+	By Item, Then Format	حسب العنصر ثم التنسيق
+	By Layer	حسب الطبقة
+	By Object	حسب العنصر
+	By Size or Row	حسب الحجم أو الصف
+	Check an artboard to save.	حدد لوحة رسم لحفظها.
+	Close the circular ends of open profiles. Partial sweeps keep their cut sides open.	إغلاق النهايات الدائرية للمقاطع المفتوحة. تبقى الجوانب المقطوعة مفتوحة في الدورانات الجزئية.
+	Color Panel Options	خيارات لوحة الألوان
+	Color Scheme	نظام الألوان
+	Color blindness – Tritanopia-type	عمى الألوان – غياب تمييز الأزرق
+	Convert to Straight Lines	تحويل إلى خطوط مستقيمة
+	Coral	مرجاني
+	Corner Point Angle Threshold:	عتبة زاوية النقطة الركنية:
+	Create Dimension	إنشاء قياس
+	Date (YYYY-MM-DD)	التاريخ (YYYY-MM-DD)
+	Date (YYYYMMDD)	التاريخ (YYYYMMDD)
+	Decrease Font Size by Five Steps	تصغير حجم الخط خمس درجات
+	Delete Export Preset	حذف إعداد التصدير المسبق
+	Destination Folder:	المجلد الوجهة:
+	Dimension Tool	أداة القياس
+	Dimension Tool Options	خيارات أداة القياس
+	Display	عرض
+	Document Name	اسم المستند
+	Drag out from a circle or arc for its radius, inwards for its diameter.	اسحب إلى خارج دائرة أو قوس لقياس نصف القطر، وإلى الداخل لقياس القطر.
+	Drag out from a corner, or click two straight lines, then click to place.	اسحب إلى خارج زاوية، أو انقر خطين مستقيمين، ثم انقر لتحديد الموضع.
+	Drag out from a segment, or click two points, then click to place.	اسحب إلى خارج مقطع، أو انقر نقطتين، ثم انقر لتحديد الموضع.
+	Drawing : real size — 1:10 labels 1 unit on the page as 10.	حجم الرسم : الحجم الحقيقي — يعرض المقياس 1:10 الوحدة الواحدة على الصفحة بقيمة 10.
+	Editable	قابل للتحرير
+	Example: {name}	مثال: {name}
+	Export Data Sets…	تصدير مجموعات البيانات…
+	Export Layer	تصدير الطبقة
+	Export Preset:	إعداد التصدير المسبق:
+	Export Selection	تصدير التحديد
+	Export Type:	نوع التصدير:
+	Filter Layers Panel Rows	تصفية صفوف لوحة الطبقات
+	Folders:	المجلدات:
+	Font Family:	عائلة الخط:
+	Font Style:	نمط الخط:
+	Halftone Pattern…	نمط الألوان النصفية…
+	Hidden Layer	طبقة مخفية
+	Hidden Objects:	العناصر المخفية:
+	Hide Template	إخفاء القالب
+	Hyphen Limit:	الحد الأقصى للواصلات:
+	Hyphenate Capitalized Words	تقسيم الكلمات التي تبدأ بحرف كبير
+	Hyphenation Zone:	نطاق تقسيم الكلمات:
+	Import Data Sets…	استيراد مجموعات البيانات…
+	Include All Subdirectories	تضمين جميع المجلدات الفرعية
+	Increase Font Size by Five Steps	تكبير حجم الخط خمس درجات
+	Intertwine	تداخل
+	Isolate Selected Object	عزل العنصر المحدد
+	Keep selected	إبقاء التحديد
+	Legacy (version 7)	قديم (الإصدار 7)
+	Legacy .ai Options	خيارات .ai القديم
+	Linked Files	الملفات المرتبطة
+	Load Texture…	تحميل نسيج…
+	Loaded Texture	النسيج المحمّل
+	Make Graph Dynamic	جعل الرسم البياني ديناميكيًا
+	Make Image Dynamic	جعل الصورة ديناميكية
+	Make Visible	إظهار
+	Merge only with selection	الدمج مع التحديد فقط
+	Mode	الوضع
+	Movie Clip	مقطع فيلم
+	Nothing is selected. Select the art to export, then open this tab again.	لا يوجد تحديد. حدد الرسم المطلوب تصديره ثم افتح علامة التبويب هذه مجددًا.
+	Number (####)	الرقم (####)
+	One File of the Selection	ملف واحد للتحديد
+	Outline Object	حدود العنصر
+	Override Action "Export" Commands	تجاوز أوامر "تصدير" الإجراء
+	Override Action "Open" Commands	تجاوز أوامر "فتح" الإجراء
+	Overrides	التجاوزات
+	PDF Print	PDF للطباعة
+	PDF-compatible	متوافق مع PDF
+	Panels Except Tools and Control	اللوحات باستثناء الأدوات والتحكم
+	Path Length	طول المسار
+	Play:	تشغيل:
+	Precision:	الدقة:
+	Preview (1 inch on the page)	معاينة (بوصة واحدة على الصفحة)
+	Registration:	نقطة التسجيل:
+	Reset Horizontal Scale	إعادة ضبط المقياس الأفقي
+	Reset Tracking and Kerning	إعادة ضبط تباعد الأحرف وتقنين المسافات
+	Rotate View to Selection	تدوير العرض إلى التحديد
+	Sample Color from Screen	التقاط لون من الشاشة
+	Save Export Preset	حفظ إعداد التصدير المسبق
+	Save and Close	حفظ وإغلاق
+	Show Original Path	إظهار المسار الأصلي
+	Show Template	إظهار القالب
+	Source Folder:	المجلد المصدر:
+	Stop on Errors	التوقف عند الأخطاء
+	Texture Image	صورة النسيج
+	The active document changed while the screen color sampler was open	تغير المستند النشط أثناء فتح أداة التقاط اللون من الشاشة
+	This system has no screen color sampler	لا تتوفر أداة التقاط اللون من الشاشة على هذا النظام
+	Time (hhmmss)	الوقت (hhmmss)
+	Transparent Images:	الصور الشفافة:
+	Update Dimensions	تحديث القياسات
+	Update Selection	تحديث التحديد
+	Uses every data set of the open document.	يستخدم جميع مجموعات البيانات في المستند المفتوح.
+	Words Longer Than:	الكلمات الأطول من:
+	hyphens	واصلات
+	{count} of {total} artboards	{count} من أصل {total} لوحة رسم
+	{n} objects selected	العناصر المحددة: {n}
+@msg	Angles require two straight segments	يتطلب قياس الزاوية مقطعين مستقيمين
+@msg	Batch: {count} processed	المعالجة الدفعية: تمت معالجة {count}
+@msg	Batch: {count} processed, {failed} failed	المعالجة الدفعية: تمت معالجة {count}، وفشلت معالجة {failed}
+@msg	Choose a circle or a perfect arc	اختر دائرة أو قوسًا دائريًا تامًا
+@msg	Choose a precision from 0 to 6	اختر دقة من 0 إلى 6
+@msg	Choose two different points	اختر نقطتين مختلفتين
+@msg	Choose two non-parallel straight segments	اختر مقطعين مستقيمين غير متوازيين
+@msg	Choose two nonzero angle arms	اختر ذراعي زاوية بطول غير صفري
+@msg	Dimension point is outside the canvas	نقطة القياس خارج مساحة الرسم
+@msg	Dimension size is outside its supported range	حجم القياس خارج النطاق المدعوم
+@msg	First measured segment no longer exists	لم يعد المقطع الأول المقاس موجودًا
+@msg	Invalid dimension distance	مسافة القياس غير صالحة
+@msg	Invalid dimension font name	اسم خط القياس غير صالح
+@msg	Invalid drawing scale	مقياس الرسم غير صالح
+@msg	Invalid real scale	مقياس الحجم الحقيقي غير صالح
+@msg	Measured anchor no longer exists	لم تعد نقطة الارتكاز المقاسة موجودة
+@msg	Measured segment no longer exists	لم يعد المقطع المقاس موجودًا
+@msg	Non-finite dimension	القياس ليس قيمة عددية منتهية
+@msg	Scale must be drawing:real, for example 1:10	يجب أن يكون المقياس بالشكل رسم:حقيقي، مثل 1:10
+@msg	Scale ratio must be between 1:1000000 and 1000000:1	يجب أن تكون نسبة المقياس بين 1:1000000 و1000000:1
+@msg	Second measured segment no longer exists	لم يعد المقطع الثاني المقاس موجودًا
+@msg	The last start of VectorCraft ended on {name} before its window appeared, so it started on {summary}. To try that graphics processor again, change Preferences › Performance › Graphics Processor or start with WGPU_BACKEND set	توقف تشغيل VectorCraft السابق على {name} قبل ظهور النافذة، لذا بدأ الآن على {summary}. لإعادة تجربة معالج الرسومات ذلك، غيّر التفضيلات › الأداء › معالج الرسومات، أو شغّل البرنامج مع تعيين WGPU_BACKEND
+@msg	The last start of VectorCraft ended while it listed the graphics processors, so it started on {summary} with OpenGL alone. To try the other graphics backends again, change Preferences › Performance › Graphics Processor or start with WGPU_BACKEND set	توقف تشغيل VectorCraft السابق أثناء استعراض معالجات الرسومات، لذا بدأ الآن على {summary} باستخدام OpenGL وحده. لإعادة تجربة واجهات الرسومات الأخرى، غيّر التفضيلات › الأداء › معالج الرسومات، أو شغّل البرنامج مع تعيين WGPU_BACKEND
+@msg	Unknown dimension mode	وضع القياس غير معروف
+@msg	Unknown dimension option {k}	خيار القياس {k} غير معروف
+@msg	Unknown dimension style	نمط القياس غير معروف
+@msg	Unknown unit	الوحدة غير معروفة
+@msg	`mode` must be grayscale, rgb, hsb, cmyk or websafe	يجب أن تكون قيمة `mode` إحدى القيم grayscale أو rgb أو hsb أو cmyk أو websafe
+@msg	`{key}` must be an array of these names: {_1}	يجب أن تكون `{key}` مصفوفة من الأسماء التالية: {_1}
+@msg	check a layer to export	حدد طبقة لتصديرها
+@msg	choose a destination folder	اختر المجلد الوجهة
+@msg	choose a source folder	اختر المجلد المصدر
+@msg	name is empty	الاسم فارغ
+@msg	no saved selection recalled	لم يُستدعَ أي تحديد محفوظ
+@msg	open a document with data sets	افتح مستندًا يحتوي على مجموعات بيانات
+@msg	select an Intertwine group	حدد مجموعة تداخل
+@msg	select the art to export first	حدد الرسم المراد تصديره أولًا
+@msg	span must be "object" or "selection", got {v}	يجب أن تكون قيمة span هي "object" أو "selection"؛ القيمة المعطاة: {v}
+@msg	span: "selection" places a `gradient`, not a swatch	القيمة span: "selection" تضع `gradient`، ولا تضع عينة لون
+@msg	span: "selection" places a gradient: give `gradient`	القيمة span: "selection" تضع تدرجًا لونيًا؛ حدد `gradient`
+@msg	span: "selection" places a linear or radial gradient, not a freeform one	القيمة span: "selection" تضع تدرجًا خطيًا أو شعاعيًا، ولا تضع تدرجًا حرًا
+@msg	span: "selection" places the gradient itself: leave out `start` and `end` (they already place it in document coordinates)	القيمة span: "selection" تضع التدرج نفسه؛ لا تحدد `start` و`end` لأنهما يحددانه أصلًا بإحداثيات المستند
+@msg	the Color Picker is not open	منتقي الألوان غير مفتوح
+@msg	the action has no steps	لا يحتوي الإجراء على خطوات
+@msg	the file's layers weren't read ({_1}): it comes in as its page, in one layer	تعذرت قراءة طبقات الملف ({_1})؛ سيُستورد كصفحة ضمن طبقة واحدة
+@msg	the file's layers weren't read from its editing data ({_1}): they come from its PDF part	تعذرت قراءة طبقات الملف من بيانات تحريره ({_1})؛ ستُقرأ من جزء PDF فيه
+@msg	the image can't be read as a texture	تعذرت قراءة الصورة بوصفها نسيجًا
+@msg	the screen color sampler is already open	أداة التقاط اللون من الشاشة مفتوحة بالفعل
+@msg	this is a PostScript file (an .ai saved in an older format or without PDF compatibility, or an EPS file), not a PDF: File › Open and File › Place read it as EPS	هذا ملف PostScript، وليس PDF: إما .ai محفوظ بتنسيق قديم أو دون توافق مع PDF، أو ملف EPS. يقرأه الأمران ملف › فتح وملف › وضع بوصفه EPS
+@msg	this system has no screen color sampler	لا تتوفر أداة التقاط اللون من الشاشة على هذا النظام
+swatch	Amber	كهرماني
+swatch	Aqua	مائي
+swatch	Azure	أزرق سماوي
+swatch	Black	أسود
+swatch	Blue	أزرق
+swatch	Bright Blue	أزرق زاهٍ
+swatch	Bright Green	أخضر زاهٍ
+swatch	Bright Red	أحمر زاهٍ
+swatch	Bright Violet	بنفسجي زاهٍ
+swatch	Bright Yellow	أصفر زاهٍ
+swatch	Brights	ألوان زاهية
+swatch	Brown	بني
+swatch	Chocolate	شوكولاتي
+swatch	Coffee	قهوة
+swatch	Copper	نحاسي
+swatch	Cyan	سماوي
+swatch	Cyan Green	أخضر سماوي
+swatch	Emerald	زمردي
+swatch	Espresso	إسبريسو
+swatch	Grays	درجات الرمادي
+swatch	Green	أخضر
+swatch	Indigo	نيلي
+swatch	Lime	ليموني
+swatch	Magenta	أرجواني
+swatch	Ocean	محيطي
+swatch	Orange	برتقالي
+swatch	Orange Red	أحمر برتقالي
+swatch	Pink	وردي
+swatch	Purple	بنفسجي داكن
+swatch	Radial White, Black	شعاعي أبيض وأسود
+swatch	Red	أحمر
+swatch	Rose	وردي زاهي
+swatch	Rust	صدئي
+swatch	Sand	رملي
+swatch	Sunset	غروب
+swatch	Tan	بني فاتح
+swatch	Teal	أخضر مزرق
+swatch	Violet	بنفسجي
+swatch	Walnut	جوزي
+swatch	White	أبيض
+swatch	White, Black	أبيض وأسود
+swatch	Yellow	أصفر
+swatch	Yellow Green	أخضر مصفر
+swatch	[None]	[بلا]
+swatch	[Registration]	[تسجيل الطباعة]
+@msg	CSV has a header but no data rows	يحتوي CSV على صف عناوين دون صفوف بيانات
+@msg	CSV is empty	ملف CSV فارغ
+@msg	CSV is larger than {MAX_CSV_BYTES} bytes	حجم CSV أكبر من {MAX_CSV_BYTES} بايت
+@msg	CSV is not UTF-8	ترميز CSV ليس UTF-8
+@msg	CSV would be larger than {MAX_CSV_BYTES} bytes	سيتجاوز حجم CSV الحد البالغ {MAX_CSV_BYTES} بايت
+@msg	Export for Screens writes png, png8, jpg, webp, gif, tiff, bmp, tga, psd, svg, svgz, pdf, eps, ai or vectorcraft	يدعم تصدير الشاشات التنسيقات png وpng8 وjpg وwebp وgif وtiff وbmp وtga وpsd وsvg وsvgz وpdf وeps وai وvectorcraft
+@msg	Revolve cap must be a boolean	يجب أن تكون قيمة إغلاق الجسم الدوراني منطقية
+@msg	Revolve surface is too complex; simplify the profile	سطح الدوران معقد جدًا؛ بسّط المقطع
+@msg	Revolve visibility cannot split the projected boundary	تعذر تقسيم الحدود المسقطة لتحديد ظهور سطح الدوران
+@msg	Revolve visibility has too many boundary crossings	توجد تقاطعات كثيرة جدًا في حدود ظهور سطح الدوران
+@msg	Revolve visibility requires convex cap sectors	يتطلب تحديد ظهور سطح الدوران قطاعات إغلاق محدبة
+@msg	Revolve visibility requires finite projected faces	يتطلب تحديد ظهور سطح الدوران أوجهًا مسقطة ذات قيم عددية منتهية
+@msg	`commands` must not be empty	يجب ألا تكون `commands` فارغة
+@msg	`dash` must be a list of lengths (numbers) or null	يجب أن تكون `dash` قائمة أطوال عددية أو null
+@msg	`destinationFolder` is required when destination is `folder`	يلزم `destinationFolder` عندما تكون الوجهة `folder`
+@msg	`destination` must be `none`, `saveAndClose` or `folder`	يجب أن تكون `destination` إحدى القيم `none` أو `saveAndClose` أو `folder`
+@msg	`kind` must be `text`, `visibility`, `image` or `graph`	يجب أن تكون `kind` إحدى القيم `text` أو `visibility` أو `image` أو `graph`
+@msg	`source` must be `folder` or `datasets`	يجب أن تكون `source` إما `folder` أو `datasets`
+@msg	`{name}` is built in and stays	`{name}` مضمّن في البرنامج ولا يمكن إزالته
+@msg	a symbol named `{n}` already exists	يوجد رمز باسم `{n}` بالفعل
+@msg	area must be a closed polygon of 3 to 100000 [x, y] points	يجب أن تكون المنطقة مضلعًا مغلقًا من 3 إلى 100000 نقطة [x, y]
+@msg	define a variable first	عرّف متغيرًا أولًا
+@msg	empty header in column {_1}	عنوان العمود {_1} فارغ
+@msg	exportType must be movieClip or graphic, not `{s}`	يجب أن تكون exportType إما movieClip أو graphic، وليس `{s}`
+@msg	first header cell must be `name`	يجب أن تكون خلية العنوان الأولى `name`
+@msg	folders deeper than {MAX_BATCH_DEPTH} levels	يتجاوز عمق المجلدات {MAX_BATCH_DEPTH} مستوى
+@msg	give `path`, `data`, `dataBase64` or `csv`	حدد `path` أو `data` أو `dataBase64` أو `csv`
+@msg	give either at (a click) or area (a path drawn around the overlaps)	حدد إما at لنقرة أو area لمسار مرسوم حول مناطق التداخل
+@msg	give one of assets, layers, selection or fullDocument	حدد إحدى القيم assets أو layers أو selection أو fullDocument
+@msg	give the preset a name	أدخل اسمًا للإعداد المسبق
+@msg	layer `{name}` has no art to export	لا تحتوي الطبقة `{name}` على رسم لتصديره
+@msg	member is for order front or back	يُستخدم member مع ترتيب front أو back
+@msg	missing destination folder	المجلد الوجهة غير محدد
+@msg	more than 256 commands	يتجاوز العدد 256 أمرًا
+@msg	more than {MAX_BATCH_FILES} data sets	يتجاوز العدد {MAX_BATCH_FILES} مجموعة بيانات
+@msg	more than {MAX_CSV_ROWS} data rows	يتجاوز العدد {MAX_CSV_ROWS} صف بيانات
+@msg	no data sets	لا توجد مجموعات بيانات
+@msg	no export preset `{name}` (see document.exportPresets.list)	لا يوجد إعداد تصدير مسبق باسم `{name}`؛ راجع document.exportPresets.list
+@msg	no files are written here	لا تُكتب ملفات في هذا الموضع
+@msg	no layer {id} (see layer.list)	لا توجد طبقة بالمعرّف {id}؛ راجع layer.list
+@msg	no layers to export	لا توجد طبقات لتصديرها
+@msg	no readable files in the folder	لا توجد ملفات قابلة للقراءة في المجلد
+@msg	no saved export preset `{name}`	لا يوجد إعداد تصدير مسبق محفوظ باسم `{name}`
+@msg	node {_1} is not a graph	العقدة {_1} ليست رسمًا بيانيًا
+@msg	node {_1} is not an image	العقدة {_1} ليست صورة
+@msg	object {_1} is not an Intertwine group	العنصر {_1} ليس مجموعة تداخل
+@msg	object {_1} is not in this Intertwine group	العنصر {_1} ليس ضمن مجموعة التداخل هذه
+@msg	pass newName, registration and/or exportType	حدد newName وregistration وexportType، أو بعضًا منها
+@msg	preserve `{v}` is not transforms|bounds|fileDimensions|fit|fill	قيمة preserve وهي `{v}` ليست إحدى القيم transforms|bounds|fileDimensions|fit|fill
+@msg	registration must be 0..8	يجب أن تكون registration من 0 إلى 8
+@msg	select one Intertwine group	حدد مجموعة تداخل واحدة
+@msg	select two or more objects to intertwine	حدد عنصرين أو أكثر لإنشاء تداخل
+@msg	settings is an object of document.exportForScreens params	يجب أن تكون settings كائنًا من معاملات document.exportForScreens
+@msg	that object is not in the overlap	ذلك العنصر ليس ضمن منطقة التداخل
+@msg	the object is outside the isolated group	العنصر خارج المجموعة المعزولة
+@msg	the selection has no art to export	لا يحتوي التحديد على رسم لتصديره
+@msg	unknown Warp style	نمط التشويه غير معروف
+@msg	value for `{var}` is longer than {MAX_GRAPH_CSV} bytes	تتجاوز قيمة `{var}` الحد البالغ {MAX_GRAPH_CSV} بايت
+@msg	warpStyle can only edit an applied Warp effect	يمكن لـwarpStyle تعديل تأثير تشويه مطبّق فقط
+@msg	width factors must be finite	يجب أن تكون معاملات العرض قيمًا عددية منتهية
+@msg	{what} can't be intertwined	يتعذر إنشاء تداخل لهذا النوع: {what}
+
+# Reviewed additions for the official 2026-10-19 source freeze
+	Add Event	إضافة حدث
+	Add JavaScript File	إضافة ملف JavaScript
+	Add Light	إضافة ضوء
+	Apply Data Set	تطبيق مجموعة بيانات
+	Cancel Pattern Editing	إلغاء تحرير النمط
+	Change to Artboard Rulers	التبديل إلى مساطر لوح الرسم
+	Chop Design	تقطيع التصميم
+	Clear Events	مسح الأحداث
+	Close Gaps With Paths	إغلاق الفجوات بمسارات
+	Color wheel	عجلة الألوان
+	Column Type:	نوع العمود:
+	Connect	اتصال
+	Copy Appearance	نسخ المظهر
+	Copy Guide	نسخ خط الإرشاد
+	Copy in Perspective	نسخ في المنظور
+	Create Slice from Selection	إنشاء شريحة من التحديد
+	Create Slices from Guides	إنشاء شرائح من خطوط الإرشاد
+	Cutout	قصاصات
+	Cutout…	قصاصات…
+	Delete All Slices	حذف جميع الشرائح
+	Delete Data Sets	حذف مجموعات البيانات
+	Delete Graphic Styles	حذف الأنماط الرسومية
+	Delete Guide	حذف خط الإرشاد
+	Delete Guides	حذف خطوط الإرشاد
+	Delete Light	حذف الضوء
+	Delete Slice	حذف الشريحة
+	Delete Style	حذف النمط
+	Delete Variables	حذف المتغيرات
+	Delete View	حذف العرض
+	Done Editing Pattern	إنهاء تحرير النمط
+	Duplicate Rows	تكرار الصفوف
+	Each Design Represents:	يمثل كل تصميم:
+	Edge Fidelity	دقة الحواف
+	Edge Intensity	شدة الحواف
+	Edge Simplicity	بساطة الحواف
+	Edge Thickness	سماكة الحواف
+	Edit Path	تحرير المسار
+	Edit Perspective Grid	تحرير شبكة المنظور
+	Enable Guides for 9-Slice Scaling	تفعيل خطوط إرشاد التحجيم بتسع شرائح
+	Event:	الحدث:
+	Expand Blend	توسيع الدمج
+	Expand Envelope	توسيع غلاف التشويه
+	Expand Image Trace	توسيع تتبع الصورة
+	Expand Live Paint	توسيع التلوين الحي
+	File or URL:	ملف أو رابط:
+	First Artboard	لوح الرسم الأول
+	For Fractions:	للكسور:
+	Gap Detection	اكتشاف الفجوات
+	Gap Options	خيارات الفجوات
+	Gap Preview Color:	لون معاينة الفجوات:
+	Glow Brightness	سطوع التوهج
+	Glow Size	حجم التوهج
+	Graph Column	عمود الرسم البياني
+	If a drawing tablet's pen doesn't draw, choose an X11 (XWayland) option.	إذا لم يرسم قلم اللوح الرسومي، فاختر أحد خيارات X11 (XWayland).
+	JavaScript Files	ملفات JavaScript
+	JavaScript:	JavaScript:
+	Large Gaps	فجوات كبيرة
+	Last Artboard	لوح الرسم الأخير
+	Levels	المستويات
+	Library Panel Options	خيارات لوحة المكتبة
+	Lights	الأضواء
+	Link JavaScript Files…	ربط ملفات JavaScript…
+	Live Shape	شكل حي
+	Lock Variables	قفل المتغيرات
+	Make Blend	إنشاء دمج
+	Make Dynamic	جعله ديناميكيًا
+	Make Intertwine	إنشاء تشابك
+	Make Live Paint	إنشاء تلوين حي
+	Make Pattern	إنشاء نمط
+	Make Slice	إنشاء شريحة
+	Medium Gaps	فجوات متوسطة
+	Merge Live Paint	دمج التلوين الحي
+	Mesh Point Color	لون نقطة الشبكة
+	Move Envelope Point	تحريك نقطة غلاف التشويه
+	Move Plane and Copy Objects	تحريك المستوى ونسخ الكائنات
+	Move Plane and Objects	تحريك المستوى والكائنات
+	Move Slice	تحريك الشريحة
+	Move Type on a Path	تحريك الكتابة على مسار
+	Neon Glow	توهج نيون
+	Neon Glow…	توهج نيون…
+	New Artboard Options…	خيارات لوح رسم جديد…
+	New Guide	خط إرشاد جديد
+	Next Artboard	لوح الرسم التالي
+	Paint Stops At:	يتوقف التلوين عند:
+	Persistent	دائم
+	Place from Library	وضع من المكتبة
+	Poster Edges	حواف الملصق
+	Poster Edges…	حواف الملصق…
+	Posterization	تقليل التدرجات اللونية
+	Previous Artboard	لوح الرسم السابق
+	Rearrange Artboards	إعادة ترتيب ألواح الرسم
+	Release Blend	فك الدمج
+	Release Envelope	فك غلاف التشويه
+	Release Intertwine	فك التشابك
+	Release Live Paint	فك التلوين الحي
+	Release Repeat	فك التكرار
+	Release Slice	فك الشريحة
+	Release Threaded Text	فك النص المترابط
+	Remove Color Profile…	إزالة ملف تعريف الألوان…
+	Remove JavaScript File	إزالة ملف JavaScript
+	Remove Selected Entry	إزالة الإدخال المحدد
+	Rename Design	إعادة تسمية التصميم
+	Rename Style	إعادة تسمية النمط
+	Rename View	إعادة تسمية العرض
+	Reorder Appearance	إعادة ترتيب المظهر
+	Reorder Artboards	إعادة ترتيب ألواح الرسم
+	Repeating	متكرر
+	Reshape Spine	إعادة تشكيل المسار الأساسي
+	Resize	تغيير الحجم
+	Resize Artboard	تغيير حجم لوح الرسم
+	Resize Slice	تغيير حجم الشريحة
+	Resize Type Area	تغيير حجم مساحة الكتابة
+	Scale Design	تحجيم التصميم
+	Scale in Perspective	تحجيم في المنظور
+	Set History Limit…	تعيين حد سجل الإجراءات…
+	Shape Builder Delete	حذف بأداة بناء الأشكال
+	Sliding	انزلاق
+	Small Gaps	فجوات صغيرة
+	Sort Swatches	فرز عينات الألوان
+	Step Backward	خطوة للخلف
+	Step Forward	خطوة للأمام
+	Step up or down	خطوة للأعلى أو للأسفل
+	Symbol Screener	تعديل عتامة الرموز
+	Symbol Scruncher	تجميع الرموز
+	Symbol Shifter	إزاحة الرموز
+	Symbol Sizer	تحجيم الرموز
+	Symbol Spinner	تدوير الرموز
+	Symbol Stainer	تلوين الرموز
+	Symbol Styler	تنسيق الرموز
+	Text Orientation	اتجاه النص
+	The name in the save panel was “{typed}”; VectorCraft added the file type's extension. Replacing the file overwrites its contents.	كان الاسم في لوحة الحفظ «{typed}»؛ وأضاف VectorCraft امتداد نوع الملف. يؤدي استبدال الملف إلى الكتابة فوق محتواه.
+	Thread Text	ربط النص
+	Trackpad Gesture to Rotate View	إيماءة لوحة اللمس لتدوير العرض
+	Typing	كتابة
+	Uniformly Scaled	تحجيم متناسب
+	Unlock Variables	إلغاء قفل المتغيرات
+	Use Document Raster Effects Resolution	استخدام دقة تأثيرات المستند النقطية
+	Variable Font	خط متغير
+	Vertically Scaled	تحجيم رأسي
+	X11 (XWayland) When a Pen Is Attached	X11 (XWayland) عند توصيل قلم
+	“{name}” already exists. Replace it?	الملف «{name}» موجود بالفعل. هل تريد استبداله؟
+3d	Light	ضوء
+@msg	Edit Original opens image and document files only; “{name}” is not one	يفتح «تحرير الأصل» ملفات الصور والمستندات فقط؛ والملف «{name}» ليس منها
+@msg	Persistent libraries not found: {files}	لم يُعثر على المكتبات الدائمة: {files}
+@msg	Save writes {_1}, not {_2}: use file.saveAsTemplate to write it	يكتب الحفظ {_1} وليس {_2}: استخدم file.saveAsTemplate لكتابته
+@msg	The image is {_1} × {_2} pixels, more than {LARGE_TRACE_SIDE} on a side: it is traced, but more slowly. A lower-fidelity preset or a smaller copy of the image traces faster.	حجم الصورة {_1} × {_2} بكسل، ويتجاوز {LARGE_TRACE_SIDE} في أحد البعدين: سيجري تتبعها، لكن ببطء أكبر. يسرّع التتبعَ إعدادٌ مسبق أقل دقة أو نسخة أصغر من الصورة.
+@msg	The image was traced at {_1} × {_2} pixels, scaled down from {_3} × {_4} ({_5} megapixels at most).	تم تتبع الصورة بحجم {_1} × {_2} بكسل، بعد تصغيرها من {_3} × {_4} (بحد أقصى {_5} ميغابكسل).
+@msg	`{given}` isn't a library panel (see window.swatchLibrary)	`{given}` ليست لوحة مكتبة (راجع window.swatchLibrary)
+@msg	`{key}` must be a #rrggbb color	يجب أن تكون قيمة `{key}` لونًا بصيغة #rrggbb
+@msg	a linked image can't become a gradient mesh: embed it first	لا يمكن تحويل صورة مرتبطة إلى شبكة تدرج؛ ضمّنها أولًا
+@msg	a mask has more than one art block	يحتوي القناع على أكثر من كتلة رسم
+@msg	cancelled; nothing was changed	أُلغيت العملية؛ لم يتغير شيء
+@msg	library panel `{given}` isn't open	لوحة المكتبة `{given}` غير مفتوحة
+@msg	mask art ends outside a mask dictionary	ينتهي رسم القناع خارج قاموس القناع
+@msg	not a blend	ليس دمجًا
+@msg	only http, https and mailto URLs open in the browser, not “{url}”	يمكن فتح روابط http وhttps وmailto فقط في المتصفح، وليس «{url}»
+@msg	the blend has no spine	ليس للدمج مسار أساسي
+@msg	the image has no usable size or position	ليس للصورة حجم أو موضع صالح للاستخدام
+@msg	too many library panels were opened in this session	فُتحت لوحات مكتبة كثيرة جدًا في هذه الجلسة
+@msg	variables are locked	المتغيرات مقفلة
+@msg	{id} opens another app: only the person at the keyboard can run it	يفتح {id} تطبيقًا آخر: لا يمكن تشغيله إلا للشخص الجالس أمام الجهاز
+@msg	“{name}” is not a file	«{name}» ليس ملفًا
+
+# Reviewed current display diagnostics; internal engine and protocol strings remain unchanged
+@msg	3D effects require one to ten lights	تتطلب التأثيرات ثلاثية الأبعاد من ضوء واحد إلى عشرة أضواء
+@msg	`columnType` is vertical, uniform, repeating or sliding	يجب أن تكون قيمة `columnType` هي vertical أو uniform أو repeating أو sliding
+@msg	`design` is a design name, or null for plain columns	يجب أن تكون قيمة `design` اسم تصميم، أو null للأعمدة العادية
+@msg	`each` is the value one design stands for, more than 0	تحدد `each` القيمة التي يمثلها تصميم واحد، ويجب أن تتجاوز 0
+@msg	`fractions` is chop or scale	يجب أن تكون قيمة `fractions` هي chop أو scale
+@msg	`ids` takes at most {MAX_INSPECT_IDS} ids	يقبل `ids` عددًا أقصاه {MAX_INSPECT_IDS} من المعرّفات
+@msg	`{name}` in the Word document is not UTF-8 or UTF-16 text	`{name}` في مستند Word ليس نصًا بترميز UTF-8 أو UTF-16
+@msg	`{name}` in the Word document nests elements more than {MAX_NESTING} deep	يحتوي `{name}` في مستند Word على عناصر متداخلة بعمق يتجاوز {MAX_NESTING}
+@msg	`{name}` is a built-in profile and stays	`{name}` ملف تعريف مضمن ولا يمكن إزالته
+@msg	a right-to-left character moves only up and down (dy)	لا يمكن تحريك المحرف المكتوب من اليمين إلى اليسار إلا للأعلى أو للأسفل (dy)
+@msg	give `event`, such as onclick	حدد `event`، مثل onclick
+@msg	give `file`, the JavaScript file's path or URL	حدد `file`، وهو مسار ملف JavaScript أو رابطه
+@msg	give `script`, the JavaScript the event runs ("" removes the event)	حدد `script`، وهو JavaScript الذي ينفذه الحدث (تزيل القيمة "" الحدث)
+@msg	lightColor must be an opaque RGB color in #rrggbb form	يجب أن تكون قيمة lightColor لون RGB معتمًا بصيغة #rrggbb
+@msg	missing `start` (the byte offset of a character)	القيمة `start` مفقودة (إزاحة البايت لمحرف)
+@msg	nineSliceGuides must be [left, top, right, bottom], each 0..1, with left + right < 1 and top + bottom < 1	يجب أن تكون قيمة nineSliceGuides هي [left, top, right, bottom]، وكل قيمة ضمن 0..1، مع left + right < 1 وtop + bottom < 1
+@msg	no character at byte {start}	لا يوجد محرف عند البايت {start}
+@msg	no profile named `{name}`	لا يوجد ملف تعريف باسم `{name}`
+@msg	pass newName, registration, exportType and/or nineSlice	مرّر newName أو registration أو exportType أو nineSlice، أو أي مجموعة منها
+@msg	preset must be the name of a print preset	يجب أن تكون قيمة preset اسم إعداد طباعة مسبق
+@msg	rect applies to raster formats, not {_1}	ينطبق rect على التنسيقات النقطية، وليس {_1}
+@msg	rect is [x, y, width, height] in points	يمثل rect القيم [x, y, width, height] بوحدة النقطة
+@msg	rect needs finite numbers and a positive width and height	يتطلب rect أعدادًا منتهية وعرضًا وارتفاعًا موجبين
+@msg	select the objects (or give their ids)	حدد الكائنات (أو مرّر معرّفاتها)
+@msg	size must be "small", "medium", "large" or a number of points over 0 up to {_1}	يجب أن تكون قيمة size هي "small" أو "medium" أو "large" أو عددًا موجبًا من النقاط بحد أقصى {_1}
+@msg	the RTF file has too many paragraphs or formatting changes to place as type (at most {MAX_PARAGRAPHS} paragraphs and {MAX_RUNS} runs)	يحتوي ملف RTF على فقرات أو تغييرات تنسيق أكثر من المسموح لوضعه ككتابة (الحد الأقصى {MAX_PARAGRAPHS} فقرة و{MAX_RUNS} مقطع تنسيق)
+@msg	the RTF file is too large to place as type (at most {_1} MB)	ملف RTF أكبر من المسموح لوضعه ككتابة (الحد الأقصى {_1} MB)
+@msg	the Word document has too much text or formatting to place as type (at most {MAX_PARAGRAPHS} paragraphs, {MAX_RUNS} runs and {_1} MB of text)	يحتوي مستند Word على نص أو تنسيق أكثر من المسموح لوضعه ككتابة (الحد الأقصى {MAX_PARAGRAPHS} فقرة و{MAX_RUNS} مقطع تنسيق و{_1} MB من النص)
+@msg	the character's size can't be measured	لا يمكن قياس حجم المحرف
+@msg	the design is too big to draw in every column of this graph	التصميم أكبر من المسموح لرسمه في كل عمود من هذا الرسم البياني
+@msg	the value of axis `{tag}` must be a number or null	يجب أن تكون قيمة المحور `{tag}` عددًا أو null
+@msg	to must be smooth or corner	يجب أن تكون قيمة to هي smooth أو corner
+@msg	x and y must be given together	يجب تحديد x وy معًا
+@msg	{file} isn't linked	{file} غير مرتبط

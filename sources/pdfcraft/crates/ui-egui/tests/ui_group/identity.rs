@@ -29,7 +29,9 @@ fn the_identity_name_signs_new_comments_and_is_remembered() {
     });
     h.run_steps(4);
     h.get_by_label_contains("Name on new comments");
-    // Replace the name in the field.
+    // Replace the name in the field (the preferences scroll to it in a 900-point window).
+    h.get_by_role_and_label(Role::TextInput, "Name on new comments").scroll_to_me();
+    h.run_steps(4);
     h.get_by_role_and_label(Role::TextInput, "Name on new comments").click();
     h.run_steps(1);
     h.key_press_modifiers(Modifiers::COMMAND, Key::A);
@@ -39,13 +41,7 @@ fn the_identity_name_signs_new_comments_and_is_remembered() {
     // New comments carry it. Wait for the page (and its text) to finish loading first: selecting
     // text that hasn't loaded selects nothing, and no highlight is made (seen on slow CI runners).
     h.state_mut().set_option("dialog", "none").unwrap();
-    for _ in 0..200 {
-        h.run_steps(2);
-        if !h.state().render_pending() {
-            break;
-        }
-        std::thread::sleep(std::time::Duration::from_millis(5));
-    }
+    crate::support::wait_until(&mut h, "the page's text layer", |app| app.views[0].glyph_screen_pos(0, 8).is_some() && !app.render_pending());
     h.state_mut().views[0].select_text(0, 4, 8);
     assert!(h.state_mut().execute("comment.highlight"));
     // Wait for the edit to land in the document (it applies on a later frame).
@@ -53,13 +49,7 @@ fn the_identity_name_signs_new_comments_and_is_remembered() {
         let doc = h.state().session.get(h.state().views[0].id).unwrap();
         doc.info.annotations.first().and_then(|a| a.author.clone())
     };
-    for _ in 0..100 {
-        if author(&h).is_some() {
-            break;
-        }
-        h.run_steps(1);
-        std::thread::sleep(std::time::Duration::from_millis(5));
-    }
+    crate::support::wait_until(&mut h, "the highlight", |app| app.session.get(app.views[0].id).is_some_and(|d| !d.info.annotations.is_empty()));
     assert_eq!(author(&h).as_deref(), Some("Grace Hopper"));
     // It survives a restart; an empty or missing name keeps the default, and a huge one is cut.
     let mut restored = PdfCraftApp::new();

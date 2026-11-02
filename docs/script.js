@@ -8,8 +8,8 @@
   let availableScreenshots = [];
   const lightbox = document.getElementById('lightbox');
   const texts = {
-    ar: { title: 'الحزمة الإبداعية العربية — 12 تطبيقًا، مشغّل واحد', draft: 'روابط النشر قيد التجهيز؛ سيظهر التنزيل عند نشر الإصدار.', published: 'Windows x64 · ملف Setup واحد · العربية وEnglish', error: 'تعذّر قراءة إعدادات الروابط. افتح هذه الصفحة عبر خادم محلي أو GitHub Pages.', download: 'تنزيل الحزمة لويندوز', release: 'عرض صفحة الإصدار' },
-    en: { title: 'Arabic Creative Suite — 12 applications, one launcher', draft: 'Publishing links are being prepared. The download appears with the published release.', published: 'Windows x64 · One Setup · Arabic & English', error: 'Could not read link settings. Open this page through a local server or GitHub Pages.', download: 'Download for Windows', release: 'View the release' }
+    ar: { title: 'الحزمة الإبداعية العربية — 13 تطبيقًا، مشغّل واحد', draft: 'روابط النشر قيد التجهيز؛ سيظهر التنزيل عند نشر الإصدار.', published: 'Windows x64 · ملف Setup واحد · العربية وEnglish', error: 'تعذّر قراءة إعدادات الروابط. افتح هذه الصفحة عبر خادم محلي أو GitHub Pages.', download: 'تنزيل الحزمة لويندوز', release: 'عرض صفحة الإصدار' },
+    en: { title: 'Arabic Creative Suite — 13 applications, one launcher', draft: 'Publishing links are being prepared. The download appears with the published release.', published: 'Windows x64 · One Setup · Arabic & English', error: 'Could not read link settings. Open this page through a local server or GitHub Pages.', download: 'Download for Windows', release: 'View the release' }
   };
   const githubName = /^[A-Za-z0-9_.-]+$/;
   function validGithubName(value) { return typeof value === 'string' && value.length > 0 && value.length <= 100 && value !== '.' && value !== '..' && githubName.test(value); }

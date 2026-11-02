@@ -1,4 +1,4 @@
-# Arabic — logical Unicode; contextual source and translation are separated by tabs.
+# Arabic — logical Unicode, independently reviewed edition.
 	   Angle	   الزاوية
 	   Blur	   ضبابية
 	   Corner Radius	   نصف قطر الزاوية
@@ -31,6 +31,7 @@
 	(no sequences)	(لا توجد تسلسلات)
 	+ Cmd	+ Cmd
 	+ Opt	+ Opt
+	0 fastest, 8 smallest	0 للأسرع، و8 لأصغر حجم
 	1 file	ملف واحد
 	10 Bit Black Point	نقطة الأسود بعمق 10 بت
 	10 Bit White Point	نقطة الأبيض بعمق 10 بت
@@ -39,6 +40,8 @@
 	24 bit	24 بت
 	29.97 fps Drop-Frame	29.97 إطار/ثانية مع إسقاط إطارات
 	29.97 fps Non Drop-Frame	29.97 إطار/ثانية دون إسقاط إطارات
+	32 bit	32 بت
+	32 bit float	عدد عشري بدقة 32 بت
 	35mm Prime	عدسة ثابتة 35 mm
 	3D Roll	التفاف ثلاثي الأبعاد
 	3D Rotate	دوران ثلاثي الأبعاد
@@ -54,6 +57,7 @@
 	A boxed label with a round pointer; move the label and the pointer follows.	تسمية ضمن مربع مع مؤشر دائري؛ حرك التسمية فيتبعها المؤشر.
 	A clean-room, pure-Rust non-linear video editor. Part of the ArtCraft family.	محرر فيديو غير خطي مفتوح المصدر، مطوّر بلغة Rust. مبني على مشروع من عائلة ArtCraft.
 	A cut sequence with transitions, effects and music	تسلسل مركّب مع انتقالات وتأثيرات وموسيقى
+	A file dialog is already open	توجد نافذة ملفات مفتوحة بالفعل
 	A news-style line that crawls in from the right and leaves at the left.	سطر بنمط الأخبار يدخل من اليمين ويخرج من اليسار.
 	A rounded tag that fits its text, with a status dot.	وسم مستدير يلائم نصه، مع نقطة حالة.
 	A title on a rounded card with a soft shadow.	عنوان على بطاقة مستديرة بظل ناعم.
@@ -111,6 +115,7 @@
 	Add pause	إضافة وقفة
 	Add pause inserts [pause 1s]. Change the number for a longer or shorter pause, e.g. [pause 500ms] or [pause 2s].	تضيف «إضافة وقفة» الرمز [pause 1s]. غيّر العدد لوقفة أطول أو أقصر، مثل [pause 500ms] أو [pause 2s].
 	Add to Favorites	إضافة إلى المفضلة
+	Add to favorites	إضافة إلى المفضلة
 	Add tracks automatically when editing source clips onto the Timeline	إضافة مسارات تلقائياً عند إدراج المقاطع المصدرية في المخطط الزمني
 	Add video tracks	إضافة مسارات فيديو
 	Add/Remove Keyframe	إضافة/إزالة إطار رئيسي
@@ -175,6 +180,7 @@
 	Amplify	تضخيم
 	Amplitude	السعة
 	Amplitude and Compression	السعة والضغط
+	An earlier start failed with the default graphics. Updating the graphics driver usually fixes this.	فشل تشغيل سابق باستخدام إعدادات الرسوم الافتراضية. عادةً ما يحل تحديث برنامج تشغيل الرسوم هذه المشكلة.
 	Analog	تماثلي
 	Analog Delay	تأخير تماثلي
 	Analyze	تحليل
@@ -196,6 +202,7 @@
 	Any	أي
 	Appearance	مظهر
 	Appearance Mode	وضع المظهر
+	Appearance Settings…	إعدادات المظهر…
 	Appearance…	المظهر…
 	Apple ProRes	Apple ProRes
 	Apple ProRes 422	Apple ProRes 422
@@ -560,6 +567,7 @@
 	Clear Out	مسح نقطة الخروج
 	Clear Poster Frame	مسح إطار المعاينة
 	Clear Recent Directories	مسح المجلدات الأخيرة
+	Clear Recent Files	مسح الملفات الأخيرة
 	Clear Selected Marker	مسح العلامة المحددة
 	Clear Transition	مسح الانتقال
 	Cleared {n} shortcut(s) of {command}	عدد الاختصارات الممسوحة للأمر {command}: {n}
@@ -668,7 +676,9 @@
 	Composite on Original	تركيب على الأصل
 	Composite on the GPU when available	التركيب ببطاقة الرسومات عند توفرها
 	Compound Blur	ضبابية مركّبة
+	Compression	ضغط
 	Compression Before Clipping	الضغط قبل تجاوز النطاق
+	Compression Level	مستوى الضغط
 	Compressor	ضاغط
 	Configure…	تهيئة…
 	Conflict: {key} is assigned to {commands} ({ctx})	تعارض: المفتاح {key} معيّن للأوامر {commands} ‏({ctx})
@@ -698,6 +708,7 @@
 	Corner Pin	تثبيت الزوايا
 	Corner Radius	نصف قطر الزاوية
 	Correction	تصحيح
+	Couldn't open your web browser	تعذر فتح متصفح الويب
 	Count	العدد
 	Countdown Sound Cues	إشارات صوتية للعد التنازلي
 	Counter-clockwise	عكس اتجاه عقارب الساعة
@@ -713,7 +724,9 @@
 	Create Proxies…	إنشاء نسخ بديلة…
 	Create Search Bin	إنشاء حاوية بحث
 	Create Sidecar File	إنشاء ملف مصاحب
+	Create a bin of subclips from each detected cut point	إنشاء حاوية للمقاطع الفرعية عند كل نقطة قطع مكتشفة
 	Create a caption track or import a caption file.	أنشئ مسار شرح نصي أو استورد ملف شرح نصي.
+	Create a clip marker at each detected cut point	إنشاء علامة مقطع عند كل نقطة قطع مكتشفة
 	Create a subclip for each detected cut point	إنشاء مقطع فرعي لكل نقطة قطع مكتشفة
 	Create captions	إنشاء الشرح النصي
 	Create ellipse mask	إنشاء قناع بيضاوي
@@ -840,6 +853,7 @@
 	Delete files older than	حذف الملفات الأقدم من
 	Delete oldest files when the cache exceeds	حذف أقدم الملفات عندما يتجاوز حجم الذاكرة المؤقتة
 	Delete selected captions	حذف أجزاء الشرح النصي المحددة
+	Delete this preset	حذف هذا الإعداد المسبق
 	Deleted preset “{active}”	حُذف الإعداد المسبق «{active}»
 	Deleted {n} file(s), {size}.	عدد الملفات المحذوفة {n}، ‏{size}.
 	Delete…	حذف…
@@ -876,6 +890,7 @@
 	Dip to Color	تلاشي إلى لون
 	Dip to White	تلاشي إلى الأبيض
 	Dip to White (Legacy)	تلاشي إلى الأبيض (قديم)
+	DirectX 12 only	DirectX 12 فقط
 	Direction	اتجاه
 	Directional	اتجاهي
 	Directional Blur	ضبابية اتجاهية
@@ -928,6 +943,7 @@
 	Drag an edge to change the clip's speed so it fills the new duration.	اسحب حافة لتغيير سرعة المقطع لملء المدة الجديدة.
 	Drag an edit point to ripple trim; later clips move to keep the gap closed.	اسحب نقطة تحرير للتشذيب مع الإزاحة؛ تتحرك المقاطع اللاحقة لإغلاق الفجوة.
 	Drag an edit point to roll it: the out of one clip and the in of the next move together.	اسحب نقطة تحرير للتشذيب باللفّ: تتحرك نقطة خروج المقطع ونقطة دخول المقطع التالي معاً.
+	Drag inward to round the corners	اسحب إلى الداخل لتدوير الزوايا
 	Drag the edge of a music clip to remix it to the new duration at musically matching beats.	اسحب حافة مقطع موسيقي لإعادة مزجه بالمدة الجديدة عند إيقاعات موسيقية متوافقة.
 	Drag to scroll the timeline.	اسحب لتمرير المخطط الزمني.
 	Drag: move · Alt-click: smooth/corner · Cmd-click: delete	سحب: تحريك · نقر مع Alt: ناعم/زاوية · نقر مع Cmd: حذف
@@ -1060,6 +1076,7 @@
 	Export Preset…	تصدير الإعداد المسبق…
 	Export formats	تنسيقات التصدير
 	Export presets	تصدير الإعدادات المسبقة
+	Export the labels to a preset file…	تصدير التسميات إلى ملف إعداد مسبق…
 	Export: no file chosen (agents: export.presets.export {path, names})	التصدير: لم يُختر ملف (للمساعدين: export.presets.export {path, names})
 	Export: no file chosen (agents: shortcuts.export {path})	التصدير: لم يُختر ملف (للمساعدين: shortcuts.export {path})
 	Exported frame to {path}	تم تصدير الإطار إلى {path}
@@ -1086,6 +1103,11 @@
 	Eyedropper: no picture to sample	القطّارة: لا توجد صورة لأخذ عينة
 	FCPXML…	FCPXML…
 	FFT Filter	مرشح FFT
+	FLAC	FLAC
+	FLAC (lossless)	FLAC (دون فقد)
+	FLAC 48 kHz 24-bit	FLAC 48 kHz 24 بت
+	FLAC stores whole-number samples only	يخزّن FLAC عينات ذات قيم صحيحة فقط
+	FLAC, stereo 48 kHz 24-bit, lossless	FLAC، صوت مجسّم بتردد 48 kHz وعمق 24 بت، دون فقد
 	Face Detection (protect skin tones)	اكتشاف الوجوه (حماية درجات البشرة)
 	Fade	تلاشي
 	Fade In	ظهور تدريجي
@@ -1401,6 +1423,8 @@
 	Hexagon	سداسي
 	Hide All Caption Tracks	إخفاء جميع مسارات الشرح النصي
 	Hide Back Face	إخفاء الوجه الخلفي
+	Hide FilmCraft	إخفاء FilmCraft
+	Hide Others	إخفاء الطبقات الأخرى
 	High	عالية
 	High Cutoff	حد القطع العالي
 	High Frequency Cut	قطع الترددات العالية
@@ -1469,6 +1493,7 @@
 	Import From	استيراد من
 	Import Image Sequence…	استيراد تسلسل صور…
 	Import Presets…	استيراد الإعدادات المسبقة…
+	Import a preset file…	استيراد ملف إعداد مسبق…
 	Import as Image Sequence	استيراد كتسلسل صور
 	Import captions file…	استيراد ملف شرح نصي…
 	Import from Media Browser	استيراد من متصفح الوسائط
@@ -1579,6 +1604,7 @@
 	Korean	الكورية
 	LUT	LUT
 	Label	التسمية
+	Label Color Presets	إعدادات ألوان التسميات المسبقة
 	Label Colors	ألوان التسميات
 	Label Defaults	افتراضيات التسميات
 	Label speakers	تسمية المتحدثين
@@ -1745,6 +1771,7 @@
 	MXF OP1a, DNxHR HQ (8-bit 4:2:2), 24-bit 48 kHz PCM, start timecode	MXF OP1a، ‏DNxHR HQ ‏(8 بت 4:2:2)، ‏PCM بعمق 24 بت وتردد 48 kHz، رمز زمني للبداية
 	MXF OP1a, H.264 High long GOP (0.3 bits per pixel), 24-bit 48 kHz PCM	MXF OP1a، ‏H.264 High بمجموعات إطارات طويلة (0.3 بت لكل بكسل)، ‏PCM بعمق 24 بت وتردد 48 kHz
 	MXF OP1a, ProRes 422 HQ, 24-bit 48 kHz PCM, start timecode	MXF OP1a، ‏ProRes 422 HQ، ‏PCM بعمق 24 بت وتردد 48 kHz، رمز زمني للبداية
+	MXF export writes integer PCM only	يدعم تصدير MXF عينات PCM ذات القيم الصحيحة فقط
 	Magenta	أرجواني
 	Magnification	التكبير
 	Magnify	تكبير
@@ -2125,6 +2152,7 @@
 	Open Ingest Settings	فتح إعدادات إدخال الوسائط
 	Open Most Recent	فتح أحدث عنصر
 	Open Project…	فتح مشروع…
+	Open Recent	فتح الملفات الأخيرة
 	Open Search	فتح بحث
 	Open a sequence to export	افتح تسلسلاً للتصدير
 	Open a sequence to see its transcript	افتح تسلسلاً لعرض نصه المفرّغ
@@ -2137,11 +2165,13 @@
 	Open in new window	فتح في نافذة جديدة
 	Open in place	فتح في المكان نفسه
 	Open new tab	فتح تبويب جديد
+	Open this address in your browser yourself:	افتح هذا العنوان يدويًا في متصفحك:
 	OpenEXR	OpenEXR
 	OpenEXR Sequence	تسلسل OpenEXR
 	OpenTimelineIO…	OpenTimelineIO…
 	OpenType	OpenType
 	Opened {url}	تاريخ الفتح {url}
+	Opens in your web browser: {url}	يُفتح في متصفح الويب: {url}
 	Opens up the shadows	يفتح درجات الظلال
 	Optical Flow	التدفق البصري
 	Options	خيارات
@@ -2410,6 +2440,7 @@
 	Rec. 2100	Rec. 2100
 	Rec. 601	Rec. 601
 	Rec. 709	Rec. 709
+	Recent	الأخيرة
 	Recent Directories	المجلدات الأخيرة
 	Recognize when different speakers are talking	تمييز المتحدثين المختلفين
 	Reconnect Full Resolution Media…	إعادة ربط الوسائط بالدقة الكاملة…
@@ -2486,6 +2517,7 @@
 	Remove Unused	إزالة العناصر غير المستخدمة
 	Remove filler words	إزالة كلمات الحشو
 	Remove from Favorites	إزالة من المفضلة
+	Remove from favorites	إزالة من المفضلة
 	Remove keyframe	إزالة الإطار الرئيسي
 	Rename	إعادة تسمية
 	Rename…	إعادة تسمية…
@@ -2552,6 +2584,7 @@
 	Reverse the order	عكس الترتيب
 	Revert	استعادة
 	Revert Remix	التراجع عن إعادة المزج
+	Revert to the preset's colors and names	استعادة ألوان الإعداد المسبق وأسمائه
 	Review	مراجعة
 	Right	يمين
 	Right - Left	اليمين – اليسار
@@ -2561,6 +2594,7 @@
 	Right channel to device output	القناة اليمنى إلى إخراج الجهاز
 	Right to left	من اليمين إلى اليسار
 	Ripple Delete	حذف مع إزاحة
+	Ripple Delete Head Frame	حذف الإطار الأول مع إغلاق الفراغ
 	Ripple Edit Tool	أداة التحرير مع الإزاحة
 	Ripple Edit, Shifting Trailing Clips	تحرير مع الإزاحة، وتحريك المقاطع اللاحقة
 	Ripple Sequence Markers	إزاحة علامات التسلسل
@@ -2593,6 +2627,7 @@
 	SFX	مؤثرات صوتية
 	SMPTE HD bars with 1 kHz reference tone	أشرطة SMPTE عالية الدقة مع نغمة مرجعية بتردد 1 kHz
 	Safe Margins	الهوامش الآمنة
+	Safe graphics mode: {mode}	وضع الرسوم الآمن: {mode}
 	Same as Project	مثل المشروع
 	Sample Rate	معدل أخذ العينات
 	Sample Rate:	معدل أخذ العينات:
@@ -2626,6 +2661,7 @@
 	Saved preset “{name}”	حُفظ الإعداد المسبق «{name}»
 	Saved template {path}	حُفظ القالب {path}
 	Saves the view, columns, sort, thumbnail and font size.	يحفظ العرض والأعمدة والفرز والصورة المصغّرة وحجم الخط.
+	Saves this session's log and shows it in your file manager.	يحفظ سجل هذه الجلسة ويعرضه في مدير الملفات.
 	Scale	تحجيم
 	Scale (Degrees)	المقياس (درجات)
 	Scale Amount	مقدار التحجيم
@@ -2816,11 +2852,14 @@
 	Show in the Preset menu	عرض في قائمة الإعدادات المسبقة
 	Show or hide {color} markers	عرض أو إخفاء العلامات باللون {color}
 	Show system compatibility issues at startup	عرض مشكلات توافق النظام عند بدء التشغيل
+	Show the presets folder	عرض مجلد الإعدادات المسبقة
 	Show {n}	إظهار {n}
 	Show/Hide Effects and Sends	إظهار/إخفاء التأثيرات والإرسال
 	Show/Hide Tracks	إظهار/إخفاء المسارات
 	Show/Hide Tracks…	إظهار/إخفاء المسارات…
 	Show:	إظهار:
+	Shows a report on this computer.	يعرض تقريرًا عن هذا الجهاز.
+	Shows the version, community links and credits in a FilmCraft window.	يعرض الإصدار وروابط المجتمع والمساهمين في نافذة FilmCraft.
 	Shrink	تقليص
 	Shutter Angle	زاوية الغالق
 	Shuttle Left	تصفح سريع لليسار
@@ -3099,6 +3138,7 @@
 	Text to Speech	تحويل النص إلى كلام
 	Text to Speech: {e}	تحويل النص إلى كلام: {e}
 	TextPanel	لوحة النص
+	The default graphics are used from the next start.	ستُستخدم إعدادات الرسوم الافتراضية عند التشغيل التالي.
 	The language changed but could not be saved: {e}	تغيّرت اللغة لكن تعذر حفظها: {e}
 	The media cache holds render previews of unsaved projects and other files FilmCraft can recreate. Deleting them is always safe; FilmCraft rebuilds them as needed.	تحتفظ ذاكرة الوسائط المؤقتة بمعاينات تصيير المشاريع غير المحفوظة وملفات أخرى يستطيع FilmCraft إعادة إنشائها. يمكن حذفها بأمان؛ يعيد FilmCraft إنشاءها عند الحاجة.
 	The project had not been saved yet.	لم يُحفظ المشروع بعد.
@@ -3291,6 +3331,7 @@
 	Upper Left	أعلى اليسار
 	Upper Right	أعلى اليمين
 	Use Color Noise	استخدام ضوضاء ملونة
+	Use Default Graphics	استخدام إعدادات الرسوم الافتراضية
 	Use Effect Shutter Angle	استخدام زاوية غالق التأثير
 	Use End Color	استخدام لون النهاية
 	Use File	استخدام ملف
@@ -3487,6 +3528,8 @@
 	YouTube 2160p 4K Ultra HD	YouTube ‏2160p بدقة فائقة 4K
 	Z Position	موضع Z
 	Z Rotation	دوران Z
+	ZIP (1 scan line)	ZIP (سطر مسح واحد)
+	ZIP (16 scan lines)	ZIP (16 سطر مسح)
 	Zoom	التكبير
 	Zoom Amount	مقدار التقريب
 	Zoom Blur	ضبابية التقريب
@@ -3511,11 +3554,13 @@
 	no Chinese font is installed on this system; the interface stays in English	لا يوجد خط صيني مثبت على هذا النظام؛ ستبقى الواجهة بالإنجليزية
 	no GPU adapter: the CPU compositor is used	لا يوجد محول رسوميات: يُستخدم مركّب الصور على المعالج المركزي
 	no Japanese font is installed on this system; the interface stays in English	لا يوجد خط ياباني مثبت على هذا النظام؛ ستبقى الواجهة بالإنجليزية
+	no Korean font is installed on this system; the interface stays in English	لا يوجد خط كوري مثبّت على هذا النظام؛ ستبقى الواجهة بالإنجليزية
 	not available in this session	غير متاح في هذه الجلسة
 	out	خارج
 	pre 	قبل 
 	second(s)	ثوانٍ
 	seconds	ثوانٍ
+	software rendering	التصيير البرمجي
 	tracks	المسارات
 	vertical	عمودي
 	with:	مع:
@@ -3530,6 +3575,7 @@
 	{key} can't be used as a shortcut	لا يمكن استخدام {key} اختصارًا
 	{mode} · no clip	{mode} · لا يوجد مقطع
 	{mode} · no sequence	{mode} · لا يوجد تسلسل
+	{name} (Modified)	{name} (معدّل)
 	{name} (Simplified)	{name} (مبسّط)
 	{name} (copy)	{name} (نسخة)
 	{name} (user)	{name} (مستخدم)

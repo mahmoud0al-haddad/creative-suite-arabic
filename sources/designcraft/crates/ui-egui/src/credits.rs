@@ -7,6 +7,8 @@ use std::cmp::Ordering;
 
 use egui::RichText;
 
+use crate::i18n::{tr, tr_context};
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Contributor {
     pub login: &'static str,
@@ -215,46 +217,42 @@ pub fn contributors_ui(ui: &mut egui::Ui, lang: &str) {
     let id = egui::Id::new("credits_view");
     let mut v = ui.data_mut(|d| d.get_temp::<View>(id)).unwrap_or_default();
     ui.horizontal_wrapped(|ui| {
-        crate::rtl::label(ui, crate::i18n::tr(lang, "Show"));
+        ui.label(tr(lang, "Show"));
         for m in NameMode::ALL {
-            if ui.selectable_label(v.names == m, crate::rtl::widget(ui, crate::i18n::tr(lang, m.label()))).clicked() {
+            if ui.selectable_label(v.names == m, tr(lang, m.label())).clicked() {
                 v.names = m;
             }
         }
         ui.separator();
-        crate::rtl::label(ui, crate::i18n::tr(lang, "Sort"));
-        egui::ComboBox::from_id_salt("credits_sort").selected_text(crate::rtl::widget(ui, crate::i18n::tr(lang, v.key.label().0))).show_ui(
-            ui,
-            |ui| {
-                for k in SortKey::ALL {
-                    if ui.selectable_label(v.key == k, crate::rtl::widget(ui, crate::i18n::tr(lang, k.label().0))).clicked() {
-                        v.key = k;
-                        v.ascending = k.default_ascending();
-                    }
+        ui.label(tr(lang, "Sort"));
+        egui::ComboBox::from_id_salt("credits_sort").selected_text(tr(lang, v.key.label().0)).show_ui(ui, |ui| {
+            for k in SortKey::ALL {
+                if ui.selectable_label(v.key == k, tr(lang, k.label().0)).clicked() {
+                    v.key = k;
+                    v.ascending = k.default_ascending();
                 }
-            },
-        );
-        if ui.button(if v.ascending { "▲" } else { "▼" }).on_hover_text(crate::rtl::widget(ui, crate::i18n::tr(lang, "Reverse the order"))).clicked()
-        {
+            }
+        });
+        if ui.button(if v.ascending { "▲" } else { "▼" }).on_hover_text(tr(lang, "Reverse the order")).clicked() {
             v.ascending = !v.ascending;
         }
         ui.separator();
-        if ui.selectable_label(!v.table, crate::rtl::widget(ui, crate::i18n::tr(lang, "Grab bag"))).clicked() {
+        if ui.selectable_label(!v.table, tr(lang, "Grab bag")).clicked() {
             v.table = false;
         }
-        if ui.selectable_label(v.table, crate::rtl::widget(ui, crate::i18n::tr(lang, "Table"))).clicked() {
+        if ui.selectable_label(v.table, tr(lang, "Table")).clicked() {
             v.table = true;
         }
     });
     let list = sorted(CONTRIBUTORS, v.names, v.key, v.ascending);
-    crate::rtl::label(
-        ui,
-        RichText::new(crate::i18n::message(lang, &format!("{} contributors · {} commits", list.len(), group(TOTAL_COMMITS)))).small().weak(),
-    );
+    let totals = tr(lang, "{contributors} contributors · {commits} commits")
+        .replace("{contributors}", &list.len().to_string())
+        .replace("{commits}", &group(TOTAL_COMMITS));
+    ui.label(RichText::new(totals).small().weak());
     ui.separator();
     egui::ScrollArea::both().auto_shrink([false, false]).show(ui, |ui| {
         if list.is_empty() {
-            crate::rtl::label(ui, crate::i18n::tr(lang, "No contributor data was built into this copy."));
+            ui.label(tr(lang, "No contributor data was built into this copy."));
         } else if v.table {
             table(ui, &list, &mut v, lang);
         } else {
@@ -276,11 +274,8 @@ fn table(ui: &mut egui::Ui, list: &[&Contributor], v: &mut View, lang: &str) {
     egui::Grid::new("credits_table").striped(true).num_columns(SortKey::ALL.len()).show(ui, |ui| {
         for k in SortKey::ALL {
             let arrow = if v.key == k { if v.ascending { " ▲" } else { " ▼" } } else { "" };
-            if ui
-                .button(RichText::new(format!("{}{arrow}", crate::i18n::tr(lang, k.label().1))).strong())
-                .on_hover_text(crate::rtl::widget(ui, crate::i18n::tr(lang, k.label().0)))
-                .clicked()
-            {
+            let header = format!("{}{arrow}", tr_context(lang, k.label().1, "contributors"));
+            if ui.button(RichText::new(header).strong()).on_hover_text(tr(lang, k.label().0)).clicked() {
                 if v.key == k {
                     v.ascending = !v.ascending;
                 } else {
@@ -310,14 +305,14 @@ fn table(ui: &mut egui::Ui, list: &[&Contributor], v: &mut View, lang: &str) {
 /// About ▸ Models: AI models credited in Co-Authored-By trailers.
 pub fn models_ui(ui: &mut egui::Ui, lang: &str) {
     if MODELS.is_empty() {
-        crate::rtl::label(ui, crate::i18n::tr(lang, "No model credits were built into this copy."));
+        ui.label(tr(lang, "No model credits were built into this copy."));
         return;
     }
     let assisted: u64 = MODELS.iter().map(|m| m.commits).max().unwrap_or(0).max(1);
     egui::ScrollArea::both().auto_shrink([false, false]).show(ui, |ui| {
         egui::Grid::new("credits_models").striped(true).num_columns(6).show(ui, |ui| {
             for h in ["Company", "Model", "Version", "Commits", "% of all commits", "Lines +/−"] {
-                crate::rtl::label(ui, RichText::new(crate::i18n::tr(lang, h)).strong());
+                ui.label(RichText::new(tr(lang, h)).strong());
             }
             ui.end_row();
             for m in MODELS {

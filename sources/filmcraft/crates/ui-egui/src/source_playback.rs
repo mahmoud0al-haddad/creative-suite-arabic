@@ -202,7 +202,7 @@ impl FilmcraftApp {
         let error = self.source_playback.failure.lock().unwrap_or_else(std::sync::PoisonError::into_inner).take();
         if let Some(error) = error {
             self.stop_source();
-            self.ui.status = error;
+            self.ui.status = crate::diagnostics::message(&error.to_string());
             return;
         }
         let now = ctx.input(|i| i.time);
@@ -212,6 +212,11 @@ impl FilmcraftApp {
             self.source_playback.clock.anchor_time = now;
             self.source_playback.clock.audio_seen = (0, now);
             self.start_source_audio();
+        }
+        if self.source_playback.clock.audio_clock
+            && let Some(audio) = self.audio.as_mut()
+        {
+            audio.recover();
         }
         let clock = &mut self.source_playback.clock;
         if clock.anchor_time < 0.0 {
@@ -245,7 +250,7 @@ impl FilmcraftApp {
                 Ok(_) => self.source_playback.shown = self.session.state.source_playhead,
                 Err(e) => {
                     self.stop_source();
-                    self.ui.status = e.to_string();
+                    self.ui.status = crate::diagnostics::message(&e.to_string());
                     return;
                 }
             }
@@ -262,7 +267,7 @@ impl FilmcraftApp {
             let start = self.source_playback.range_start.unwrap_or(range.start).max(view.start);
             if let Err(e) = self.session.execute("source.setPlayhead", json!({"time":start.0})) {
                 self.stop_source();
-                self.ui.status = e.to_string();
+                self.ui.status = crate::diagnostics::message(&e.to_string());
                 return;
             }
             let time = self.session.state.source_playhead;
@@ -279,7 +284,7 @@ impl FilmcraftApp {
             Ok(_) => self.source_playback.shown = self.session.state.source_playhead,
             Err(e) => {
                 self.stop_source();
-                self.ui.status = e.to_string();
+                self.ui.status = crate::diagnostics::message(&e.to_string());
                 return;
             }
         }

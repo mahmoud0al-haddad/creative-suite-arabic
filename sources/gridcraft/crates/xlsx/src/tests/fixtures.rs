@@ -48,7 +48,7 @@ fn shared_formulas_and_value_types() {
 
 #[test]
 fn workbook_settings_names_and_states() {
-    let wb_extra = r#"<workbookPr date1904="1"/><workbookProtection lockStructure="1"/><bookViews><workbookView activeTab="0"/></bookViews>"#;
+    let wb_extra = r#"<workbookPr date1904="1"/><workbookProtection workbookPassword="83AF" lockStructure="1"/><bookViews><workbookView activeTab="0"/></bookViews>"#;
     // Defined names must come after <sheets>; build the workbook by hand.
     let wbx = format!(
         r#"<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">{wb_extra}<sheets><sheet name="A" sheetId="1" r:id="rId1"/><sheet name="B" sheetId="2" state="veryHidden" r:id="rId2"/><sheet name="Chart" sheetId="3" r:id="rId3"/><sheet name="C" sheetId="4" state="hidden" r:id="rId4"/></sheets>
@@ -69,6 +69,9 @@ fn workbook_settings_names_and_states() {
     assert_eq!(wb.sheets.len(), 3);
     assert_eq!(wb.date_system, DateSystem::D1904);
     assert!(wb.protected_structure);
+    // The legacy structure password ("password" hashes to 83AF) is kept and really verifies.
+    let pw = wb.structure_password.as_ref().unwrap();
+    assert!(pw.verify("password").unwrap() && !pw.verify("Password").unwrap());
     assert_eq!(wb.calc.mode, CalcMode::Manual);
     assert!(wb.calc.iterative);
     assert_eq!(wb.calc.max_iterations, 50);
@@ -220,7 +223,7 @@ fn hyperlinks_comments_tables_validation_filters() {
       <printOptions gridLines="1" horizontalCentered="1"/><pageMargins left="0.5" right="0.5" top="1" bottom="1" header="0.4" footer="0.4"/>
       <headerFooter><oddHeader>&amp;CTitle</oddHeader><oddFooter>Page &amp;P</oddFooter></headerFooter>
       <rowBreaks count="1"><brk id="10" max="16383" man="1"/></rowBreaks>
-      <sheetProtection sheet="1" formatCells="0" sort="0" password="CC1A"/>
+      <sheetProtection sheet="1" formatCells="0" sort="0" password="CBEB"/>
       <tableParts count="1"><tablePart r:id="rId2"/></tableParts>
       <extLst><ext uri="{CCE6A557-97BC-4b89-ADB6-D9C93CAAB3DF}"><x14:dataValidations xmlns:x14="x" xmlns:xm="m" count="1"><x14:dataValidation type="list"><x14:formula1><xm:f>Other!$A$1:$A$3</xm:f></x14:formula1><xm:sqref>G1:G4</xm:sqref></x14:dataValidation></x14:dataValidations></ext>
         <ext uri="{05C60535-1F16-4fd2-B633-F4F36F0B64E0}"><x14:sparklineGroups xmlns:x14="x" xmlns:xm="m"><x14:sparklineGroup type="column" markers="1"><x14:colorSeries rgb="FF376092"/><x14:sparklines><x14:sparkline><xm:f>Data!A1:E1</xm:f><xm:sqref>F1</xm:sqref></x14:sparkline></x14:sparklines></x14:sparklineGroup></x14:sparklineGroups></ext></extLst>"#;
@@ -267,9 +270,69 @@ Check this</t></r></text></comment></commentList></comments>"#;
     assert_eq!(s.print.row_breaks, vec![10]);
     let p = s.protection.as_ref().unwrap();
     assert!(p.format_cells && p.sort && !p.insert_rows && p.select_locked);
-    assert!(rep.warnings.iter().any(|w| w.contains("password")));
+    // The legacy sheet password is imported (CBEB is the hash of "test") and verifies.
+    let pw = p.password.as_ref().unwrap();
+    assert!(pw.verify("test").unwrap() && !pw.verify("Test").unwrap());
+    assert!(!rep.warnings.iter().any(|w| w.contains("password")), "{:?}", rep.warnings);
     assert_eq!(s.sparklines.len(), 1);
     assert_eq!(s.sparklines[0].kind, gridcraft_model::SparklineKind::Column);
+}
+
+/// The sheet's hyperlinks as written: cell, relationship target (external only), location.
+fn written_links(bytes: &[u8]) -> Vec<(String, Option<String>, Option<String>)> {
+    let mut pkg = crate::package::Package::open(bytes).unwrap();
+    let rels = pkg.rels("xl/worksheets/sheet1.xml").unwrap();
+    let sheet = pkg.read_xml("xl/worksheets/sheet1.xml").unwrap().unwrap();
+    let Some(links) = sheet.child("hyperlinks") else { return vec![] };
+    links
+        .kids("hyperlink")
+        .map(|h| {
+            let rel = h.attr("id").map(|id| rels.iter().find(|r| r.id == id).unwrap());
+            let target = rel.map(|r| {
+                assert!(r.external && r.kind == "hyperlink", "{r:?}");
+                r.target.clone()
+            });
+            (h.attr("ref").unwrap().to_string(), target, h.attr("location").map(str::to_string))
+        })
+        .collect()
+}
+
+/// A link to another file is a relationship (`TargetMode="External"`) in the file, with the place in
+/// it as `location`. Saved as a bare `location`, Excel takes it for a place in this workbook and the
+/// link no longer opens the file (#800). C16 is Apache POI's `WithMoreVariousData.xlsx`.
+#[test]
+fn hyperlink_to_another_file_stays_external() {
+    let body = r#"<sheetData/><hyperlinks><hyperlink ref="C16" r:id="rId2"/><hyperlink ref="C17" r:id="rId3" location="Sheet1!A2"/>
+      <hyperlink ref="C18" r:id="rId4"/><hyperlink ref="C19" location="Data!B2"/><hyperlink ref="C20" r:id="rId5"/></hyperlinks>"#;
+    let rel = |id: &str, target: &str| {
+        format!(
+            r#"<Relationship Id="{id}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="{target}" TargetMode="External"/>"#
+        )
+    };
+    let sheet_rels = format!(
+        r#"<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">{}{}{}{}</Relationships>"#,
+        rel("rId2", "WithVariousData.xlsx"),
+        rel("rId3", "Source.xlsx"),
+        rel("rId4", r"..\Reports\Q1.xlsx"),
+        rel("rId5", "https://example.com/a.xlsx"),
+    );
+    let bytes = minimal(body, &[("xl/worksheets/_rels/sheet1.xml.rels", &sheet_rels)], "", "");
+    let (wb, _) = read_xlsx(&bytes).unwrap();
+    let s = wb.sheet(0).unwrap();
+    assert!(s.hyperlinks[&at("C16")].external && !s.hyperlinks[&at("C19")].external);
+
+    let some = |s: &str| Some(s.to_string());
+    let links = written_links(&crate::write_xlsx(&wb).unwrap());
+    assert_eq!(
+        links,
+        vec![
+            ("C16".into(), some("WithVariousData.xlsx"), None),
+            ("C17".into(), some("Source.xlsx"), some("Sheet1!A2")),
+            ("C18".into(), some(r"..\Reports\Q1.xlsx"), None),
+            ("C19".into(), None, some("Data!B2")),
+            ("C20".into(), some("https://example.com/a.xlsx"), None),
+        ]
+    );
 }
 
 #[test]
@@ -447,4 +510,70 @@ fn chartex_parts_as_excel_expects_them() {
     assert!(back.names.is_empty());
     let s = &back.sheet(0).unwrap().charts[0].series[0];
     assert_eq!((s.name.as_deref(), s.categories.as_deref(), s.values.as_str()), (Some("Data!$B$1"), Some("Data!$A$2:$A$5"), "Data!$B$2:$B$5"));
+}
+
+/// #377: a WordArt-style text box keeps its run size, bold, typeface, text fill and outline, its
+/// centring (horizontal and vertical) and its "no outline" shape line, through a round trip.
+#[test]
+fn text_box_formatting_is_read_and_written() {
+    let drawing = r#"<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><xdr:twoCellAnchor>
+      <xdr:from><xdr:col>1</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>2</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:to><xdr:col>7</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>8</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to>
+      <xdr:sp macro="" textlink=""><xdr:nvSpPr><xdr:cNvPr id="2" name="TextBox 1"/><xdr:cNvSpPr txBox="1"/></xdr:nvSpPr>
+      <xdr:spPr><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill><a:schemeClr val="bg1"/></a:solidFill><a:ln w="9525" cmpd="sng"><a:noFill/></a:ln></xdr:spPr>
+      <xdr:txBody><a:bodyPr vertOverflow="clip" horzOverflow="clip" wrap="square" rtlCol="0" anchor="ctr"/><a:lstStyle/>
+      <a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="en-US" sz="5400" b="1"><a:ln w="19050"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill></a:ln><a:solidFill><a:schemeClr val="bg1"/></a:solidFill><a:latin typeface="Arial Black"/></a:rPr><a:t>DRAFT</a:t></a:r></a:p></xdr:txBody></xdr:sp><xdr:clientData/></xdr:twoCellAnchor></xdr:wsDr>"#;
+    let srels = r#"<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing1.xml"/></Relationships>"#;
+    let bytes = minimal(
+        r#"<sheetData/><drawing r:id="rId1"/>"#,
+        &[("xl/worksheets/_rels/sheet1.xml.rels", srels), ("xl/drawings/drawing1.xml", drawing)],
+        "",
+        "",
+    );
+    let (wb, _) = read_xlsx(&bytes).unwrap();
+    let sp = &wb.sheet(0).unwrap().shapes[0];
+    assert_eq!(sp.kind, gridcraft_model::ShapeKind::TextBox);
+    assert_eq!(sp.text, "DRAFT");
+    let f = &sp.format;
+    assert!(f.no_line, "a:ln/a:noFill: no border");
+    assert_eq!(f.font_size, Some(54.0));
+    assert!(f.bold && !f.italic);
+    assert_eq!(f.font.as_deref(), Some("Arial Black"));
+    assert_eq!(f.text_color, Some(Color::Theme(0, 0)));
+    assert_eq!(f.text_outline, Some((Color::Theme(1, 0), 1.5)));
+    assert_eq!(f.align, Some(gridcraft_model::ShapeTextAlign::Center));
+    assert_eq!(f.anchor, Some(gridcraft_model::ShapeTextAnchor::Middle));
+
+    let (back, _) = read_xlsx(&crate::write_xlsx(&wb).unwrap()).unwrap();
+    let g = &back.sheet(0).unwrap().shapes[0].format;
+    let rgb = |c: Option<Color>| c.and_then(|c| c.resolve(&wb.theme));
+    assert_eq!((g.no_line, g.font_size, g.bold, g.font.as_deref()), (true, Some(54.0), true, Some("Arial Black")));
+    assert_eq!((g.align, g.anchor), (f.align, f.anchor));
+    assert_eq!(rgb(g.text_color), rgb(f.text_color));
+    assert_eq!(rgb(g.text_outline.map(|o| o.0)), rgb(f.text_outline.map(|o| o.0)));
+    assert_eq!(g.text_outline.map(|o| o.1), Some(1.5));
+}
+
+/// `_xludf.` marks a user-defined call even when a built-in has the same name; dropping it turns
+/// the call into the built-in, and `_xludf.EOMONTH()` into a call Excel repairs away (#726).
+#[test]
+fn user_defined_function_prefix_round_trips() {
+    let cases =
+        [("A1", "_xludf.EOMONTH()"), ("A2", "_xludf.CONCAT(\"a\",\"b\")"), ("A3", "_xludf.SUM(1,2)"), ("A4", "MYUDF(1)"), ("A5", "_xludf.MYUDF(1)")];
+    let rows: String = cases
+        .iter()
+        .enumerate()
+        .map(|(i, (a, f))| format!(r#"<row r="{}"><c r="{a}"><f>{}</f></c></row>"#, i + 1, f.replace('"', "&quot;")))
+        .collect();
+    let (wb, _) = read_xlsx(&minimal(&format!("<sheetData>{rows}</sheetData>"), &[], "", "")).unwrap();
+    let s = wb.sheet(0).unwrap();
+    for (a, f) in cases {
+        assert_eq!(s.cell(at(a)).unwrap().formula.as_ref().unwrap().text, f, "read {a}");
+    }
+    let bytes = crate::write_xlsx(&wb).unwrap();
+    let mut pkg = crate::package::Package::open(&bytes).unwrap();
+    let sheet = pkg.read_xml("xl/worksheets/sheet1.xml").unwrap().unwrap();
+    for (a, f) in cases {
+        let cell = sheet.child("sheetData").unwrap().kids("row").flat_map(|r| r.kids("c")).find(|c| c.attr("r") == Some(a)).unwrap();
+        assert_eq!(cell.child("f").unwrap().text, f, "written {a}");
+    }
 }

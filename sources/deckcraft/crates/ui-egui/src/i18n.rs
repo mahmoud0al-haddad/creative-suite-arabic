@@ -51,6 +51,15 @@ pub fn switcher(ui: &mut egui::Ui, language: &mut Language) {
         }
     });
 }
+/// Handout count is interface vocabulary, not a document value.
+pub(crate) fn slide_count(n: u8) -> String {
+    if current() == Language::Ar {
+        std::format!("عدد الشرائح: {n}")
+    } else {
+        std::format!("{n} Slide{}", if n == 1 { "" } else { "s" })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -115,6 +124,10 @@ pub fn error_text(message: &str) -> String {
     if CURRENT.get() != Language::Ar {
         return message.to_string();
     }
+    let dynamic = crate::diagnostic_display::display_message(message);
+    if dynamic != message {
+        return dynamic;
+    }
     let translated = t(message);
     if translated != message {
         return translated.to_string();
@@ -125,7 +138,7 @@ pub fn error_text(message: &str) -> String {
         ("unsupported: ", "Unsupported: {message}"),
     ] {
         if let Some(detail) = message.strip_prefix(prefix) {
-            return error_format(template, &[("message", t(detail).to_string())]);
+            return error_format(template, &[("message", crate::diagnostic_display::display_message(detail))]);
         }
     }
     if let Some(command) = message.strip_prefix("unknown command `").and_then(|value| value.strip_suffix('`')) {
@@ -135,7 +148,7 @@ pub fn error_text(message: &str) -> String {
         if let Some((command, detail)) = message.strip_prefix(prefix).and_then(|value| value.split_once("`: ")) {
             return error_format(
                 "Invalid parameters for `{command}`: {message}",
-                &[("command", command.to_string()), ("message", t(detail).to_string())],
+                &[("command", command.to_string()), ("message", crate::diagnostic_display::display_message(detail))],
             );
         }
     }
@@ -145,7 +158,7 @@ pub fn error_text(message: &str) -> String {
                 if let Some((command, detail)) = value.split_once(marker) {
                     return error_format(
                         "Command `{command}` is not available: {message}",
-                        &[("command", command.to_string()), ("message", t(detail).to_string())],
+                        &[("command", command.to_string()), ("message", crate::diagnostic_display::display_message(detail))],
                     );
                 }
             }
@@ -199,5 +212,44 @@ mod mixed_format_tests {
     fn named_and_positional_values_keep_their_own_indices_and_literal_braces() {
         super::set_current(super::Language::En);
         assert_eq!(super::format("{name}: {} / {}", &[("name", "اسم {x}".into()), ("", "abc".into()), ("", "123".into())]), "اسم {x}: abc / 123");
+    }
+}
+
+#[cfg(test)]
+mod oct19_display_tests {
+    #[test]
+    fn actual_icon_and_picture_gallery_metadata_has_arabic_display_labels() {
+        for icon in deckcraft_engine::icons::icons() {
+            for label in [icon.label, icon.category] {
+                assert_ne!(super::Language::Ar.tr(label), label, "icon metadata: {label}");
+                assert_eq!(super::Language::En.tr(label), label);
+            }
+        }
+        for (_, label) in deckcraft_engine::cmd::picture_style::STYLES {
+            assert_ne!(super::Language::Ar.tr(label), label, "picture style: {label}");
+            assert_eq!(super::Language::En.tr(label), label);
+        }
+        for (_, label) in deckcraft_engine::cmd::artistic::EFFECTS {
+            assert_ne!(super::Language::Ar.tr(label), *label, "artistic effect: {label}");
+            assert_eq!(super::Language::En.tr(label), *label);
+        }
+    }
+
+    #[test]
+    fn dynamic_labels_keep_opaque_values_and_english_behavior() {
+        super::set_current(super::Language::Ar);
+        assert_eq!(super::t("Photo\nAlbum"), "ألبوم\nالصور");
+        assert_eq!(super::slide_count(1), "عدد الشرائح: 1");
+        assert_eq!(super::slide_count(12), "عدد الشرائح: 12");
+        assert_eq!(super::error_text("Slide 3 changed"), "الشريحة 3 معدّلة");
+        assert_eq!(super::error_text("Slide 3 deleted"), "الشريحة 3 محذوفة");
+        assert_eq!(super::error_text("Slide 3"), "الشريحة 3");
+        let name = "ملف O'Brien {literal} File123";
+        assert_eq!(super::error_text(&std::format!("Compared with {name}")), std::format!("تمت المقارنة مع {name}"));
+        super::set_current(super::Language::En);
+        assert_eq!(super::slide_count(1), "1 Slide");
+        assert_eq!(super::slide_count(12), "12 Slides");
+        let text = std::format!("Compared with {name}");
+        assert_eq!(super::error_text(&text), text);
     }
 }

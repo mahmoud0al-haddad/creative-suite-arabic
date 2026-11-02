@@ -87,7 +87,28 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let after_arrow = frame(&ctx, &mut text, vec![key(Key::ArrowRight, Modifiers::NONE)])?;
     let after_arrow_cursor = after_arrow.cursor_range.map(|r| usize::from(r.primary.index));
     let after_arrow_x = after_arrow.cursor_range.map(|r| after_arrow.galley.pos_from_cursor(r.primary).center().x);
+    text = "abc بجد".into();
+    let _ = frame(&ctx, &mut text, vec![])?;
+    let select_arabic = || {
+        let id = Id::new("mixed-input");
+        let mut state = egui::text_edit::TextEditState::load(&ctx, id).unwrap_or_default();
+        state.cursor.set_char_range(Some(CCursorRange::two(CCursor::new(5), CCursor::new(6))));
+        state.store(&ctx, id);
+        ctx.memory_mut(|m| m.request_focus(id));
+    };
+    select_arabic();
+    let collapse_right = frame(&ctx, &mut text, vec![key(Key::ArrowRight, Modifiers::NONE)])?;
+    let collapse_right = collapse_right.cursor_range.map(|c| (usize::from(c.primary.index), usize::from(c.secondary.index)));
+    assert_eq!(collapse_right, Some((5, 5)), "RTL selection Right collapses to visual right");
+    select_arabic();
+    let collapse_left = frame(&ctx, &mut text, vec![key(Key::ArrowLeft, Modifiers::NONE)])?;
+    let collapse_left = collapse_left.cursor_range.map(|c| (usize::from(c.primary.index), usize::from(c.secondary.index)));
+    assert_eq!(collapse_left, Some((6, 6)), "RTL selection Left collapses to visual left");
+    let _ = frame(&ctx, &mut text, vec![Event::Text("س".into())])?;
+    assert_eq!(text, "abc بجسد", "typing after collapse uses logical source order");
+    let after_rtl_collapse_typing = text.clone();
     let report = serde_json::json!({
+        "rtl_selection_right":collapse_right, "rtl_selection_left":collapse_left, "after_rtl_collapse_typing":after_rtl_collapse_typing,
         "original_logical_text":original, "logical_char_count":original.chars().count(),
         "rendered_glyphs":glyphs,"logical_carets":carets,
         "latin_a_expected_logical_index":6,"latin_a_hit_test_index":usize::from(hit.index),

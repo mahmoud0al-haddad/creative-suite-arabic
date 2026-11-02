@@ -16,6 +16,7 @@ pub fn default_gradient(base: ColorRef, angle: f64) -> Gradient {
     let mut dark = base.clone();
     dark.mods.push(ColorTransform::LumMod(60_000));
     Gradient {
+        tile: [0.0; 4],
         stops: vec![GradientStop { pos: 0.0, color: base }, GradientStop { pos: 1.0, color: dark }],
         shape: GradientShape::Linear { angle, scaled: false },
         rotate_with_shape: true,
@@ -136,6 +137,7 @@ pub fn gradient_editor(ui: &mut Ui, id: &str, g: &Gradient, sc: &ColorScheme) ->
                 ..default_gradient(base.clone(), 45.0)
             },
             Gradient {
+                tile: [0.0; 4],
                 stops: vec![GradientStop { pos: 0.0, color: light }, GradientStop { pos: 1.0, color: dark }],
                 shape: GradientShape::Path { path: "circle".into(), focus: [0.5, 0.5, 0.5, 0.5] },
                 rotate_with_shape: true,
@@ -165,7 +167,7 @@ pub fn gradient_editor(ui: &mut Ui, id: &str, g: &Gradient, sc: &ColorScheme) ->
         GradientShape::Path { .. } => "Radial",
     };
     ui.horizontal(|ui| {
-        ui.add_sized(vec2(70.0, 20.0), egui::Label::new("Type"));
+        ui.add_sized(vec2(70.0, 20.0), egui::Label::new(crate::i18n::t("Type")));
         egui::ComboBox::from_id_salt((id, "kind")).selected_text(kind).width(120.0).show_ui(ui, |ui| {
             for k in ["Linear", "Radial", "Rectangular", "Path"] {
                 if ui.selectable_label(kind == k, k).clicked() && kind != k {
@@ -185,7 +187,7 @@ pub fn gradient_editor(ui: &mut Ui, id: &str, g: &Gradient, sc: &ColorScheme) ->
         });
     });
     ui.horizontal_wrapped(|ui| {
-        ui.add_sized(vec2(70.0, 20.0), egui::Label::new("Direction"));
+        ui.add_sized(vec2(70.0, 20.0), egui::Label::new(crate::i18n::t("Direction")));
         match &g.shape {
             GradientShape::Linear { angle, .. } => {
                 for (l, a) in DIRECTIONS_LINEAR {
@@ -207,7 +209,7 @@ pub fn gradient_editor(ui: &mut Ui, id: &str, g: &Gradient, sc: &ColorScheme) ->
     });
     if let GradientShape::Linear { angle, .. } = &g.shape {
         ui.horizontal(|ui| {
-            ui.add_sized(vec2(70.0, 20.0), egui::Label::new("Angle"));
+            ui.add_sized(vec2(70.0, 20.0), egui::Label::new(crate::i18n::t("Angle")));
             if let Some(a) = widgets::spinner(ui, &format!("{id}-angle"), *angle, 15.0, "°", 70.0) {
                 out = Some(Gradient { shape: GradientShape::Linear { angle: a.rem_euclid(360.0), scaled: false }, ..g.clone() });
             }
@@ -272,7 +274,7 @@ pub fn gradient_editor(ui: &mut Ui, id: &str, g: &Gradient, sc: &ColorScheme) ->
     // The selected stop.
     if let Some(s) = g.stops.get(sel) {
         ui.horizontal(|ui| {
-            ui.add_sized(vec2(70.0, 20.0), egui::Label::new("Color"));
+            ui.add_sized(vec2(70.0, 20.0), egui::Label::new(crate::i18n::t("Color")));
             let (sw, _) = ui.allocate_exact_size(vec2(18.0, 18.0), Sense::hover());
             ui.painter().rect(sw, CornerRadius::same(3), c32(&s.color, sc), Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
             let r = widgets::drop_button(ui, "", vec2(24.0, 20.0), true);
@@ -292,7 +294,7 @@ pub fn gradient_editor(ui: &mut Ui, id: &str, g: &Gradient, sc: &ColorScheme) ->
             }
         });
         ui.horizontal(|ui| {
-            ui.add_sized(vec2(70.0, 20.0), egui::Label::new("Position"));
+            ui.add_sized(vec2(70.0, 20.0), egui::Label::new(crate::i18n::t("Position")));
             if let Some(v) = widgets::spinner(ui, &format!("{id}-pos-{sel}"), (s.pos * 100.0).round(), 5.0, "%", 70.0) {
                 let mut ng = g.clone();
                 ng.stops[sel].pos = (v / 100.0).clamp(0.0, 1.0);
@@ -301,7 +303,7 @@ pub fn gradient_editor(ui: &mut Ui, id: &str, g: &Gradient, sc: &ColorScheme) ->
             }
         });
         ui.horizontal(|ui| {
-            ui.add_sized(vec2(70.0, 20.0), egui::Label::new("Transparency"));
+            ui.add_sized(vec2(70.0, 20.0), egui::Label::new(crate::i18n::t("Transparency")));
             let key = ui.id().with((id, "tr", sel));
             let mut tr: f32 = ui.data_mut(|d| d.get_temp(key).unwrap_or(((1.0 - alpha_of(&s.color)) * 100.0) as f32));
             let r = ui.add(egui::Slider::new(&mut tr, 0.0..=100.0).suffix("%"));

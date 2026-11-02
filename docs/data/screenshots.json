@@ -1,0 +1,34 @@
+{
+  "screenshots": [
+    {
+      "app": "filmcraft",
+      "version": "0.9.0",
+      "binary_sha256": "8d786a17b285098a0ddd1fc0b6fd4cba7f902345c8d36ca5278bedfc9a3c9638",
+      "image": "assets/screenshots/filmcraft-ar.png",
+      "image_sha256": "c9da0101b5b6eb056adc99ad79100f29bd4b827d47d9ba3ee285d01b5f4c112e",
+      "capture": "Current native application, embedded open fonts, synthetic document",
+      "license": "MIT OR Apache-2.0",
+      "credit": "mahmoud0al-haddad — Arabic edition"
+    },
+    {
+      "app": "cadcraft",
+      "version": "0.8.0",
+      "binary_sha256": "df804c8d17313f68edd98741d74ad2f0bd1da7affce47e1ebe9744c12f68d192",
+      "image": "assets/screenshots/cadcraft-ar.png",
+      "image_sha256": "db5dc82d7ab311ca6c96b9f16cb42afca8cfcec781a948481700bb53d75b4dc4",
+      "capture": "Current native application, embedded open fonts, synthetic document",
+      "license": "MIT OR Apache-2.0",
+      "credit": "mahmoud0al-haddad — Arabic edition"
+    },
+    {
+      "app": "soundcraft",
+      "version": "0.8.0",
+      "binary_sha256": "3992c52882a02221543b68c2fae16384df0eb885e53fee6d3e422d6eeb2371df",
+      "image": "assets/screenshots/soundcraft-ar.png",
+      "image_sha256": "804cc2fa9ff5387cca714441b9fc675f3a4fa101709dc4eed7f41cca875e3ffd",
+      "capture": "Current native application, embedded open fonts, synthetic document",
+      "license": "MIT OR Apache-2.0",
+      "credit": "mahmoud0al-haddad — Arabic edition"
+    }
+  ]
+}

@@ -61,7 +61,7 @@ pub fn specs() -> Vec<CommandSpec> {
             "Calculation Options",
             ["Formulas", "Calculation"],
             None,
-            "{mode: automatic|automaticExceptTables|manual, iterative?, maxIterations?, maxChange?}",
+            "{mode?: automatic|automaticExceptTables|manual, iterative?: bool (Enable iterative calculation), maxIterations?: 1–32767 (100), maxChange?: number (0.001)} → the settings. File › Options › Formulas › Calculation options; stored in the workbook.",
             has_doc,
             calc_options
         ),
@@ -78,18 +78,28 @@ fn auto_sum(s: &mut Session, p: &Json) -> Result<Json> {
     };
     if !sel.is_single() {
         // A block: totals below each column (and to the right when a blank column is included).
-        let num_end = sel.end;
-        let below = CellRef::new(num_end.row + 1, 0);
-        let mut writes = Vec::new();
-        let last_row_blank = (sel.start.col..=sel.end.col).all(|c| sh.value(CellRef::new(sel.end.row, c)).is_empty());
-        let (data_end_row, out_row) = if last_row_blank { (sel.end.row.saturating_sub(1), sel.end.row) } else { (sel.end.row, below.row) };
-        for c in sel.start.col..=sel.end.col {
-            let r = RangeRef::new(CellRef::new(sel.start.row, c), CellRef::new(data_end_row, c));
-            writes.push((CellRef::new(out_row, c), format!("={func}({})", r.a1())));
+        // Columns past the sheet's data get no total (a whole-row selection doesn't write 16,384
+        // formulas), and all totals are one edit (one undo step).
+        let Some(last_col) = sh.cells.used_range().map(|u| u.end.col.min(sel.end.col)) else { return ok() };
+        let last_row_blank = (sel.start.col..=last_col).all(|c| sh.value(CellRef::new(sel.end.row, c)).is_empty());
+        let (data_end_row, out_row) = if last_row_blank { (sel.end.row.saturating_sub(1), sel.end.row) } else { (sel.end.row, sel.end.row + 1) };
+        if out_row >= gridcraft_core::MAX_ROWS {
+            return Err(EngineError::Other("There's no room below the selection for the totals.".into()));
         }
-        for (c, f) in writes {
-            s.execute("cell.set", json!({"cell": c.a1(), "input": f}))?;
-        }
+        let writes: Vec<(CellRef, String)> = (sel.start.col..=last_col)
+            .map(|c| {
+                (CellRef::new(out_row, c), format!("={func}({})", RangeRef::new(CellRef::new(sel.start.row, c), CellRef::new(data_end_row, c)).a1()))
+            })
+            .collect();
+        let sheet = d.wb.active_sheet;
+        edit(s, |cx| {
+            for (c, f) in &writes {
+                let cell = super::edit::input_to_cell(f, sheet, *c, &mut cx.wb)?.unwrap_or_default();
+                cx.sheet_mut(sheet)?.set_cell(*c, cell);
+                cx.touch(sheet, *c);
+            }
+            Ok(())
+        })?;
         return ok();
     }
     // Single cell: guess the range above, else to the left.
@@ -253,7 +263,15 @@ fn define_name(s: &mut Session, p: &Json) -> Result<Json> {
         Some(sh) => Some(d.wb.sheet_index(sh).ok_or_else(|| bad("formulas.defineName", "no such sheet"))?),
     };
     let refers = match str_param(p, "refersTo") {
-        Some(r) => r.trim_start_matches('=').to_string(),
+        // As in Excel, relative references are relative to the active cell; names keep them
+        // relative to A1, as files do.
+        Some(r) => match gridcraft_formula::parse(r.trim_start_matches('=')) {
+            Ok(e) if gridcraft_formula::adjust::has_relative_refs(&e) => {
+                let at = d.selection.active;
+                gridcraft_formula::print(&gridcraft_formula::adjust::shift_relative_wrapping(e, -(at.row as i64), -(at.col as i64)))
+            }
+            _ => r.trim_start_matches('=').to_string(),
+        },
         None => {
             let sh = d.wb.active().ok_or(EngineError::NoDocument)?;
             let r = d.selection.current();
@@ -546,6 +564,7 @@ fn calc_options(s: &mut Session, p: &Json) -> Result<Json> {
         _ => None,
     };
     edit(s, |cx| {
+        let before = cx.wb.calc.clone();
         if let Some(m) = mode {
             cx.wb.calc.mode = m;
         }
@@ -553,14 +572,42 @@ fn calc_options(s: &mut Session, p: &Json) -> Result<Json> {
             cx.wb.calc.iterative = v;
         }
         if let Some(v) = u32_param(p, "maxIterations") {
-            cx.wb.calc.max_iterations = v.clamp(1, 32767);
+            cx.wb.calc.set_max_iterations(v);
         }
         if let Some(v) = f64_param(p, "maxChange") {
-            cx.wb.calc.max_change = v.abs();
+            cx.wb.calc.set_max_change(v);
         }
-        if mode == Some(CalcMode::Automatic) {
+        let c = &cx.wb.calc;
+        // Switching to automatic, or changing how circular references are calculated outside
+        // manual mode, recalculates the workbook.
+        let iteration_changed = (c.iterative, c.max_iterations, c.max_change) != (before.iterative, before.max_iterations, before.max_change);
+        if mode == Some(CalcMode::Automatic) || (iteration_changed && c.mode != CalcMode::Manual) {
             cx.structural = true;
         }
-        Ok(json!({"mode": format!("{:?}", cx.wb.calc.mode)}))
+        Ok(json!({"mode": format!("{:?}", c.mode), "iterative": c.iterative, "maxIterations": c.max_iterations, "maxChange": c.max_change}))
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn names_with_relative_references() {
+        let mut s = Session::new();
+        s.new_workbook();
+        s.execute("range.setValues", json!({"range": "A1", "values": [[1], [2], [3]]})).unwrap();
+        // Defined from B2, `=Sheet1!A2` is "the cell to the left".
+        s.execute("selection.set", json!({"range": "B2"})).unwrap();
+        let r = s.execute("formulas.defineName", json!({"name": "LeftCell", "refersTo": "=Sheet1!A2"})).unwrap();
+        assert_eq!(r["refersTo"], "=Sheet1!XFD1");
+        s.execute("cell.set", json!({"cell": "B1", "input": "=LeftCell"})).unwrap();
+        s.execute("cell.set", json!({"cell": "B3", "input": "=LeftCell*10"})).unwrap();
+        let v = |s: &mut Session, a: &str| s.execute("cell.get", json!({"cell": a})).unwrap()["value"].clone();
+        assert_eq!(v(&mut s, "B1"), json!(1.0));
+        assert_eq!(v(&mut s, "B3"), json!(30.0));
+        // Absolute references are kept as they are.
+        let r = s.execute("formulas.defineName", json!({"name": "First", "refersTo": "=Sheet1!$A$1"})).unwrap();
+        assert_eq!(r["refersTo"], "=Sheet1!$A$1");
+    }
 }

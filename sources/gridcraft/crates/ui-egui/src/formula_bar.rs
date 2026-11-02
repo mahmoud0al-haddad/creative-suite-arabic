@@ -177,6 +177,10 @@ pub fn editor_widget(app: &mut SheetApp, ui: &mut egui::Ui, id: egui::Id, font: 
             let enter = i.consume_key(egui::Modifiers::NONE, Key::Enter) || i.consume_key(egui::Modifiers::SHIFT, Key::Enter);
             let tab = i.consume_key(egui::Modifiers::NONE, Key::Tab) || i.consume_key(egui::Modifiers::SHIFT, Key::Tab);
             let esc = i.consume_key(egui::Modifiers::NONE, Key::Escape);
+            // Backspace takes back the AutoComplete proposal (Excel's selected rest), not a typed character.
+            if ed.completion.is_some() && i.consume_key(egui::Modifiers::NONE, Key::Backspace) {
+                ed.completion = None;
+            }
             (enter, tab, esc, alt_enter, cmd_enter, ctrl_shift_enter, m.shift)
         });
         if alt_enter {
@@ -202,6 +206,8 @@ pub fn editor_widget(app: &mut SheetApp, ui: &mut egui::Ui, id: egui::Id, font: 
         if esc {
             if !ed.autocomplete.is_empty() {
                 ed.autocomplete.clear();
+            } else if ed.completion.is_some() {
+                ed.completion = None;
             } else {
                 cancel = true;
             }
@@ -309,7 +315,8 @@ pub fn editor_widget(app: &mut SheetApp, ui: &mut egui::Ui, id: egui::Id, font: 
     }
     if resp.changed() {
         ed.completion = None;
-        if !ed.is_formula()
+        if app.ui.autocomplete
+            && !ed.is_formula()
             && ed.caret == ed.text.chars().count()
             && let Some(sh) = app.session.active().and_then(|d| d.wb.sheet(ed.sheet))
         {
@@ -333,8 +340,7 @@ pub fn editor_widget(app: &mut SheetApp, ui: &mut egui::Ui, id: egui::Id, font: 
     }
     // Column AutoComplete: the rest of the suggested entry, shown selected after the caret.
     if let Some(full) = &ed.completion
-        && full.len() > ed.text.len()
-        && let Some(rest) = full.get(ed.text.len()..)
+        && let Some(rest) = crate::editor::completion_rest(full, &ed.text)
     {
         let pos = resp.rect.left_top() + egui::vec2(output.galley.rect.width(), 0.0);
         let g = ui.painter().layout_no_wrap(
@@ -396,6 +402,13 @@ pub fn editor_widget(app: &mut SheetApp, ui: &mut egui::Ui, id: egui::Id, font: 
                         }
                         ui.label(egui::RichText::new(crate::i18n::t(")")).font(theme::ui_font(12.0)));
                     });
+                    // The description too, so values an argument takes (DATEDIF's units, #363) show
+                    // while it's typed; wrapped to the hint's width.
+                    if let Some(desc) = crate::formula_locale::description(&name, ed.locale) {
+                        ui.set_max_width(ui.min_rect().width().max(220.0));
+                        ui.separator();
+                        ui.add(egui::Label::new(egui::RichText::new(desc).small()).wrap());
+                    }
                 }
             });
         });

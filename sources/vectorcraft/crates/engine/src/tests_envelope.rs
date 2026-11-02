@@ -40,7 +40,7 @@ fn enveloped(s: &mut Session, cmd: &str, params: Value) -> (NodeId, NodeId) {
 
 fn kind(s: &Session, id: NodeId) -> EnvelopeKind {
     match node(s, id).kind {
-        NodeKind::Envelope { kind, .. } => kind,
+        NodeKind::Envelope { kind, .. } => *kind,
         k => panic!("{k:?}"),
     }
 }
@@ -130,7 +130,7 @@ fn release_gives_back_the_warp_shape_as_a_mesh_and_keeps_the_transparency() {
     s.execute("transparency.set", &json!({"opacity": 40, "blend": "multiply"})).unwrap();
     let mask = Node::path(NodeId(0), vectorcraft_geom::shapes::rectangle(Rect::new(0.0, 0.0, 50.0, 50.0)), Default::default());
     s.edit("mask", |d, _| {
-        d.node_mut(e).unwrap().mask = Some(Box::new(OpacityMask::new(mask, true)));
+        d.node_mut(e).unwrap().extras_mut().mask = Some(Box::new(OpacityMask::new(mask, true)));
         Ok(())
     })
     .unwrap();
@@ -139,7 +139,7 @@ fn release_gives_back_the_warp_shape_as_a_mesh_and_keeps_the_transparency() {
     assert_eq!(ids.len(), 2);
     assert_eq!(ids[0], a);
     let content = node(&s, a);
-    assert_eq!((content.opacity, content.blend, content.mask.is_some()), (0.4, BlendMode::Multiply, true), "the content keeps the look");
+    assert_eq!((content.opacity, content.blend, content.extras().mask.is_some()), (0.4, BlendMode::Multiply, true), "the content keeps the look");
     let NodeKind::Mesh(m) = node(&s, ids[1]).kind else { panic!("the warp's shape comes back as a mesh") };
     // The mesh follows the arc: its outline reaches below the content's bottom edge at the sides.
     let b = m.outline().bounds().unwrap();
@@ -172,14 +172,14 @@ fn expand_keeps_name_transparency_knockout_and_mask() {
     s.edit("name and mask", |d, _| {
         let n = d.node_mut(e).unwrap();
         n.name = Some("Banner".into());
-        n.mask = Some(Box::new(OpacityMask::new(mask, true)));
+        n.extras_mut().mask = Some(Box::new(OpacityMask::new(mask, true)));
         Ok(())
     })
     .unwrap();
     s.execute("object.envelope.expand", &json!({})).unwrap();
     let g = node(&s, e);
     assert!(matches!(g.kind, NodeKind::Group { .. }));
-    assert_eq!((g.name.as_deref(), g.opacity, g.isolate, g.knockout, g.mask.is_some()), (Some("Banner"), 0.7, true, Knockout::On, true));
+    assert_eq!((g.name.as_deref(), g.opacity, g.isolate, g.knockout, g.extras().mask.is_some()), (Some("Banner"), 0.7, true, Knockout::On, true));
 }
 
 #[test]
@@ -257,7 +257,7 @@ fn enveloped_type_exports_distorted_in_every_format() {
 #[test]
 fn enveloped_type_keeps_each_runs_colour_on_the_canvas() {
     let mut s = session();
-    let t = id_of(&s.execute("text.create", &json!({"x": 100, "y": 200, "text": "MMMMMMMM", "size": 60, "fill": "#000000"})).unwrap());
+    let t = id_of(&s.execute("text.create", &json!({"x": 100, "y": 200, "text": "MMMMMMMM", "size": 60})).unwrap());
     s.edit("red half", |d, _| {
         if let NodeKind::Text(tx) = &mut d.node_mut(t).unwrap().kind {
             vectorcraft_text::edit::style_range(&mut tx.runs, 0, 4, |st| {
@@ -287,4 +287,36 @@ fn enveloped_type_keeps_each_runs_colour_on_the_canvas() {
         }
     }
     assert!(red > 100 && black > 100, "{red} red, {black} black");
+}
+
+/// #1738: type warped by an envelope inside a symbol looks the same after a native save and
+/// reopen: the type in symbol definitions gets its layout bounds back (they aren't saved), so the
+/// envelope is fitted to the same box as before.
+#[test]
+fn warped_type_in_a_symbol_reopens_unchanged() {
+    let mut s = session();
+    s.execute("text.create", &json!({"x": 30, "y": 160, "text": "STUDIO", "size": 72, "color": "#E3AB49"})).unwrap();
+    s.execute("object.envelope.makeWithWarp", &json!({"style": "wave", "bend": 18})).unwrap();
+    s.execute("symbol.new", &json!({"name": "Master"})).unwrap();
+    let render = |s: &Session| vectorcraft_render::Renderer::new().render(&s.doc().unwrap().doc, 400, 300, Affine::IDENTITY, &Default::default());
+    let before = render(&s);
+    let dir = std::env::temp_dir().join(format!("vectorcraft-1738-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("warped.vectorcraft");
+    s.execute("document.save", &json!({"path": path})).unwrap();
+    let mut o = Session::new();
+    o.execute("document.open", &json!({"path": path})).unwrap();
+    let _ = std::fs::remove_dir_all(&dir);
+    let d = &o.doc().unwrap().doc;
+    let mut texts = 0;
+    d.symbols[0].art.walk(&mut |n| {
+        if let NodeKind::Text(t) = &n.kind {
+            texts += 1;
+            assert!(t.cached_bounds.is_some(), "the symbol's type has no layout bounds after reopening");
+        }
+    });
+    assert_eq!(texts, 1);
+    let after = render(&o);
+    let differ = (0..300).flat_map(|y| (0..400).map(move |x| (x, y))).filter(|&(x, y)| before.pixel(x, y) != after.pixel(x, y)).count();
+    assert_eq!(differ, 0, "{differ} pixels changed on reopening");
 }

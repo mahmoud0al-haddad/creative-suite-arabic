@@ -82,7 +82,7 @@ pub fn show_recovery(app: &mut FilmcraftApp, ctx: &egui::Context) -> bool {
             ui.horizontal(|ui| {
                 if button(app, ui, "recovery.discard", tl!("Discard"), false) {
                     if let Err(e) = app.session.execute("file.discardRecovery", json!({ "id": id })) {
-                        app.ui.status = e.to_string();
+                        app.ui.status = crate::diagnostics::message(&e.to_string());
                     }
                     choice = 0;
                 }
@@ -120,7 +120,7 @@ pub fn show_revert(app: &mut FilmcraftApp, ctx: &egui::Context) -> bool {
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 if button(app, ui, "revert.yes", tl!("Yes"), true) {
                     if let Err(e) = app.session.execute("file.revert", json!({})) {
-                        app.ui.status = e.to_string();
+                        app.ui.status = crate::diagnostics::message(&e.to_string());
                     }
                     open = false;
                 }
@@ -130,7 +130,8 @@ pub fn show_revert(app: &mut FilmcraftApp, ctx: &egui::Context) -> bool {
             });
         });
     });
-    open && !r.should_close()
+    // (the modal's own close also fires on Escape: not while a drag is being cancelled, #580)
+    open && !(r.should_close() && !ctx.input(|i| i.pointer.any_down()))
 }
 
 /// Draw the dialog if it is one of ours; returns Some(still open).

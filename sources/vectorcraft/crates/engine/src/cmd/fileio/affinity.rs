@@ -32,6 +32,7 @@ pub(super) fn import(name: &str, bytes: &[u8]) -> Result<Imported> {
         Ok(d) => {
             let mut b = Builder { doc: Document::new(0.0, 0.0), warnings: Vec::new(), k: 72.0 / d.dpi, layer: 0 };
             b.document(&d)?;
+            b.doc.limit_depth_noting(&mut b.warnings);
             let mut warnings = d.warnings.iter().map(|w| format!("Affinity: not imported or approximated: {w}.")).collect::<Vec<_>>();
             warnings.extend(b.warnings.iter().map(|w| format!("Affinity: {w}.")));
             Ok(Imported { doc: b.doc, warnings, preview_only: false })
@@ -289,7 +290,7 @@ impl Builder {
             // shows outside it, as an opacity mask that clips.
             if let Some(kind) = self.image(img, to_doc) {
                 let art = Node::new(self.doc.alloc_id(), kind);
-                out.mask = Some(Box::new(OpacityMask::new(art, true)));
+                out.extras_mut().mask = Some(Box::new(OpacityMask::new(art, true)));
             }
         }
         if let Some(mask) = &n.mask {
@@ -488,6 +489,10 @@ impl Builder {
         };
         if let Some(f) = t.frame {
             obj.kind = TextKind::Area { frame: shapes::rectangle(Rect::new(0.0, 0.0, (f.x1 - f.x0) * k, (f.y1 - f.y0) * k)) };
+            // Affinity shows a line in a frame shorter than it (#1423); here none of it would draw.
+            if vectorcraft_text::fit_first_line(vectorcraft_text::FontDb::global(), &mut obj) {
+                self.warn("text frames too short for their first line (made taller so the line shows)");
+            }
         }
         obj
     }
@@ -514,7 +519,7 @@ impl Builder {
         let sy = img.height as f64 / f64::from(r.height.max(1));
         let xf = to_doc * affine(img.transform) * Affine::scale_non_uniform(sx, sy);
         self.doc.images.entry(r.key.clone()).or_insert(r.blob);
-        Some(NodeKind::Image(ImageObject { key: r.key, width: r.width, height: r.height, xf, link: None, placement: Default::default() }))
+        Some(NodeKind::Image(Box::new(ImageObject { key: r.key, width: r.width, height: r.height, xf, link: None, placement: Default::default() })))
     }
 }
 

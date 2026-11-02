@@ -1,5 +1,7 @@
 # Releasing VectorCraft
 
+> **Last updated:** 2026-10-12 · **Change:** minor (RPM runtime capabilities and metadata checks, #1275)
+
 Every push to the `release` branch runs `.github/workflows/release.yml`. The workflow builds
 installers for macOS, Windows, Linux (including Flatpak bundles and a RISC-V tarball) and FreeBSD, plus the web build, and creates or updates a
 **draft** GitHub Release named `VectorCraft v<version>`. Nobody sees a draft until a maintainer
@@ -111,6 +113,21 @@ to the target triple, so host build scripts aren't affected.
 - Before packaging, the script checks each binary's PE machine type against `-Arch` (an x64 build
   can never ship labelled arm64), that `vectorcraft.exe` is a GUI program (no console window) and
   that `vectorcraft-cli.exe` is a console program.
+- **Portable zip:** it ships `packaging/windows/portable.txt` beside `vectorcraft.exe`. That
+  marker (or a `VectorCraft.portable` file) switches on portable mode, as in PhotoCraft: `ui.json`
+  and the folders next to it (Swatches, Graphic Styles, Fonts, Data Recovery, logs…) go to
+  `VectorCraftData\` next to the exe instead of `%APPDATA%\VectorCraft`. The first time
+  `VectorCraftData` is created, the settings already in `%APPDATA%\VectorCraft` are copied into it
+  (the originals stay), so someone updating a portable zip from before the marker keeps their
+  settings. If that folder isn't writable the app logs a warning and uses `%APPDATA%`. Deleting
+  `portable.txt` returns settings to the user profile (the `VectorCraftData` folder is left as it
+  is). The MSI has no marker. `VECTORCRAFT_CONFIG_DIR` still wins, `VECTORCRAFT_NO_PREFS` never
+  looks for the marker, and a portable copy skips the one-time read of the old DrawCraft settings.
+  The logic is in `apps/vectorcraft/src/profile.rs`. On the other platforms the marker goes where
+  the user sees the app, never inside it: on macOS next to `VectorCraft.app` (nothing is written
+  inside the signed bundle), for an AppImage next to the `.AppImage` file (`$APPIMAGE`; the mounted
+  executable's own folder is read-only). Flatpak isn't supported: `/app` is read-only and the
+  sandbox has no folder "beside the app", so a Flatpak install always uses its own config folder.
 - `vectorcraft.wxs` (WiX) is a per-machine install into Program Files with a Start Menu shortcut
   and an App Paths entry (Win+R `vectorcraft`). Same-version upgrades are allowed, so release
   candidates replace each other.
@@ -146,6 +163,23 @@ The jobs run on `ubuntu-22.04`, the oldest GitHub-hosted image, so the binaries 
 glibc 2.35 or newer: Ubuntu 22.04+, Debian 12+, Fedora 36+ and RHEL 10. Moving the job to a newer
 image raises that floor, so do it deliberately. After packaging, the job prints the `.deb`'s
 metadata and contents, runs `ldd` on the binary and runs each AppImage with `--version`.
+
+**RPM dependencies.** The x86_64 and aarch64 RPMs require 64-bit shared-library
+capabilities rather than distribution-specific package names: `libc`, libm's `GLIBC_2.35`,
+`libgcc_s`, `libxkbcommon`, and either Vulkan or EGL. Windowing and GPU
+libraries are loaded at runtime, so `ldd` alone does not list every requirement.
+The glibc capability enforces the same floor as the `.deb`; a distribution with
+an older glibc is not supported by these binaries. It names libm, whose `hypot` and `hypotf`
+are the binaries' GLIBC_2.35 symbols: RHEL 9's glibc 2.34 provides `libc.so.6(GLIBC_2.35)`
+through backports, so a libc capability let it install binaries that can't start. Weak
+recommendations still use package names and do not block installation.
+
+Before publishing a Linux release:
+
+- [ ] Check `rpm -qp --requires` on both architectures for the runtime capabilities
+  above, including the Vulkan/EGL alternative and glibc floor.
+- [ ] Install and start the package on the target RPM distributions. Synthetic
+  provider tests verify metadata resolution, not a real desktop installation.
 
 **RISC-V.** The `linux-riscv64` job cross-compiles `riscv64gc-unknown-linux-gnu` on `ubuntu-24.04`
 against riscv64 libraries from ports.ubuntu.com (so the floor there is glibc 2.39) and runs
@@ -202,3 +236,11 @@ warning, never a failed build.
 | `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID` | notarization (`APPLE_PASSWORD` is an app-specific password) |
 | `WINDOWS_CERTIFICATE`, `WINDOWS_CERTIFICATE_PASSWORD` | Windows signing with a `.pfx` |
 | `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_SIGNING_ENDPOINT`, `AZURE_SIGNING_ACCOUNT`, `AZURE_CERT_PROFILE` | Windows signing with Azure Trusted Signing |
+
+## Revision history
+
+| Date | Change | Summary |
+|---|---|---|
+| 2026-10-14 | minor | RPM glibc floor names libm's `GLIBC_2.35`: RHEL 9's glibc 2.34 provides libc's through backports |
+| 2026-10-12 | minor | RPM dependencies use 64-bit runtime capabilities and enforce glibc 2.35 (#1275); real distro install/start-up checks remain pending |
+| 2026-10-12 | minor | Portable mode (#1366): the Windows portable zip ships `portable.txt`; where the marker goes on macOS and Linux, and what Flatpak can't do |

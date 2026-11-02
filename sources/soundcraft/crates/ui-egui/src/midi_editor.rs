@@ -4,7 +4,7 @@ use crate::SoundApp;
 use crate::theme::{Tokens, bold, regular};
 use egui::{Align2, Color32, Rect, Sense, Stroke, StrokeKind, Ui, pos2, vec2};
 use serde_json::json;
-use soundcraft_model::{ClipContent, ClipId};
+use soundcraft_model::{ClipContent, ClipId, Tool};
 use soundcraft_time::TICKS_PER_QUARTER;
 
 const KEY_W: f32 = 48.0;
@@ -15,7 +15,7 @@ const VEL_H: f32 = 64.0;
 pub struct MidiEditorState {
     pub selected: Vec<usize>,
     pub drag: Option<NoteDrag>,
-    pub top_pitch: i32,
+    pub scroll: f32,
     pub clip: Option<ClipId>,
     /// Rubber-band selection start (screen position).
     pub band: Option<egui::Pos2>,
@@ -36,7 +36,7 @@ pub fn target_clip(app: &SoundApp) -> Option<ClipId> {
     let s = app.engine.session();
     for id in &s.edit.selected_clips {
         if let Some((_, c)) = s.find_clip(*id)
-            && !c.is_audio()
+            && matches!(c.content, ClipContent::Midi { .. })
         {
             return Some(*id);
         }
@@ -66,13 +66,24 @@ pub fn show(app: &mut SoundApp, ui: &mut Ui) {
     ui.painter().rect_filled(header, 0.0, t.panel_bg2);
     ui.painter().text(pos2(header.min.x + 8.0, header.center().y), Align2::LEFT_CENTER, crate::i18n::t("MIDI EDITOR"), bold(11.5), t.header_text);
     let Some(cid) = target_clip(app) else {
-        ui.painter().text(
-            full.center(),
-            Align2::CENTER_CENTER,
-            crate::i18n::t("Select a MIDI clip (or a MIDI track) to edit its notes."),
-            regular(13.0),
-            t.text_dim,
-        );
+        let track = {
+            let s = app.engine.session();
+            s.tracks.iter().find(|t| t.kind.is_midi() && s.edit.selected_tracks.contains(&t.id)).map(|t| (t.id, t.name.clone()))
+        };
+        let msg = match &track {
+            Some((_, name)) => crate::i18n::format("Click to add a MIDI clip to {name} at the insertion point.", &[("name", name.to_string())]),
+            None => "Select a MIDI clip (or a MIDI track) to edit its notes.".into(),
+        };
+        ui.painter().text(full.center(), Align2::CENTER_CENTER, msg, regular(13.0), t.text_dim);
+        let body = Rect::from_min_max(pos2(full.min.x, header.max.y), full.max);
+        if let Some((id, _)) = track
+            && ui.interact(body, ui.id().with("new_clip"), Sense::click()).clicked()
+        {
+            let sel = app.engine.session().edit.selection;
+            if let Ok(v) = app.run("midi.new_clip", json!({"track": id.0, "start": sel.start, "end": sel.end})) {
+                let _ = app.run("edit.select", json!({"clips": [v["clip"]]}));
+            }
+        }
         return;
     };
     let Some((track, clip)) = app.engine.session().find_clip(cid).map(|(t, c)| (t, c.clone())) else { return };
@@ -82,12 +93,25 @@ pub fn show(app: &mut SoundApp, ui: &mut Ui) {
         pos2(header.min.x + 110.0, header.center().y),
         Align2::LEFT_CENTER,
         crate::i18n::format(
-            "{} · {} notes · {} selected · click: add · drag: move/select · arrows: move · Delete: remove",
-            &[("", clip.name.to_string()), ("", (sequence.notes.len()).to_string()), ("", (app.midi.selected.len()).to_string())],
+            "{} · {} notes · {} selected · Pencil: add · drag: move/select · arrows: move · Delete: remove",
+            &[("", clip.name.to_string()), ("", format!("{}", sequence.notes.len())), ("", format!("{}", app.midi.selected.len()))],
         ),
         regular(11.0),
         t.text_dim,
     );
+    let grid_ticks = match app.engine.session().edit.grid {
+        soundcraft_time::GridValue::Note { value, dotted, triplet } => {
+            let mut g = value.ticks();
+            if dotted {
+                g = g * 3 / 2;
+            }
+            if triplet {
+                g = g * 2 / 3;
+            }
+            g.max(1)
+        }
+        _ => TICKS_PER_QUARTER / 4,
+    };
     // Header toolbar: whole-clip MIDI operations.
     let bar = Rect::from_min_max(pos2(header.max.x - 330.0, header.min.y + 1.0), pos2(header.max.x - 6.0, header.max.y - 1.0));
     let mut tb = ui.new_child(egui::UiBuilder::new().max_rect(bar).layout(egui::Layout::right_to_left(egui::Align::Center)));
@@ -103,56 +127,42 @@ pub fn show(app: &mut SoundApp, ui: &mut Ui) {
         op = Some(("event.change_velocity", json!({"add": 10})));
     }
     if tb.small_button(crate::i18n::t("Quantize")).on_hover_text(crate::i18n::t("Quantize to the grid")).clicked() {
-        op = Some(("event.quantize", json!({"grid": "1/16", "strength": 100})));
+        op = Some(("event.quantize", json!({"grid": grid_ticks, "strength": 100})));
     }
     if let Some((id, mut p)) = op {
         p["clips"] = json!([cid.0]);
         let _ = app.run(id, p);
     }
-    let s = app.engine.session().clone();
+    let s = app.engine.session_arc();
     let sr = s.sample_rate;
     let base_tick = s.tempo.samples_to_ticks(clip.start, sr);
     let len_ticks = (s.tempo.samples_to_ticks(clip.end(), sr) - base_tick).max(1);
-    let grid_ticks = match s.edit.grid {
-        soundcraft_time::GridValue::Note { value, dotted, triplet } => {
-            let mut g = value.ticks();
-            if dotted {
-                g = g * 3 / 2;
-            }
-            if triplet {
-                g = g * 2 / 3;
-            }
-            g.max(1)
-        }
-        _ => TICKS_PER_QUARTER / 4,
-    };
     let roll = Rect::from_min_max(pos2(full.min.x + KEY_W, header.max.y), pos2(full.max.x - 4.0, full.max.y - VEL_H - 4.0));
     let keys = Rect::from_min_max(pos2(full.min.x, roll.min.y), pos2(roll.min.x, roll.max.y));
     let vel = Rect::from_min_max(pos2(roll.min.x, roll.max.y + 4.0), pos2(roll.max.x, full.max.y - 2.0));
     // Vertical range: centre on the notes the first time.
     let rows = (roll.height() / ROW_H).floor() as i32;
-    if app.midi.top_pitch == 0 || app.midi.clip != Some(cid) {
+    if app.midi.clip != Some(cid) {
         let hi = sequence.notes.iter().map(|n| i32::from(n.pitch)).max().unwrap_or(72);
         let lo = sequence.notes.iter().map(|n| i32::from(n.pitch)).min().unwrap_or(48);
-        let mid = (hi + lo) / 2;
-        app.midi.top_pitch = (mid + rows / 2).clamp(rows.min(127), 127);
+        app.midi.scroll = (127 - (hi + lo) / 2 - rows / 2) as f32 * ROW_H;
         app.midi.clip = Some(cid);
     }
     if ui.rect_contains_pointer(roll) {
-        let dy = ui.input(|i| i.smooth_scroll_delta.y);
-        if dy.abs() > 0.5 {
-            app.midi.top_pitch = (app.midi.top_pitch + (dy / ROW_H).round() as i32).clamp(rows.min(127), 127);
-        }
+        app.midi.scroll -= ui.input(|i| i.smooth_scroll_delta.y);
     }
-    let top = app.midi.top_pitch;
+    app.midi.scroll = app.midi.scroll.clamp(0.0, (128.0 * ROW_H - roll.height()).max(0.0));
+    let scroll = app.midi.scroll;
     let px_per_tick = roll.width() / len_ticks as f32;
     let x_of = |tick: i64| roll.min.x + tick as f32 * px_per_tick;
-    let y_of = |pitch: i32| roll.min.y + (top - pitch) as f32 * ROW_H;
+    let y_of = |pitch: i32| roll.min.y + (127 - pitch) as f32 * ROW_H - scroll;
+    let pitch_at = |y: f32| 127 - ((y - roll.min.y + scroll) / ROW_H).floor() as i32;
     let painter = ui.painter().with_clip_rect(roll.union(keys));
     // Background rows and keys.
-    for r in 0..=rows {
+    let top = pitch_at(roll.min.y);
+    for r in 0..=rows + 1 {
         let pitch = top - r;
-        let y = roll.min.y + r as f32 * ROW_H;
+        let y = y_of(pitch);
         let row = Rect::from_min_size(pos2(roll.min.x, y), vec2(roll.width(), ROW_H));
         painter.rect_filled(row, 0.0, if is_black(pitch) { Color32::from_rgb(30, 30, 32) } else { Color32::from_rgb(40, 40, 42) });
         let key = Rect::from_min_size(pos2(keys.min.x, y), vec2(KEY_W - 2.0, ROW_H - 1.0));
@@ -291,8 +301,8 @@ pub fn show(app: &mut SoundApp, ui: &mut Ui) {
                 }
                 // Audition on the instrument would go here (needs a live MIDI input path).
             }
-            None => {
-                let pitch = (top - ((p.y - roll.min.y) / ROW_H).floor() as i32).clamp(0, 127);
+            None if s.edit.tool == Tool::Pencil => {
+                let pitch = pitch_at(p.y).clamp(0, 127);
                 let start = (((p.x - roll.min.x) / px_per_tick) as i64 / grid_ticks) * grid_ticks;
                 let _ = app.run(
                     "midi.note_add",
@@ -300,17 +310,19 @@ pub fn show(app: &mut SoundApp, ui: &mut Ui) {
                 );
                 app.midi.selected.clear();
             }
+            None => app.midi.selected.clear(),
         }
     }
     // Keyboard: Cmd+A select all; arrows transpose (Shift = octave) and move by the grid.
     if ui.rect_contains_pointer(roll) && !ui.ctx().egui_wants_keyboard_input() {
         let (all, up, down, left, right, shift) = ui.input(|i| {
+            let arrows = !i.modifiers.alt && !i.modifiers.command && !i.modifiers.ctrl;
             (
                 i.modifiers.command && i.key_pressed(egui::Key::A),
-                i.key_pressed(egui::Key::ArrowUp),
-                i.key_pressed(egui::Key::ArrowDown),
-                i.key_pressed(egui::Key::ArrowLeft),
-                i.key_pressed(egui::Key::ArrowRight),
+                arrows && i.key_pressed(egui::Key::ArrowUp),
+                arrows && i.key_pressed(egui::Key::ArrowDown),
+                arrows && !i.modifiers.shift && i.key_pressed(egui::Key::ArrowLeft),
+                arrows && !i.modifiers.shift && i.key_pressed(egui::Key::ArrowRight),
                 i.modifiers.shift,
             )
         });
@@ -335,7 +347,10 @@ pub fn show(app: &mut SoundApp, ui: &mut Ui) {
             let _ = app.run("midi.notes_move", json!({"clip": cid.0, "indices": app.midi.selected, "ticks": ticks, "semitones": semi}));
         }
     }
-    if !app.midi.selected.is_empty() && ui.input(|i| i.key_pressed(egui::Key::Delete) || i.key_pressed(egui::Key::Backspace)) {
+    if !app.midi.selected.is_empty()
+        && !ui.ctx().egui_wants_keyboard_input()
+        && ui.input(|i| i.key_pressed(egui::Key::Delete) || i.key_pressed(egui::Key::Backspace))
+    {
         let _ = app.run("midi.note_delete", json!({"clip": cid.0, "indices": app.midi.selected}));
         app.midi.selected.clear();
     }

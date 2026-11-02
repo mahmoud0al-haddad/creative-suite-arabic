@@ -1,4 +1,4 @@
-# German (de) catalog for Creative Suite Launcher.
+# German (de) catalog for ArtCraft Launcher.
 # Format: context<TAB>source<TAB>translation
 # Empty context = plain UI string (tl!, t).
 # @id = command-id keyed (tr_id).
@@ -6,15 +6,15 @@
 # @msg = status/error message template (message, msg).
 # Other context = disambiguation for tr_ctx.
 #
-# Clean-room: written from the meaning of Creative Suite Launcher's English labels in neutral German,
+# Clean-room: written from the meaning of ArtCraft Launcher's English labels in neutral German,
 # using the terms German-speaking users of creative software know. The user is addressed with
 # the informal "du", as in most current creative and community software.
 #
 # Coverage: the whole interface — every menu string and tl! literal (complete_menus = true).
-# Left in English on purpose: product name "Creative Suite Launcher" (and its "Launcher" tag), suite
+# Left in English on purpose: product name "ArtCraft Launcher" (and its "Launcher" tag), suite
 # name "Craft App Suite",
 # app names (PhotoCraft, LightCraft, FilmCraft, DesignCraft, VectorCraft, PdfCraft, EffectCraft,
-# WordCraft, DeckCraft, GridCraft, CADCraft, SoundCraft), "GitHub", "Discord".
+# WordCraft, DeckCraft, GridCraft, CADCraft, SoundCraft, FigCraft), "GitHub", "Discord".
 # Shortcut keys keep their key-cap names (Shift, Alt, Ctrl, Cmd, Esc).
 # Trailing "…" (U+2026) must be preserved. Placeholders {name}, {n}, {version}, {count}, {v},
 # {what}, {unit}, {real}, {e} must appear in translation.
@@ -73,7 +73,7 @@
 	Reinstall	Neu installieren
 	Uninstall…	Deinstallieren…
 	All releases	Alle Versionen
-	Creative Suite Launcher {version} is available.	Creative Suite Launcher {version} ist verfügbar.
+	ArtCraft Launcher {version} is available.	ArtCraft Launcher {version} ist verfügbar.
 	Dismiss	Ausblenden
 	Update and restart	Aktualisieren und neu starten
 	A new version is available. Would you like to relaunch with the updated version?	Eine neue Version ist verfügbar. Mit der neuen Version neu starten?
@@ -83,23 +83,24 @@
 	Released {date}	Veröffentlicht am {date}
 	Open on GitHub	Auf GitHub öffnen
 	Close	Schließen
-	Creative Suite Launcher {version}	Creative Suite Launcher {version}
+	ArtCraft Launcher {version}	ArtCraft Launcher {version}
 	Only when I ask	Nur manuell
 	Automatically download and install updates	Updates automatisch herunterladen und installieren
 	Notify me when an installed app has an update	Benachrichtigen, wenn es für eine installierte App ein Update gibt
 	Include pre-releases (betas and release candidates)	Vorabversionen einbeziehen (Betas und Release Candidates)
 	Installing on Linux	Installation unter Linux
+	Installing on Windows	Installation unter Windows
 	Install new apps as	Neue Apps installieren als
 	System package (recommended)	Systempaket (empfohlen)
 	Updates always use the format an app was installed with.	Updates verwenden immer das Format, mit dem eine App installiert wurde.
 	Running in the background	Im Hintergrund ausführen
 	Keep running in the tray when the window is closed	Beim Schließen des Fensters im Infobereich weiterlaufen
 	Show the window on the current desktop	Fenster auf dem aktuellen Schreibtisch zeigen
-	Start Creative Suite Launcher when I log in	Creative Suite Launcher bei der Anmeldung starten
+	Start ArtCraft Launcher when I log in	ArtCraft Launcher bei der Anmeldung starten
 	Community	Community
 	Questions, ideas and news from the ArtCraft team	Fragen, Ideen und Neuigkeiten vom ArtCraft-Team
 	Appearance	Erscheinungsbild
-	Quit Creative Suite Launcher	Creative Suite Launcher beenden
+	Quit ArtCraft Launcher	ArtCraft Launcher beenden
 	Done	Fertig
 	Uninstall {name}?	{name} deinstallieren?
 	The app will be moved to the Trash. Your documents and settings stay.	Die App wird in den Papierkorb verschoben. Deine Dokumente und Einstellungen bleiben erhalten.
@@ -118,6 +119,10 @@
 	Apps on this computer	Apps auf diesem Computer
 	Installed apps with a newer version	Installierte Apps mit neuerer Version
 	Apps you can install	Apps, die du installieren kannst
+	Hide App	App ausblenden
+	Unhide App	App einblenden
+	Hidden Apps	Ausgeblendete Apps
+	Apps you hid	Apps, die du ausgeblendet hast
 	Checked {ago} · using {sources}	Zuletzt geprüft: {ago} · über {sources}
 	{a} and {b}	{a} und {b}
 	Join the Discord	Dem Discord beitreten
@@ -130,7 +135,7 @@
 	Open link	Link öffnen
 	Update	Aktualisieren
 	{name} icon	{name}-Symbol
-	Loading Creative Suite Launcher…	Creative Suite Launcher wird geladen…
+	Loading ArtCraft Launcher…	ArtCraft Launcher wird geladen…
 	Cancel update	Update abbrechen
 	Stop waiting; the update can be started again later	Nicht mehr warten; das Update kann später erneut gestartet werden
 	Download again	Erneut herunterladen
@@ -166,6 +171,7 @@ deckcraft	Presentations and slide shows	Präsentationen und Diashows
 gridcraft	Spreadsheets and data	Tabellenkalkulation und Daten
 cadcraft	Computer-aided design and drafting	Computergestütztes Konstruieren und Zeichnen
 soundcraft	Recording, editing and mixing audio	Audio aufnehmen, bearbeiten und mischen
+figcraft	Interface design and prototyping	Interface-Design und Prototyping
 
 # Contextual: month abbreviations for date rendering
 month	Jan	Jan.
@@ -203,10 +209,11 @@ month	Dec	Dez.
 	{version} installed → {latest} released	{version} installiert → {latest} veröffentlicht
 	Version {version}	Version {version}
 	{installed} installed · latest {latest}	{installed} installiert · neueste {latest}
+	Installed · latest {latest}	Installiert · neueste {latest}
 	Version {version} installed	Version {version} installiert
 	Version {latest}	Version {latest}
 	No release published yet	Noch keine Version veröffentlicht
-	Creative Suite Launcher	Creative Suite Launcher
+	ArtCraft Launcher	ArtCraft Launcher
 	App	App
 	Latest	Neueste
 	Released	Veröffentlicht
@@ -226,7 +233,6 @@ month	Dec	Dez.
 	Checking for updates…	Suche nach Updates…
 	Downloads the new version, replaces this one and opens it again	Lädt die neue Version herunter, ersetzt diese und öffnet sie erneut
 	Couldn't check for updates: {f}	Updates konnten nicht geprüft werden: {f}
-	Website (coming soon)	Website (demnächst)
 	GitHub repository	GitHub-Repository
 	ArtCraft	ArtCraft
 	Update 1 app	1 App aktualisieren
@@ -241,7 +247,7 @@ month	Dec	Dez.
 	Full changelog	Vollständiges Änderungsprotokoll
 	link	Link
 	No apps match	Keine passenden Apps
-	Open Creative Suite Launcher to update.	Öffne Creative Suite Launcher, um zu aktualisieren.
+	Open ArtCraft Launcher to update.	Öffne ArtCraft Launcher, um zu aktualisieren.
 	{name} {v} is available	{name} {v} ist verfügbar
 	{count} updates are available	{count} Updates sind verfügbar
 	These notes weren't fetched (GitHub's request limit was reached). They're on the release page.	Diese Hinweise wurden nicht geladen (das Anfragelimit von GitHub ist erreicht). Sie stehen auf der Release-Seite.
@@ -256,6 +262,7 @@ column	Released	Datum
 
 # Contextual: the filter tab names a group (the status pill says "Installed")
 filter	Installed	Installiert
+	{name} details	Details zu {name}
 
 # Plural forms for German (one|other)
 @plural	{n} app|{n} apps	{n} App|{n} Apps
@@ -291,7 +298,7 @@ filter	Installed	Installiert
 @id	launcher.notes	Neuigkeiten
 @id	launcher.dismiss	Ausblenden
 @id	settings.open	Einstellungen
-@id	settings.quit	Creative Suite Launcher beenden
+@id	settings.quit	ArtCraft Launcher beenden
 @id	view.grid	Raster
 @id	view.table	Tabelle
 @id	filter.all	Alle
@@ -315,13 +322,63 @@ filter	Installed	Installiert
 @id	linux.preferred_kind	Neue Apps installieren als
 @id	tray.close_to_tray	Beim Schließen des Fensters im Infobereich weiterlaufen
 @id	tray.show_on_current_desktop	Fenster auf dem aktuellen Schreibtisch zeigen
-@id	tray.login_item	Creative Suite Launcher bei der Anmeldung starten
+@id	tray.login_item	ArtCraft Launcher bei der Anmeldung starten
 @id	appearance.theme	Erscheinungsbild
 
 # Tray (menu bar) menu and tooltip
-	Show Creative Suite Launcher	Creative Suite Launcher anzeigen
+	Show ArtCraft Launcher	ArtCraft Launcher anzeigen
 	Check for Updates	Nach Updates suchen
 	Visit getartcraft.com	getartcraft.com besuchen
 	ArtCraft on GitHub	ArtCraft auf GitHub
 	Join the ArtCraft Discord	Dem ArtCraft-Discord beitreten
+	App details	App-Details
+	Close (Esc)	Schließen (Esc)
+	Features	Funktionen
+	Latest release	Neueste Version
+	Version	Version
+	Platforms	Plattformen
+	Releases	Versionen
+	Enlarge picture	Bild vergrößern
+	Click to enlarge	Zum Vergrößern klicken
+	Previous picture (←)	Vorheriges Bild (←)
+	Next picture (→)	Nächstes Bild (→)
+	Loading pictures…	Bilder werden geladen…
+	Pictures couldn't be loaded. Reopen this page to try again.	Die Bilder konnten nicht geladen werden. Beim erneuten Öffnen der Seite wird es noch einmal versucht.
+@plural	ArtCraft Launcher · {n} update available|ArtCraft Launcher · {n} updates available	ArtCraft Launcher · {n} Update verfügbar|ArtCraft Launcher · {n} Updates verfügbar
+	Install folder	Installationsordner
+	Default install folder	Standardordner für Installationen
+	System default	Systemstandard
+	Browse…	Durchsuchen…
+	Use default	Standard verwenden
+	New installs use this folder. Updates stay in their current location.	Neue Installationen verwenden diesen Ordner. Updates bleiben am bisherigen Speicherort.
+	Custom folders use AppImage on Linux.	Für eigene Ordner wird unter Linux AppImage verwendet.
+	The system manages install locations here.	Das System verwaltet hier die Installationsorte.
+@msg	couldn't use install folder {path}: {reason}	Installationsordner {path} konnte nicht verwendet werden: {reason}
+@msg	this release has no AppImage for a custom install folder	diese Veröffentlichung enthält kein AppImage für einen eigenen Installationsordner
+@msg	custom install folders aren't supported on this system	eigene Installationsordner werden auf diesem System nicht unterstützt
+@msg	{path} already exists and wasn't installed by ArtCraft Launcher	{path} existiert bereits und wurde nicht von ArtCraft Launcher installiert
+@msg	couldn't move {path} to Trash ({reason}). Remove it in Finder instead.	{path} konnte nicht in den Papierkorb verschoben werden ({reason}). Entfernen Sie es stattdessen im Finder.
+	Apps are placed inside this folder.	Apps werden in diesem Ordner abgelegt.
+	Replace what's there?	Vorhandenes ersetzen?
+	{path} already exists. Installing {name} will overwrite it.	{path} existiert bereits. Die Installation von {name} überschreibt es.
+	Replace	Ersetzen
+	Creative Suite Launcher {version} is available.	Creative Suite Launcher {version} ist verfügbar.
+	Creative Suite Launcher {version}	Creative Suite Launcher {version}
+	Start Creative Suite Launcher when I log in	Creative Suite Launcher bei der Anmeldung starten
+	Quit Creative Suite Launcher	Creative Suite Launcher beenden
+	Loading Creative Suite Launcher…	Creative Suite Launcher wird geladen…
+	Creative Suite Launcher	Creative Suite Launcher
+	Open Creative Suite Launcher to update.	Öffne Creative Suite Launcher, um zu aktualisieren.
+	Show Creative Suite Launcher	Creative Suite Launcher anzeigen
 @plural	Creative Suite Launcher · {n} update available|Creative Suite Launcher · {n} updates available	Creative Suite Launcher · {n} Update verfügbar|Creative Suite Launcher · {n} Updates verfügbar
+	Arabic suite update	Arabic suite update
+	Save your work and close the suite applications before continuing. The verified setup updates the launcher and all translated applications together, preserves your settings, and opens the launcher again.	Save your work and close the suite applications before continuing. The verified setup updates the launcher and all translated applications together, preserves your settings, and opens the launcher again.
+	Download and open setup	Download and open setup
+	Arabic edition updates from GitHub	Arabic edition updates from GitHub
+	Update Arabic suite	Update Arabic suite
+	Arabic edition is up to date	Arabic edition is up to date
+	No Arabic release has been published yet	No Arabic release has been published yet
+	Could not check Arabic updates. Try again when connected.	Could not check Arabic updates. Try again when connected.
+	Check for updates to the complete Arabic edition	Check for updates to the complete Arabic edition
+	Automatic checks run once a day. Setup opens only when you choose to update.	Automatic checks run once a day. Setup opens only when you choose to update.
+	Arabic edition {tag} is available. Open the launcher to update the complete suite.	Arabic edition {tag} is available. Open the launcher to update the complete suite.

@@ -26,19 +26,24 @@ pub fn rpr_inner(w: &mut W, c: &CharProps) {
     if let Some(s) = &c.style {
         w.val("w:rStyle", s);
     }
-    // The complex-script font is written only when set: without it, Persian/Arabic text keeps
-    // the style's. Complex-script bold, italic and size default to the plain ones (they come in
-    // pairs, see `CharProps::overlay`), so text formatted here looks the same in Word.
-    match (&c.font, &c.font_cs) {
-        (Some(f), Some(cs)) => w.empty("w:rFonts", &[("w:ascii", f), ("w:hAnsi", f), ("w:cs", cs)]),
-        (Some(f), None) => w.empty("w:rFonts", &[("w:ascii", f), ("w:hAnsi", f)]),
-        (None, Some(cs)) => w.empty("w:rFonts", &[("w:cs", cs)]),
-        (None, None) => {}
+    // Emit only explicit properties so absent values keep inheriting from the style chain.
+    let mut fonts: Vec<(&str, &str)> = Vec::new();
+    if let Some(f) = &c.font {
+        fonts.extend([("w:ascii", f.as_str()), ("w:hAnsi", f.as_str())]);
+    }
+    if let Some(ea) = &c.font_ea {
+        fonts.push(("w:eastAsia", ea));
+    }
+    if let Some(cs) = &c.font_cs {
+        fonts.push(("w:cs", cs));
+    }
+    if !fonts.is_empty() {
+        w.empty("w:rFonts", &fonts);
     }
     toggle(w, "w:b", c.bold);
-    toggle(w, "w:bCs", c.bold_cs.or(c.bold));
+    toggle(w, "w:bCs", c.bold_cs);
     toggle(w, "w:i", c.italic);
-    toggle(w, "w:iCs", c.italic_cs.or(c.italic));
+    toggle(w, "w:iCs", c.italic_cs);
     toggle(w, "w:caps", c.caps);
     toggle(w, "w:smallCaps", c.small_caps);
     toggle(w, "w:strike", c.strike);
@@ -70,7 +75,7 @@ pub fn rpr_inner(w: &mut W, c: &CharProps) {
     if let Some(s) = c.size {
         w.val("w:sz", &half(s));
     }
-    if let Some(s) = c.size_cs.or(c.size) {
+    if let Some(s) = c.size_cs {
         w.val("w:szCs", &half(s));
     }
     if let Some(h) = c.highlight {
@@ -105,6 +110,9 @@ pub fn rpr_inner(w: &mut W, c: &CharProps) {
         (Some(l), None) => w.val("w:lang", l),
         (None, Some(b)) => w.empty("w:lang", &[("w:bidi", b)]),
         (None, None) => {}
+    }
+    if let Some(fx) = &c.text_effects {
+        super::wordart::rpr_effects(w, fx);
     }
 }
 
@@ -201,6 +209,35 @@ pub fn ppr_inner(w: &mut W, p: &ParaProps, framed: bool, num_change: Option<&Cha
             "w:framePr",
             &[("w:dropCap", "drop"), ("w:lines", &n(lines.min(10) as i64)), ("w:wrap", "around"), ("w:vAnchor", "text"), ("w:hAnchor", "text")],
         );
+    } else if let Some(f) = &p.frame {
+        let (fw, fh, fx, fy) = (f.w.map(twips), f.h.map(twips), twips(f.x), twips(f.y));
+        let (hs, vs) = (twips(f.h_space), twips(f.v_space));
+        let mut a: Vec<(&str, &str)> = Vec::new();
+        if let Some(v) = &fw {
+            a.push(("w:w", v));
+        }
+        if let Some(v) = &fh {
+            a.push(("w:h", v));
+            a.push(("w:hRule", if f.h_exact { "exact" } else { "atLeast" }));
+        }
+        if f.h_space > 0.0 {
+            a.push(("w:hSpace", &hs));
+        }
+        if f.v_space > 0.0 {
+            a.push(("w:vSpace", &vs));
+        }
+        a.push(("w:wrap", &f.wrap));
+        a.push(("w:vAnchor", &f.v_anchor));
+        a.push(("w:hAnchor", &f.h_anchor));
+        match &f.x_align {
+            Some(x) => a.push(("w:xAlign", x)),
+            None => a.push(("w:x", &fx)),
+        }
+        match &f.y_align {
+            Some(y) => a.push(("w:yAlign", y)),
+            None => a.push(("w:y", &fy)),
+        }
+        w.empty("w:framePr", &a);
     }
     toggle(w, "w:widowControl", p.widow_control);
     if let Some(nr) = p.numbering {
@@ -257,7 +294,13 @@ pub fn ppr_inner(w: &mut W, p: &ParaProps, framed: bool, num_change: Option<&Cha
     toggle(w, "w:autoSpaceDE", p.auto_space_de);
     toggle(w, "w:autoSpaceDN", p.auto_space_dn);
     toggle(w, "w:bidi", p.bidi);
-    if p.space_before.is_some() || p.space_after.is_some() || p.line_spacing.is_some() {
+    toggle(w, "w:snapToGrid", p.snap_to_grid);
+    if p.space_before.is_some()
+        || p.space_after.is_some()
+        || p.line_spacing.is_some()
+        || p.space_before_auto.is_some()
+        || p.space_after_auto.is_some()
+    {
         let before = p.space_before.map(|v| twips(v.max(0.0)));
         let after = p.space_after.map(|v| twips(v.max(0.0)));
         let line = p.line_spacing.map(|l| match l {
@@ -269,8 +312,14 @@ pub fn ppr_inner(w: &mut W, p: &ParaProps, framed: bool, num_change: Option<&Cha
         if let Some(b) = &before {
             a.push(("w:before", b));
         }
+        if let Some(on) = p.space_before_auto {
+            a.push(("w:beforeAutospacing", if on { "1" } else { "0" }));
+        }
         if let Some(x) = &after {
             a.push(("w:after", x));
+        }
+        if let Some(on) = p.space_after_auto {
+            a.push(("w:afterAutospacing", if on { "1" } else { "0" }));
         }
         if let Some((l, r)) = &line {
             a.push(("w:line", l));
@@ -278,16 +327,29 @@ pub fn ppr_inner(w: &mut W, p: &ParaProps, framed: bool, num_change: Option<&Cha
         }
         w.empty("w:spacing", &a);
     }
-    if p.indent_left.is_some() || p.indent_right.is_some() || p.indent_first.is_some() {
+    let chars = [p.indent_left_chars, p.indent_right_chars, p.indent_first_chars];
+    if p.indent_left.is_some() || p.indent_right.is_some() || p.indent_first.is_some() || chars.iter().any(Option::is_some) {
         let l = p.indent_left.map(twips);
         let r = p.indent_right.map(twips);
         let f = p.indent_first.map(|v| (v < 0.0, twips(v.abs())));
+        // Character units in hundredths of a character.
+        let hundredths = |v: f32| ((v.clamp(-1584.0, 1584.0) * 100.0).round() as i64).to_string();
+        let [lc, rc, fc] = chars.map(|c| c.map(|v| (v < 0.0, hundredths(v.abs()), hundredths(v))));
         let mut a: Vec<(&str, &str)> = Vec::new();
+        if let Some((_, _, v)) = &lc {
+            a.push(("w:leftChars", v));
+        }
         if let Some(l) = &l {
             a.push(("w:left", l));
         }
+        if let Some((_, _, v)) = &rc {
+            a.push(("w:rightChars", v));
+        }
         if let Some(r) = &r {
             a.push(("w:right", r));
+        }
+        if let Some((hang, v, _)) = &fc {
+            a.push((if *hang { "w:hangingChars" } else { "w:firstLineChars" }, v));
         }
         if let Some((hang, v)) = &f {
             a.push((if *hang { "w:hanging" } else { "w:firstLine" }, v));
@@ -295,6 +357,7 @@ pub fn ppr_inner(w: &mut W, p: &ParaProps, framed: bool, num_change: Option<&Cha
         w.empty("w:ind", &a);
     }
     toggle(w, "w:contextualSpacing", p.contextual_spacing);
+    toggle(w, "w:mirrorIndents", p.mirror_indents);
     if let Some(a) = p.align {
         w.val("w:jc", align_val(a));
     }
@@ -394,12 +457,19 @@ fn tblpr_inner(w: &mut W, t: &TableProps) {
     if let Some(c) = &t.caption {
         w.val("w:tblCaption", c);
     }
+    if let Some(d) = &t.description {
+        w.val("w:tblDescription", d);
+    }
 }
 
 /// `w:trPr` (when the row has any), with a tracked change last as for [`tblpr`].
 pub fn trpr(w: &mut W, r: &RowProps, change: Option<&ChangeAttrs>) {
+    if let Some(x) = &r.exceptions {
+        tblprex(w, x);
+    }
     let change = change.zip(r.fmt_change.as_ref());
-    if r.height.is_none() && !r.header && !r.cant_split && change.is_none() {
+    let gaps = r.grid_before > 0 || r.grid_after > 0 || r.w_before.is_some() || r.w_after.is_some();
+    if r.height.is_none() && !r.header && !r.cant_split && !gaps && change.is_none() {
         return;
     }
     w.open("w:trPr", &[]);
@@ -410,7 +480,48 @@ pub fn trpr(w: &mut W, r: &RowProps, change: Option<&ChangeAttrs>) {
     w.close("w:trPr");
 }
 
+/// `w:tblPrEx`: only the properties the row overrides (it takes no style, float or look).
+fn tblprex(w: &mut W, t: &TableProps) {
+    w.open("w:tblPrEx", &[]);
+    if let Some(p) = t.width_pct {
+        w.empty("w:tblW", &[("w:w", &n(round(p.clamp(0.0, 1000.0) * 50.0))), ("w:type", "pct")]);
+    } else if let Some(v) = t.width {
+        w.empty("w:tblW", &[("w:w", &twips(v.max(0.0))), ("w:type", "dxa")]);
+    }
+    if let Some(a) = t.align {
+        w.val("w:jc", align_val(if a == Align::Justify || a == Align::Distribute { Align::Left } else { a }));
+    }
+    if let Some(i) = t.indent {
+        w.empty("w:tblInd", &[("w:w", &twips(i)), ("w:type", "dxa")]);
+    }
+    if let Some(b) = &t.borders {
+        borders(w, "w:tblBorders", b, Some("w:insideH"), &[]);
+    }
+    if let Some(s) = t.shading {
+        w.empty("w:shd", &[("w:val", "clear"), ("w:color", "auto"), ("w:fill", &s.hex())]);
+    }
+    if t.fixed {
+        w.empty("w:tblLayout", &[("w:type", "fixed")]);
+    }
+    if let Some(m) = &t.cell_margins {
+        margins(w, "w:tblCellMar", m);
+    }
+    w.close("w:tblPrEx");
+}
+
 fn trpr_inner(w: &mut W, r: &RowProps) {
+    // The grid gaps go first, in the schema's order (as Word writes them).
+    if r.grid_before > 0 {
+        w.val("w:gridBefore", &n(r.grid_before.into()));
+    }
+    if r.grid_after > 0 {
+        w.val("w:gridAfter", &n(r.grid_after.into()));
+    }
+    for (name, width) in [("w:wBefore", r.w_before), ("w:wAfter", r.w_after)] {
+        if let Some(v) = width {
+            w.empty(name, &[("w:w", &twips(v)), ("w:type", "dxa")]);
+        }
+    }
     if r.cant_split {
         w.empty("w:cantSplit", &[]);
     }
@@ -463,13 +574,17 @@ fn tcpr_inner(w: &mut W, c: &CellProps) {
     if let Some(m) = &c.margins {
         margins(w, "w:tcMar", m);
     }
-    if c.text_direction.is_turned() {
+    if c.text_direction.is_turned() || c.text_direction_set {
         w.val("w:textDirection", c.text_direction.ooxml());
     }
     match c.valign {
-        VAlign::Top => {}
-        VAlign::Center => w.val("w:vAlign", "center"),
-        VAlign::Bottom => w.val("w:vAlign", "bottom"),
+        None => {}
+        Some(VAlign::Top) => w.val("w:vAlign", "top"),
+        Some(VAlign::Center) => w.val("w:vAlign", "center"),
+        Some(VAlign::Bottom) => w.val("w:vAlign", "bottom"),
+    }
+    if c.hide_mark {
+        w.empty("w:hideMark", &[]);
     }
 }
 

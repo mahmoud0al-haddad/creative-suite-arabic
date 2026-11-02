@@ -3,6 +3,7 @@
 @msg	 (searching… {s} of {p} pages)	 (جارٍ البحث… {s} من {p} صفحات)
 @msg	 ({n} at {dpi} dpi, the largest size they can be drawn at)	 ({n} بدقة {dpi} dpi، وهي أكبر دقة يمكن رسمها بها)
 @msg	 ({s} not exported: {first})	 ({s} لم تُصدَّر: {first})
+@msg	 on page {label}	 في الصفحة {label}
 @msg	 on page {p}	 في الصفحة {p}
 @msg	 · password-protected	 · محمي بكلمة مرور
 @msg	% of all commits	% من كل الإيداعات
@@ -31,6 +32,7 @@
 @msg	A clean-room, open-source PDF application written in Rust. MIT OR Apache-2.0.	تطبيق PDF مفتوح المصدر مكتوب بلغة Rust بأسلوب الغرفة النظيفة. MIT OR Apache-2.0.
 @msg	A diagonal CONFIDENTIAL watermark on every page.	علامة مائية قطرية CONFIDENTIAL على كل صفحة.
 @msg	A document needs at least one page: copy instead	المستند يحتاج إلى صفحة واحدة على الأقل: استخدم النسخ بدلًا من ذلك
+@msg	A font isn't embedded	أحد الخطوط غير مضمن
 @msg	A form field has additional actions	حقل نموذج له إجراءات إضافية
 @msg	A hidden panel cannot restore over the document view	لا يمكن استعادة اللوحة المخفية فوق عرض المستند
 @msg	A hidden panel has an invalid or duplicate identity	معرّف اللوحة المخفية غير صالح أو مكرر
@@ -40,6 +42,10 @@
 @msg	A stream refers to an external file	تدفق يشير إلى ملف خارجي
 @msg	A stream uses LZW compression	تدفق يستخدم ضغط LZW
 @msg	A summary describes the table's purpose and layout. Add a Summary attribute to each table.	الملخص يصف غرض الجدول وتخطيطه. أضف سمة Summary لكل جدول.
+@msg	A {} action isn't allowed	الإجراء {} غير مسموح به
+@msg	A {} annotation has additional actions	التعليق التوضيحي {} يتضمن إجراءات إضافية
+@msg	A {} annotation has no appearance stream	لا يوجد تدفق مظهر للتعليق التوضيحي {}
+@msg	A {} annotation isn't set to print, or is hidden	التعليق التوضيحي {} غير معد للطباعة أو مخفي
 @msg	AI assistant	مساعد الذكاء الاصطناعي
 @msg	About	حول
 @msg	About PdfCraft	حول PdfCraft
@@ -47,6 +53,7 @@
 @msg	Accessibility	إمكانية الوصول
 @msg	Accessibility Checker	مدقق إمكانية الوصول
 @msg	Accessibility Checker Options	خيارات مدقق إمكانية الوصول
+@msg	Accessibility Report	تقرير إمكانية الوصول
 @msg	Accessibility permission flag	علامة إذن إمكانية الوصول
 @msg	Accessibility permission flag is set	علامة إذن إمكانية الوصول مضبوطة
 @msg	Acrobat 3.0 and later (40-bit RC4)	Acrobat 3.0 وما بعده (RC4 40 بت)
@@ -61,6 +68,7 @@
 @msg	Active	نشط
 @msg	Actual Size	الحجم الفعلي
 @msg	Actual size	الحجم الفعلي
+@msg	Actual text	النص الفعلي
 @msg	Add	إضافة
 @msg	Add Bates numbering…	إضافة ترقيم بيتس…
 @msg	Add Page Numbers	إضافة أرقام الصفحات
@@ -92,6 +100,7 @@
 @msg	Add callout	إضافة وسيلة شرح
 @msg	Add checkmark	إضافة علامة صح
 @msg	Add cloud	إضافة سحابة
+@msg	Add comment	إضافة تعليق
 @msg	Add comments	إضافة تعليقات
 @msg	Add connected lines	إضافة خطوط متصلة
 @msg	Add content	إضافة محتوى
@@ -132,6 +141,7 @@
 @msg	Add strikethrough	إضافة شطب
 @msg	Add text	إضافة نص
 @msg	Add text box	إضافة مربع نص
+@msg	Add the PDFs to combine	أضف ملفات PDF المطلوب دمجها
 @msg	Add the choices people pick from.	أضف الخيارات التي يختار منها الناس.
 @msg	Add the files to combine	أضف الملفات المراد دمجها
 @msg	Add the steps this action runs, in order.	أضف الخطوات التي ينفذها هذا الإجراء بالترتيب.
@@ -143,10 +153,12 @@
 @msg	Add {what}	إضافة {what}
 @msg	Added 1 comment	أُضيف تعليق واحد
 @msg	Added more than once	أُضيف أكثر من مرة
+@msg	Added the first {n} PDFs in {folder}	تمت إضافة أول {n} ملفات PDF في {folder}
 @msg	Added the first {n} files in {folder}	أُضيفت أول {n} ملفات في {folder}
 @msg	Added {n} comments	أُضيف {n} تعليقات
 @msg	Adding images arrives on the web with file pickers for images	إضافة الصور ستتوفر على الويب مع منتقيات ملفات الصور
 @msg	Adds invisible text over each word; the page image is not changed	يضيف نصًا غير مرئي فوق كل كلمة؛ صورة الصفحة لا تتغير
+@msg	Adobe-authored font assets are excluded by the project's asset policy	تستبعد سياسة موارد المشروع ملفات الخطوط التي أنشأتها Adobe
 @msg	Advanced	متقدم
 @msg	Advanced Options {chevron}	خيارات متقدمة {chevron}
 @msg	Advanced optimization	تحسين متقدم
@@ -155,8 +167,8 @@
 @msg	Algorithm	الخوارزمية
 @msg	Align	محاذاة
 @msg	Align fields	محاذاة الحقول
-@msg	Align left	محاذاة لليسار
-@msg	Align right	محاذاة لليمين
+@msg	Align left	محاذاة إلى اليسار
+@msg	Align right	محاذاة إلى اليمين
 @msg	Alignment:	المحاذاة:
 @msg	All	الكل
 @msg	All annotations are tagged	كل التعليقات التوضيحية موسومة
@@ -174,6 +186,7 @@
 @msg	Allow Rich Text Formatting	السماح بتنسيق النص الغني
 @msg	Allow user to enter custom text	السماح للمستخدم بإدخال نص مخصص
 @msg	Allowed	مسموح
+@msg	Also recognize pages that already have text	التعرف على الصفحات التي تحتوي على نص أيضًا
 @msg	Alternate Text	النص البديل
 @msg	Alternate text	النص البديل
 @msg	Alternate text inside an element that already has alternate text is never read. Remove the inner alternate text.	النص البديل داخل عنصر له نص بديل بالفعل لا يُقرأ أبدًا. أزل النص البديل الداخلي.
@@ -182,6 +195,7 @@
 @msg	Alternate text on an element without page content is never reached. Remove it or attach the element to content.	النص البديل على عنصر بلا محتوى في الصفحة لا يُوصَل إليه أبدًا. أزله أو اربط العنصر بمحتوى.
 @msg	Alternate text should not hide annotation	النص البديل ينبغي ألا يخفي تعليقًا توضيحيًا
 @msg	Alternate text that will never be read	نص بديل لن يُقرأ أبدًا
+@msg	Always	دائماً
 @msg	An action is already running	يوجد إجراء قيد التشغيل بالفعل
 @msg	An action with this name already exists.	يوجد إجراء بهذا الاسم بالفعل.
 @msg	An embedded file has no AFRelationship	ملف مضمَّن ليس له AFRelationship
@@ -189,6 +203,7 @@
 @msg	An image has alternates or OPI information	صورة لها بدائل أو معلومات OPI
 @msg	An open-source PDF workbench — local, private, and scriptable.	منضدة عمل مفتوحة المصدر لملفات PDF — محلية وخاصة وقابلة للبرمجة.
 @msg	Angle	الزاوية
+@msg	Animation effects	تأثيرات الحركة
 @msg	Animation that flashes can cause seizures. Check scripts and media for flicker.	الحركة الوامضة قد تسبب نوبات. افحص السكربتات والوسائط بحثًا عن الوميض.
 @msg	Annotations, form fill-in, and digital signatures	التعليقات وتعبئة النماذج والتوقيعات الرقمية
 @msg	Another file dialog is still open. Finish with it first.	يوجد حوار ملفات آخر ما زال مفتوحًا. أنهِ العمل فيه أولًا.
@@ -197,7 +212,7 @@
 @msg	Anyone opening the document will need this password. It's applied when you save.	كل من يفتح المستند سيحتاج إلى كلمة المرور هذه. تُطبَّق عند الحفظ.
 @msg	Appear behind page	الظهور خلف الصفحة
 @msg	Appear on top of page	الظهور فوق الصفحة
-@msg	Appearance	المظهر
+@msg	Appearance	مظهر
 @msg	Appearance mode	وضع المظهر
 @msg	Appearance settings…	إعدادات المظهر…
 @msg	Application	التطبيق
@@ -211,7 +226,7 @@
 @msg	Apply redactions…	تطبيق الحجب…
 @msg	Apply scale	تطبيق المقياس
 @msg	Appropriate nesting	تداخل مناسب
-@msg	Apr needs positive arguments	تحتاج الدالة Apr إلى معاملات موجبة
+@msg	Apr needs positive arguments	تتطلب Apr معاملات موجبة
 @msg	April	أبريل
 @msg	Arbitrary Mask	قناع حر
 @msg	Archive documents	أرشفة المستندات
@@ -239,6 +254,7 @@
 @msg	Auto portrait/landscape	عمودي/أفقي تلقائيًا
 @msg	Auto-rotate pages	تدوير الصفحات تلقائيًا
 @msg	Auto-size text to fit redaction region	تحجيم النص تلقائيًا ليلائم منطقة الحجب
+@msg	Automatically	تلقائيًا
 @msg	Automatically tag PDF	وسم PDF تلقائيًا
 @msg	Available	متاح
 @msg	Back	رجوع
@@ -254,17 +270,18 @@
 @msg	Bicubic downsampling to	تقليل العينات بطريقة Bicubic إلى
 @msg	Binary assets added	الأصول الثنائية المضافة
 @msg	Binary assets removed	الأصول الثنائية المُزالة
-@msg	Binding	التجليد
-@msg	Binding:	التجليد:
+@msg	Binding	اتجاه التجليد
+@msg	Binding:	اتجاه التجليد:
 @msg	Black	أسود
 @msg	Black and white	أبيض وأسود
+@msg	Black on white	أسود على أبيض
 @msg	Blank page	صفحة فارغة
 @msg	Blue	أزرق
-@msg	Bold	غامق
+@msg	Bold	عريض
 @msg	Booklet	كتيّب
 @msg	Booklet subset:	جزء الكتيّب:
 @msg	Bookmark options	خيارات الإشارات المرجعية
-@msg	Bookmarks	الإشارات المرجعية
+@msg	Bookmarks	إشارات مرجعية
 @msg	Bookmarks Panel and Page	لوحة الإشارات المرجعية والصفحة
 @msg	Bookmarks are present in large documents	الإشارات المرجعية موجودة في المستندات الكبيرة
 @msg	Border Color:	لون الحد:
@@ -273,18 +290,20 @@
 @msg	Both sides	الوجهان
 @msg	Bottom	أسفل
 @msg	Bottom:	الأسفل:
-@msg	Box	المربع
+@msg	Box	مربع
 @msg	Bring your own model (off by default)	استخدم نموذجك الخاص (متوقف افتراضيًا)
+@msg	Browser's print dialog	مربع حوار الطباعة في المتصفح
 @msg	Browse…	استعراض…
-@msg	Butt	مستوية
+@msg	Butt	مسطحة
 @msg	Button	زر
 @msg	Button Properties	خصائص الزر
 @msg	Button Style:	نمط الزر:
 @msg	Button is checked by default	الزر محدد افتراضيًا
 @msg	Buttons with the same name and value are selected in unison	الأزرار ذات الاسم والقيمة نفسيهما تُحدَّد معًا
 @msg	Bytes	بايت
-@msg	CCITT fax images can't be exported yet	تصدير صور الفاكس بتنسيق CCITT غير متاح بعد
-@msg	CTerm needs positive arguments	تحتاج الدالة CTerm إلى معاملات موجبة
+@msg	CCITT fax images can't be exported yet	لا يمكن تصدير صور فاكس CCITT بعد
+@msg	CRL Signing	توقيع قوائم إبطال الشهادات
+@msg	CTerm needs positive arguments	تتطلب CTerm معاملات موجبة
 @msg	Calculate	الحساب
 @msg	Calibrate from two points	المعايرة من نقطتين
 @msg	Callout	وسيلة شرح
@@ -301,6 +320,7 @@
 @msg	Center vertically	توسيط عمودي
 @msg	Center window on screen	توسيط النافذة على الشاشة
 @msg	Centre	توسيط
+@msg	Certificate Signing	توقيع الشهادات
 @msg	Certificate Viewer	عارض الشهادات
 @msg	Certificate authority	سلطة تصديق
 @msg	Certificates	الشهادات
@@ -308,6 +328,10 @@
 @msg	Certify	تصديق
 @msg	Certify (invisible signature)	تصديق (توقيع غير مرئي)
 @msg	Certify (visible signature)	تصديق (توقيع مرئي)
+@msg	Change Author	تغيير المؤلف
+@msg	Change Keywords	تغيير الكلمات المفتاحية
+@msg	Change Subject	تغيير الموضوع
+@msg	Change Title	تغيير العنوان
 @msg	Change comment properties	تغيير خصائص التعليق
 @msg	Change document properties	تغيير خصائص المستند
 @msg	Change field properties	تغيير خصائص الحقل
@@ -318,6 +342,8 @@
 @msg	Change reading options…	تغيير خيارات القراءة…
 @msg	Change settings…	تغيير الإعدادات…
 @msg	Change signature	تغيير التوقيع
+@msg	Change tag properties	تغيير خصائص الوسم
+@msg	Change the colour of line art as well as text	تغيير لون الخطوط أيضًا، وليس النص فقط
 @msg	Change {key}	تغيير {key}
 @msg	Change {what}	تغيير {what}
 @msg	Changes allowed	التغييرات المسموح بها
@@ -347,20 +373,27 @@
 @msg	Checking for a newer version…	جارٍ التحقق من وجود إصدار أحدث…
 @msg	Checkmark	علامة صح
 @msg	Choose a PNG or JPEG image (up to 4 MiB). Transparency is preserved.	اختر صورة PNG أو JPEG (حتى 4 MiB). الشفافية تُحفظ.
-@msg	Choose a PNG or JPEG image.	اختر صورة بصيغة PNG أو JPEG.
+@msg	Choose a PNG or JPEG image.	اختر صورة PNG أو JPEG.
+@msg	Choose a PNG or JPEG photo.	اختر صورة فوتوغرافية بصيغة PNG أو JPEG.
+@msg	Choose a digital ID.	اختر هوية رقمية.
+@msg	Choose a file…	اختيار ملف…
 @msg	Choose a folder for the exported files	اختر مجلدًا للملفات المصدَّرة
 @msg	Choose a folder for the extracted pages	اختر مجلدًا للصفحات المستخرجة
 @msg	Choose a folder for the results	اختر مجلدًا للنتائج
 @msg	Choose a folder for the searchable files	اختر مجلدًا للملفات القابلة للبحث
 @msg	Choose a folder for the split files	اختر مجلدًا للملفات المقسَّمة
 @msg	Choose a folder on this computer to pin	اختر مجلدًا على هذا الحاسوب لتثبيته
+@msg	Choose a folder…	اختيار مجلد…
 @msg	Choose a layout:	اختر تخطيطًا:
+@msg	Choose a photo smaller than 4 MiB and 32 megapixels (at most 8192 pixels per side).	اختر صورة فوتوغرافية أصغر من 4 MiB و32 ميغابكسل (8192 بكسل لكل جانب كحد أقصى).
 @msg	Choose a stamp, then click on the page to place it.	اختر ختمًا، ثم انقر على الصفحة لوضعه.
 @msg	Choose an image	اختر صورة
-@msg	Choose an image smaller than 4 MiB and 32 megapixels (at most 8192 pixels per side).	اختر صورة أصغر من 4 ميبيبايت و32 ميغابكسل، وبحد أقصى 8192 بكسل لكل ضلع.
+@msg	Choose an image smaller than 4 MiB and 32 megapixels (at most 8192 pixels per side).	اختر صورة أصغر من 4 MiB و32 ميغابكسل (8192 بكسل لكل جانب كحد أقصى).
 @msg	Choose images	اختر صورًا
 @msg	Choose image…	اختيار صورة…
+@msg	Choose photo…	اختيار صورة…
 @msg	Choose the digital ID that you want to use for signing:	اختر المعرّف الرقمي الذي تريد استخدامه للتوقيع:
+@msg	Choose…	اختيار…
 @msg	Circle	دائرة
 @msg	Clean Up	تنظيف
 @msg	Clean-up	تنظيف
@@ -381,6 +414,7 @@
 @msg	Clockwise 90 degrees	90 درجة مع عقارب الساعة
 @msg	Close	إغلاق
 @msg	Close (Esc)	إغلاق (Esc)
+@msg	Close Tab	إغلاق علامة التبويب
 @msg	Close all	إغلاق الكل
 @msg	Close file	إغلاق الملف
 @msg	Close panel	إغلاق اللوحة
@@ -389,12 +423,15 @@
 @msg	Collapse	طي
 @msg	Collapse all	طي الكل
 @msg	Collapse all bookmarks	طي كل الإشارات المرجعية
+@msg	Collapse tag	طي الوسم
 @msg	Collate	ترتيب النسخ
+@msg	Color	لون
 @msg	Color Images	الصور الملونة
 @msg	Color Spaces	فضاءات الألوان
 @msg	Color contrast	تباين الألوان
 @msg	Color:	اللون:
-@msg	Colour	اللون
+@msg	Colour	لون
+@msg	Colours are remapped while rendering; the document itself never changes.	تُستبدل الألوان عند الرسم؛ المستند نفسه لا يتغير أبدًا.
 @msg	Column select	تحديد عمود
 @msg	Comb of	خانات عددها
 @msg	Comb of characters	خانات محارف
@@ -407,7 +444,9 @@
 @msg	Coming in milestone	قادم في المرحلة
 @msg	Coming in milestone {m}. Items marked Ready work today.	قادم في المرحلة {m}. العناصر الموسومة بـ«جاهز» تعمل اليوم.
 @msg	Command	أمر
+@msg	Comment	تعليق
 @msg	Comment and form data	بيانات التعليقات والنماذج
+@msg	Comment and review	التعليق والمراجعة
 @msg	Comment list	قائمة التعليقات
 @msg	Commenting	التعليق
 @msg	Commenting, filling in form fields, and signing existing signature fields	التعليق وتعبئة حقول النموذج وتوقيع حقول التوقيع الموجودة
@@ -430,7 +469,7 @@
 @msg	Completed	مكتمل
 @msg	Compress a PDF	ضغط ملف PDF
 @msg	Compress document structure (object streams)	ضغط بنية المستند (تدفقات الكائنات)
-@msg	Compression	الضغط
+@msg	Compression	ضغط
 @msg	Configure New Digital ID	إعداد معرّف رقمي جديد
 @msg	Configure a Digital ID for Signing	إعداد معرّف رقمي للتوقيع
 @msg	Confirm Password	تأكيد كلمة المرور
@@ -445,23 +484,33 @@
 @msg	Contributors	المساهمون
 @msg	Convert	تحويل
 @msg	Convert colors	تحويل الألوان
+@msg	Copied to clipboard	تم النسخ إلى الحافظة
 @msg	Copied {what}	تم نسخ {what}
-@msg	Copies:	النسخ:
+@msg	Copies, two-sided printing and colour are chosen in the browser's print dialog.	يُختار عدد النسخ والطباعة على الوجهين والألوان في مربع حوار الطباعة في المتصفح.
+@msg	Copies:	عدد النسخ:
 @msg	Copy	نسخ
+@msg	Copy Image	نسخ الصورة
+@msg	Copy Image in Original Format	نسخ الصورة بتنسيقها الأصلي
 @msg	Copy or cut pages first	انسخ صفحات أو قصها أولًا
 @msg	Copy pages	نسخ الصفحات
 @msg	Copy selected text	نسخ النص المحدد
 @msg	Copy text	نسخ النص
+@msg	Copy to clipboard	نسخ إلى الحافظة
 @msg	Correct recognized text	تصحيح النص المتعرَّف عليه
+@msg	Could not reveal the file in the system file manager	تعذر إظهار الملف في مدير ملفات النظام
 @msg	Could not save: {e}	تعذّر الحفظ: {e}
 @msg	Couldn't add {name}: {e}	تعذّرت إضافة {name}: {e}
 @msg	Couldn't check for updates: {e}	تعذّر التحقق من التحديثات: {e}
 @msg	Couldn't combine files: {e}	تعذّر دمج الملفات: {e}
+@msg	Couldn't copy the image: {e}	تعذّر نسخ الصورة: {e}
 @msg	Couldn't create a PDF: {e}	تعذّر إنشاء ملف PDF: {e}
-@msg	Couldn't decode the signature image: {e}	تعذّر فك ترميز صورة التوقيع: {e}
+@msg	Couldn't decode the photo: {0}	تعذر فك ترميز الصورة الفوتوغرافية: {0}
+@msg	Couldn't decode the signature image: {0}	تعذر فك ترميز صورة التوقيع: {0}
+@msg	Couldn't decode the signature image: {e}	تعذر فك ترميز صورة التوقيع: {e}
 @msg	Couldn't download {name}: {e}	تعذّر تنزيل {name}: {e}
 @msg	Couldn't extract pages: {e}	تعذّر استخراج الصفحات: {e}
 @msg	Couldn't fit the visible content: {e}	تعذّرت ملاءمة المحتوى المرئي: {e}
+@msg	Couldn't follow linked PDF: {reason}	تعذّر فتح ملف PDF المرتبط: {reason}
 @msg	Couldn't import the signature image: {e}	تعذّر استيراد صورة التوقيع: {e}
 @msg	Couldn't open revision {n}: {e}	تعذّر فتح المراجعة {n}: {e}
 @msg	Couldn't open the printer's preferences: {e}	تعذّر فتح تفضيلات الطابعة: {e}
@@ -470,7 +519,10 @@
 @msg	Couldn't open {name}: {e}	تعذّر فتح {name}: {e}
 @msg	Couldn't optimize the file	تعذّر تحسين الملف
 @msg	Couldn't optimize the file: {e}	تعذّر تحسين الملف: {e}
-@msg	Couldn't read the signature image: {e}	تعذّرت قراءة صورة التوقيع: {e}
+@msg	Couldn't print from the browser ({e}); downloaded {name} to print instead	تعذّرت الطباعة من المتصفح ({e})؛ نُزّل {name} لطباعته بدلًا من ذلك
+@msg	Couldn't read the photo: {0}	تعذرت قراءة الصورة الفوتوغرافية: {0}
+@msg	Couldn't read the signature image: {0}	تعذرت قراءة صورة التوقيع: {0}
+@msg	Couldn't read the signature image: {e}	تعذرت قراءة صورة التوقيع: {e}
 @msg	Couldn't read {name}: {e}	تعذّرت قراءة {name}: {e}
 @msg	Couldn't recover {name}: {e}	تعذّرت استعادة {name}: {e}
 @msg	Couldn't reload {name}: {e}	تعذّرت إعادة تحميل {name}: {e}
@@ -482,6 +534,7 @@
 @msg	Couldn't summarize comments: {e}	تعذّر تلخيص التعليقات: {e}
 @msg	Couldn't take the snapshot: {e}	تعذّر التقاط اللقطة: {e}
 @msg	Couldn't unlock {name}: {e}	تعذّر إلغاء قفل {name}: {e}
+@msg	Couldn't use the photo: {e}	تعذّر استخدام الصورة: {e}
 @msg	Couldn't use {name}: {e}	تعذّر استخدام {name}: {e}
 @msg	Couldn't write {name}: {e}	تعذّرت كتابة {name}: {e}
 @msg	Couldn't write {path}: {e}	تعذّرت الكتابة في {path}: {e}
@@ -501,9 +554,12 @@
 @msg	Create a new Digital ID (self-signed, saved to a password-protected file)	إنشاء معرّف رقمي جديد (موقَّع ذاتيًا، يُحفظ في ملف محمي بكلمة مرور)
 @msg	Create accessibility report	إنشاء تقرير إمكانية الوصول
 @msg	Create custom stamp…	إنشاء ختم مخصص…
+@msg	Create folder	إنشاء مجلد
 @msg	Create from	إنشاء من
 @msg	Create link	إنشاء رابط
+@msg	Create links	إنشاء روابط
 @msg	Create links from URLs	إنشاء روابط من عناوين URL
+@msg	Create separate PDFs…	إنشاء ملفات PDF منفصلة…
 @msg	Create {what}	إنشاء {what}
 @msg	Created 1 link	أُنشئ رابط واحد
 @msg	Created a PDF from the first {n} files	أُنشئ ملف PDF من أول {n} ملفات
@@ -531,7 +587,7 @@
 @msg	Custom:	مخصص:
 @msg	Cut	قص
 @msg	Cut and stack	قص وتكديس
-@msg	Cut and stack needs Two-sided: Off. Print single-sided sheets.	يتطلب القص والتكديس إيقاف الطباعة على الوجهين. اطبع الأوراق على وجه واحد.
+@msg	Cut and stack needs Two-sided: Off. Print single-sided sheets.	يتطلب القص والتكديس تعطيل الطباعة على الوجهين. اطبع الأوراق على وجه واحد.
 @msg	Cut marks	علامات القص
 @msg	Cut pages	قص الصفحات
 @msg	Cut {what}	تم قص {what}
@@ -541,6 +597,7 @@
 @msg	Dark gray theme	سمة رمادية داكنة
 @msg	Dark theme	سمة داكنة
 @msg	Dashed	متقطع
+@msg	Data Encipherment	تشفير البيانات
 @msg	Date	تاريخ
 @msg	Date field	حقل تاريخ
 @msg	Date format	تنسيق التاريخ
@@ -548,6 +605,7 @@
 @msg	December	ديسمبر
 @msg	Decimal places:	المنازل العشرية:
 @msg	Decimals	المنازل العشرية
+@msg	Decipher Only	فك التشفير فقط
 @msg	Declared conformance: {shown}	المطابقة المعلنة: {shown}
 @msg	Decorative figure	شكل زخرفي
 @msg	Default	افتراضي
@@ -577,20 +635,25 @@
 @msg	Describe the figure	صِف الشكل
 @msg	Description	الوصف
 @msg	Description:	الوصف:
+@msg	Detailed Report	تقرير مفصل
 @msg	Details	التفاصيل
 @msg	Detect form fields	اكتشاف حقول النموذج
 @msg	Detected 1 form field	اكتُشف حقل نموذج واحد
 @msg	Detected {n} form fields	اكتُشف {n} حقول نموذج
 @msg	Device colour is used, but there is no PDF/A output intent	يُستخدم لون الجهاز، لكن لا يوجد هدف إخراج PDF/A
+@msg	DeviceCMYK is used, but the PDF/A output intent isn't a CMYK profile	يُستخدم DeviceCMYK، لكن ملف تعريف مقصد الإخراج لـPDF/A ليس CMYK
 @msg	DeviceCMYK is used: it needs a CMYK output intent (not added automatically)	يُستخدم DeviceCMYK: يحتاج إلى هدف إخراج CMYK (لا يُضاف تلقائيًا)
+@msg	DeviceRGB is used, but the PDF/A output intent isn't an RGB profile	يُستخدم DeviceRGB، لكن ملف تعريف مقصد الإخراج لـPDF/A ليس RGB
 @msg	Diagnostic details	تفاصيل التشخيص
 @msg	Diamond	معيّن
 @msg	Digital ID	معرّف رقمي
 @msg	Digital ID password	كلمة مرور المعرّف الرقمي
+@msg	Digital Signature	التوقيع الرقمي
 @msg	Digital Signature Properties	خصائص التوقيع الرقمي
 @msg	Digital signature	توقيع رقمي
 @msg	Digitally sign	توقيع رقمي
 @msg	Direction:	الاتجاه:
+@msg	Disabled	معطّل
 @msg	Discard	تجاهل
 @msg	Discard Objects	تجاهل الكائنات
 @msg	Discard User Data	تجاهل بيانات المستخدم
@@ -606,6 +669,7 @@
 @msg	Discard hidden layer content	تجاهل محتوى الطبقات المخفية
 @msg	Discard hidden text	تجاهل النص المخفي
 @msg	Discard private data of other applications	تجاهل البيانات الخاصة بالتطبيقات الأخرى
+@msg	Discard this text (Esc)	تجاهل هذا النص (Esc)
 @msg	Dismiss	تجاهل
 @msg	Display name	الاسم المعروض
 @msg	Display theme	سمة العرض
@@ -613,7 +677,7 @@
 @msg	Distinguished name	الاسم المميز
 @msg	Distribute	توزيع
 @msg	Distribute fields	توزيع الحقول
-@msg	Document	المستند
+@msg	Document	مستند
 @msg	Document JavaScripts	سكربتات JavaScript للمستند
 @msg	Document JavaScripts…	سكربتات JavaScript للمستند…
 @msg	Document Overhead	الحمل الإضافي للمستند
@@ -637,6 +701,7 @@
 @msg	Documents of more than 20 pages need bookmarks for navigation. Add bookmarks for the main sections.	المستندات التي تزيد على 20 صفحة تحتاج إلى إشارات مرجعية للتنقل. أضف إشارات مرجعية للأقسام الرئيسية.
 @msg	Don't save	عدم الحفظ
 @msg	Done	تم
+@msg	Done adding text	إنهاء إضافة النص
 @msg	Dot	نقطة
 @msg	Double-click	نقر مزدوج
 @msg	Download	تنزيل
@@ -663,9 +728,11 @@
 @msg	Drawing	رسم
 @msg	Drawing scale	مقياس الرسم
 @msg	Drawing scale changes. Use Actual size for full-scale plans.	يتغير مقياس الرسم. استخدم الحجم الفعلي لطباعة المخططات بمقياسها الأصلي.
+@msg	Drop PDFs or folders here, or choose them.	أسقط ملفات PDF أو المجلدات هنا، أو اخترها.
 @msg	Drop PDFs, images, text files or folders here, or choose them.	أفلت ملفات PDF أو الصور أو الملفات النصية أو المجلدات هنا، أو اخترها.
 @msg	Drop-down list	قائمة منسدلة
 @msg	Dropdown Properties	خصائص القائمة المنسدلة
+@msg	Duplicate	تكرار
 @msg	Duplicate "{name}" onto:	تكرار "{name}" على:
 @msg	Duplicate Field	تكرار الحقل
 @msg	Duplicate field	تكرار الحقل
@@ -701,18 +768,22 @@
 @msg	Enable Acrobat JavaScript	تفعيل Acrobat JavaScript
 @msg	Enable copying of text, images, and other content	تفعيل نسخ النصوص والصور والمحتويات الأخرى
 @msg	Enable text access for screen reader devices for the visually impaired	تفعيل وصول أجهزة قراءة الشاشة إلى النص لضعاف البصر
+@msg	Enabled	مفعل
+@msg	Encipher Only	التشفير فقط
 @msg	Encrypt	تشفير
 @msg	Encrypt with certificate	تشفير بشهادة
 @msg	Encryption	التشفير
 @msg	End entity	كيان نهائي
 @msg	Endpoint	نقطة نهاية
 @msg	Endpoints	نقاط النهاية
+@msg	English	English
 @msg	English plural forms must be nonempty and have matching placeholders	يجب ألا تكون صيغ الجمع الإنجليزية فارغة، ويجب أن تتطابق عناصرها النائبة
 @msg	Enhance camera image	تحسين صورة الكاميرا
 @msg	Enhance page	تحسين الصفحة
 @msg	Enhance scanned file	تحسين الملف الممسوح ضوئيًا
 @msg	Enter a URL	أدخل عنوان URL
-@msg	Enter a name.	أدخل اسمًا.
+@msg	Enter a name.	أدخل اسماً.
+@msg	Enter a page number	أدخل رقم صفحة
 @msg	Enter permissions password…	أدخل كلمة مرور الأذونات…
 @msg	Enter the field names	أدخل أسماء الحقول
 @msg	Enter the password that opens it	أدخل كلمة المرور التي تفتحه
@@ -721,10 +792,13 @@
 @msg	Erase	محو
 @msg	Erase drawings	محو الرسومات
 @msg	Eraser	ممحاة
+@msg	Error	خطأ
 @msg	Even Pages Only	الصفحات الزوجية فقط
 @msg	Even and Odd Pages	الصفحات الزوجية والفردية
 @msg	Even pages	الصفحات الزوجية
 @msg	Even pages only	الصفحات الزوجية فقط
+@msg	Every PDF in the folder	كل ملفات PDF في المجلد
+@msg	Every PDF in the folder and the folders inside it	كل ملفات PDF في المجلد والمجلدات الموجودة بداخله
 @msg	Every PDF, image and text file in the folder	كل ملفات PDF والصور والملفات النصية في المجلد
 @msg	Every PDF, image and text file in the folder and the folders inside it	كل ملفات PDF والصور والملفات النصية في المجلد والمجلدات التي بداخله
 @msg	Everything on a page must be tagged or marked as an artifact (decoration, headers, footers). Tag the untagged content.	كل ما في الصفحة يجب أن يكون موسومًا أو معلَّمًا كعنصر زخرفي (زخارف، رؤوس، تذييلات). وسّم المحتوى غير الموسوم.
@@ -734,6 +808,7 @@
 @msg	Expand	توسيع
 @msg	Expand all	توسيع الكل
 @msg	Expand all bookmarks	توسيع كل الإشارات المرجعية
+@msg	Expand tag	توسيع الوسم
 @msg	Expand top-level bookmarks	توسيع إشارات المستوى الأعلى
 @msg	Explain	شرح
 @msg	Export	تصدير
@@ -756,6 +831,7 @@
 @msg	Export to	تصدير إلى
 @msg	Export to HTML…	تصدير إلى HTML…
 @msg	Export to Image	تصدير إلى صورة
+@msg	Export to PowerPoint…	تصدير إلى PowerPoint…
 @msg	Export to RTF…	تصدير إلى RTF…
 @msg	Export to Text	تصدير إلى نص
 @msg	Export to Word…	تصدير إلى Word…
@@ -779,6 +855,7 @@
 @msg	Failed	فاشل
 @msg	February	فبراير
 @msg	Field	الحقل
+@msg	Field "{}" on page {p} has no description (tooltip)	لا يوجد وصف (تلميح) للحقل «{}» في الصفحة {p}
 @msg	Field descriptions	أوصاف الحقول
 @msg	Field is used for file selection	الحقل يُستخدم لاختيار ملف
 @msg	Field list	قائمة الحقول
@@ -799,7 +876,10 @@
 @msg	File Name	اسم الملف
 @msg	File attachments	الملفات المرفقة
 @msg	File name	اسم الملف
+@msg	File reveal is not available on this platform	إظهار الملف غير متاح على هذه المنصة
 @msg	File size	حجم الملف
+@msg	FileManager1 unavailable	FileManager1 غير متاح
+@msg	Filename	اسم الملف
 @msg	Files are combined from top to bottom. Leave Pages empty to take every page.	تُدمج الملفات من الأعلى إلى الأسفل. اترك «الصفحات» فارغًا لأخذ كل الصفحات.
 @msg	Files are combined in the order shown. Drag them to change it.	تُدمج الملفات بالترتيب المعروض. اسحبها لتغيير الترتيب.
 @msg	Files are combined in this order. Leave Pages empty to take every page.	تُدمج الملفات بهذا الترتيب. اترك «الصفحات» فارغًا لأخذ كل الصفحات.
@@ -828,12 +908,14 @@
 @msg	Filling in form fields and signing existing signature fields	تعبئة حقول النموذج وتوقيع حقول التوقيع الموجودة
 @msg	Filling of form fields	تعبئة حقول النموذج
 @msg	Filter comments	تصفية التعليقات
+@msg	Find a tag	ابحث عن وسم
 @msg	Find options	خيارات البحث
 @msg	Find text	البحث عن نص
 @msg	Find text and redact	البحث عن نص وحجبه
 @msg	Find text and redact…	البحث عن نص وحجبه…
 @msg	Find tools and commands	البحث عن الأدوات والأوامر
 @msg	Find tools and commands…	البحث عن الأدوات والأوامر…
+@msg	Finding document fonts…	جارٍ البحث عن خطوط المستند…
 @msg	Find…	بحث…
 @msg	Finish or discard the text being edited before selecting several objects.	أكمل تحرير النص أو تجاهله قبل تحديد عدة عناصر.
 @msg	First	الأول
@@ -856,6 +938,7 @@
 @msg	Fixed what could be fixed; 1 problem remains	أُصلح ما أمكن إصلاحه؛ بقيت مشكلة واحدة
 @msg	Fixed what could be fixed; {n} problems remain	أُصلح ما أمكن إصلاحه؛ بقيت {n} مشكلات
 @msg	Flatten	تسطيح
+@msg	Flatten Fill & Sign	تسطيح التعبئة والتوقيع
 @msg	Flatten Fill & Sign when saving	تسطيح التعبئة والتوقيع عند الحفظ
 @msg	Flatten comments	تسطيح التعليقات
 @msg	Flatten form fields	تسطيح حقول النموذج
@@ -867,16 +950,22 @@
 @msg	Flip on short edge	قلب على الحافة القصيرة
 @msg	Flip vertical	قلب عمودي
 @msg	Float panel	تعويم اللوحة
+@msg	Folder	مجلد
 @msg	Folders	المجلدات
+@msg	Font	خط
+@msg	Font (unnamed) on page {p} doesn't map its characters to Unicode	الخط (غير المسمى) في الصفحة {p} لا يربط محارفه بـUnicode
 @msg	Font Size:	حجم الخط:
 @msg	Font colour:	لون الخط:
 @msg	Font size 0 uses automatic sizing.	حجم الخط 0 يستخدم التحجيم التلقائي.
 @msg	Font size:	حجم الخط:
+@msg	Font {} on page {p} doesn't map its characters to Unicode	الخط {} في الصفحة {p} لا يربط محارفه بـUnicode
 @msg	Font:	الخط:
 @msg	Font: Helvetica	الخط: Helvetica
 @msg	Fonts	الخطوط
 @msg	Fonts must map their characters to Unicode so text can be read and copied. Fix the fonts or recreate the PDF.	يجب أن تربط الخطوط محارفها بـ Unicode كي يمكن قراءة النص ونسخه. أصلح الخطوط أو أعد إنشاء ملف PDF.
+@msg	For page sizes and margins.	لأحجام الصفحات والهوامش.
 @msg	Form data and PDF forms	بيانات النماذج ونماذج PDF
+@msg	Form field on page {p} isn't tagged	حقل النموذج في الصفحة {p} غير موسوم
 @msg	Form fields	حقول النموذج
 @msg	Form fields are flattened: their values stay visible. Saving rewrites the whole file.	حقول النموذج تُسطَّح: قيمها تبقى مرئية. الحفظ يعيد كتابة الملف كله.
 @msg	Form fields must be in the tag tree (Form tags) to be announced. Tag the form fields.	حقول النموذج يجب أن تكون في شجرة الوسوم (وسوم Form) كي تُعلَن. وسّم حقول النموذج.
@@ -908,6 +997,7 @@
 @msg	Gray	رمادي
 @msg	Grayscale Images	الصور الرمادية
 @msg	Green	أخضر
+@msg	Green on black	أخضر على أسود
 @msg	Greyscale	تدرج رمادي
 @msg	Grid view	عرض الشبكة
 @msg	H / Space (hold)	H / مسافة (مع الضغط المستمر)
@@ -918,10 +1008,11 @@
 @msg	Header cells (TH) tell listeners what each column or row holds. Mark the header cells.	خلايا الرأس (TH) تخبر المستمعين بما يحتويه كل عمود أو صف. علّم خلايا الرأس.
 @msg	Headers	الرؤوس
 @msg	Heading levels shouldn't skip (an H1 followed by an H3). Retag the headings.	مستويات العناوين ينبغي ألا تتخطى مستوى (H1 يتبعه H3). أعد وسم العناوين.
-@msg	Headings	العناوين
+@msg	Headings	عناوين الصفوف والأعمدة
 @msg	Height	الارتفاع
 @msg	Height:	الارتفاع:
 @msg	Help	مساعدة
+@msg	Help…	المساعدة…
 @msg	Hidden layers	الطبقات المخفية
 @msg	Hidden text	النص المخفي
 @msg	Hide a field	إخفاء حقل
@@ -936,7 +1027,7 @@
 @msg	High	عالية
 @msg	High Resolution	دقة عالية
 @msg	High resolution	دقة عالية
-@msg	Highlight	تمييز
+@msg	Highlight	الإبراز
 @msg	Highlight Style:	نمط التمييز:
 @msg	Highlight fields	تمييز الحقول
 @msg	Highlight text	تمييز النص
@@ -946,6 +1037,7 @@
 @msg	Horizontal reversed	أفقي معكوس
 @msg	Horizontal scale	المقياس الأفقي
 @msg	Horizontally	أفقيًا
+@msg	H{n} follows an H{d}; headings should not skip levels	يأتي H{n} بعد H{d}؛ يجب ألا تتجاوز العناوين مستويات
 @msg	Icon	الأيقونة
 @msg	Identity	الهوية
 @msg	Image	صورة
@@ -955,6 +1047,7 @@
 @msg	Images	صور
 @msg	Images and text	صور ونص
 @msg	Images and text (converted to PDF)	صور ونص (تُحوَّل إلى PDF)
+@msg	Import	استيراد
 @msg	Import comments…	استيراد التعليقات…
 @msg	Import data	استيراد البيانات
 @msg	Import form data…	استيراد بيانات النموذج…
@@ -965,10 +1058,12 @@
 @msg	In this file	في هذا الملف
 @msg	Includes unsaved changes	يتضمن تغييرات غير محفوظة
 @msg	Incorrect password. Try again.	كلمة المرور غير صحيحة. حاول مجددًا.
-@msg	Indent	إزاحة للداخل
+@msg	Indent	مسافة بادئة
 @msg	Index	فهرس
+@msg	Information	معلومات
 @msg	Initial View	العرض الأولي
 @msg	Initials	أحرف أولى
+@msg	Ink sensitivity	حساسية الحبر
 @msg	Insert	إدراج
 @msg	Insert Date	إدراج التاريخ
 @msg	Insert Page Number	إدراج رقم الصفحة
@@ -980,12 +1075,15 @@
 @msg	Insert pages from a file…	إدراج صفحات من ملف…
 @msg	Insert pages from file…	إدراج صفحات من ملف…
 @msg	Insert pages from {name}	إدراج صفحات من {name}
+@msg	Insert pages from {name} — 1 field renamed	إدراج صفحات من {name} — تمت إعادة تسمية حقل واحد
+@msg	Insert pages from {name} — fields renamed	إدراج صفحات من {name} — تمت إعادة تسمية حقول
 @msg	Insert text	إدراج نص
 @msg	Inserted	مُدرَج
 @msg	Inserted text	نص مُدرَج
 @msg	Inserting, deleting, and rotating pages	إدراج الصفحات وحذفها وتدويرها
 @msg	Inset	غائر
 @msg	Inspector	الفاحص
+@msg	Installed fonts…	الخطوط المثبتة…
 @msg	Intended usage	الاستخدام المقصود
 @msg	Interface language	لغة الواجهة
 @msg	Interface size	حجم الواجهة
@@ -1003,24 +1101,27 @@
 @msg	Item:	العنصر:
 @msg	Items marked Ready work today.	العناصر الموسومة بـ«جاهز» تعمل اليوم.
 @msg	Its security settings don't allow copying pages	إعدادات أمانه لا تسمح بنسخ الصفحات
-@msg	JBIG2 images can't be exported yet	تصدير صور JBIG2 غير متاح بعد
-@msg	JPEG 2000 images can't be exported yet	تصدير صور JPEG 2000 غير متاح بعد
-@msg	JPEG images inside other filters can't be exported yet	تصدير صور JPEG المضمّنة داخل مرشحات أخرى غير متاح بعد
+@msg	JBIG2 images can't be exported yet	لا يمكن تصدير صور JBIG2 بعد
+@msg	JPEG 2000 images can't be exported yet	لا يمكن تصدير صور JPEG 2000 بعد
+@msg	JPEG images inside other filters can't be exported yet	لا يمكن تصدير صور JPEG داخل مرشحات أخرى بعد
 @msg	January	يناير
 @msg	JavaScript	JavaScript
 @msg	JavaScript Console	وحدة تحكم JavaScript
 @msg	JavaScript console…	وحدة تحكم JavaScript…
 @msg	JavaScript is turned off (Preferences ▸ JavaScript).	JavaScript متوقف (التفضيلات > JavaScript).
 @msg	JavaScript, e.g. getField("total").value	JavaScript، مثلًا getField("total").value
-@msg	Join our Discord	انضم إلى خادمنا على Discord
+@msg	Join our Discord	انضم إلى Discord
 @msg	Join the ArtCraft Discord	انضم إلى خادم ArtCraft على Discord
 @msg	Join the ArtCraft community	انضم إلى مجتمع ArtCraft
 @msg	July	يوليو
 @msg	June	يونيو
 @msg	Justify	ضبط
+@msg	Keep source fonts	الاحتفاظ بالخطوط الأصلية
 @msg	Keep tool selected	إبقاء الأداة محددة
 @msg	Keep tool selected: on	إبقاء الأداة محددة: مفعَّل
+@msg	Key Agreement	توافق المفاتيح
 @msg	Key Algorithm	خوارزمية المفتاح
+@msg	Key Encipherment	تشفير المفاتيح
 @msg	Key usage	استخدام المفتاح
 @msg	Keyboard shortcuts	اختصارات لوحة المفاتيح
 @msg	Keychain  ·  	سلسلة المفاتيح  ·  
@@ -1033,7 +1134,7 @@
 @msg	Landscape Pages	الصفحات الأفقية
 @msg	Landscape and Portrait Pages	الصفحات الأفقية والعمودية
 @msg	Landscape pages	الصفحات الأفقية
-@msg	Language	اللغة
+@msg	Language	لغة
 @msg	Larger pages	صفحات أكبر
 @msg	Last	الأخير
 @msg	Last commit	آخر إيداع
@@ -1049,13 +1150,14 @@
 @msg	Left Edge	الحافة اليسرى
 @msg	Left Footer Text	نص التذييل الأيسر
 @msg	Left Header Text	نص الرأس الأيسر
+@msg	Left out: {names}	تم استبعاد: {names}
 @msg	Left:	اليسار:
 @msg	Light	فاتح
 @msg	Light blue	أزرق فاتح
 @msg	Light gray	رمادي فاتح
 @msg	Light theme	سمة فاتحة
 @msg	Limit of	حد أقصى
-@msg	Line	خط
+@msg	Line	خط مستقيم
 @msg	Line Style:	نمط الخط:
 @msg	Line Thickness:	سماكة الخط:
 @msg	Line delta	فرق الأسطر
@@ -1079,6 +1181,10 @@
 @msg	List labels and bodies belong in a list item. Fix the list's tags.	تسميات القائمة ومتونها مكانها داخل عنصر قائمة. أصلح وسوم القائمة.
 @msg	List view	عرض القائمة
 @msg	Lists	القوائم
+@msg	Load document font	تحميل خط المستند
+@msg	Load font…	تحميل خط…
+@msg	Loading…	جارٍ التحميل…
+@msg	Local cross-PDF links require the desktop app	تتطلب الروابط المحلية بين ملفات PDF تطبيق سطح المكتب
 @msg	Location	الموقع
 @msg	Lock comment	قفل التعليق
 @msg	Locked	مقفل
@@ -1094,6 +1200,7 @@
 @msg	Make scans searchable, then make them smaller.	جعل الصفحات الممسوحة قابلة للبحث، ثم تصغير حجمها.
 @msg	Manage embedded index	إدارة الفهرس المضمَّن
 @msg	March	مارس
+@msg	Margins	الهوامش
 @msg	Margins (in)	الهوامش (بوصة)
 @msg	Mark Page Range	تعليم نطاق صفحات
 @msg	Mark all	تعليم الكل
@@ -1110,7 +1217,7 @@
 @msg	Mask:	القناع:
 @msg	Match field sizes	مطابقة أحجام الحقول
 @msg	Match page at 100%	مطابقة الورق للصفحة بنسبة 100%
-@msg	Maximum	القصوى
+@msg	Maximum	الحد الأقصى
 @msg	May	مايو
 @msg	Measure	قياس
 @msg	Measure area	قياس المساحة
@@ -1131,7 +1238,7 @@
 @msg	Microsoft Word (.docx)	Microsoft Word (.docx)
 @msg	Midpoint	نقطة منتصف
 @msg	Midpoints	نقاط المنتصف
-@msg	Minimum	الأدنى
+@msg	Minimum	الحد الأدنى
 @msg	Mixed	متباين
 @msg	Model	النموذج
 @msg	Models	النماذج
@@ -1146,6 +1253,7 @@
 @msg	Mouse Exit	خروج الفأرة
 @msg	Mouse Up	رفع زر الفأرة
 @msg	Mouse wheel scroll speed	سرعة التمرير بعجلة الماوس
+@msg	Move	تحريك
 @msg	Move bookmark	نقل الإشارة المرجعية
 @msg	Move comment	نقل التعليق
 @msg	Move down	نقل لأسفل
@@ -1174,6 +1282,7 @@
 @msg	Needs manual check	يحتاج إلى فحص يدوي
 @msg	Negative number style:	نمط الأرقام السالبة:
 @msg	Nested alternate text	نص بديل متداخل
+@msg	Never	أبداً
 @msg	New Action	إجراء جديد
 @msg	New Action…	إجراء جديد…
 @msg	New blank PDF	ملف PDF فارغ جديد
@@ -1183,6 +1292,7 @@
 @msg	New bookmarks from structure	إشارات مرجعية جديدة من البنية
 @msg	New file:	الملف الجديد:
 @msg	New {tool} comments will look like this one	تعليقات {tool} الجديدة ستبدو مثل هذا التعليق
+@msg	Next	التالي
 @msg	Next ({key})	التالي ({key})
 @msg	Next (⌘G)	التالي (⌘G)
 @msg	Next / previous match	التطابق التالي / السابق
@@ -1192,6 +1302,7 @@
 @msg	Next sheet	الورقة التالية
 @msg	Next view	العرض التالي
 @msg	No	لا
+@msg	No PDFs found in {folder}	لم يُعثر على ملفات PDF في {folder}
 @msg	No PDFs in this folder yet	لا توجد ملفات PDF في هذا المجلد بعد
 @msg	No PDFs, images or text files found in {folder}	لم يُعثر على ملفات PDF أو صور أو ملفات نصية في {folder}
 @msg	No actions	لا توجد إجراءات
@@ -1205,6 +1316,7 @@
 @msg	No contributor data was built into this copy.	لم تُضمَّن بيانات المساهمين في هذه النسخة.
 @msg	No differences in the text.	لا فروق في النص.
 @msg	No digital IDs yet.	لا توجد معرّفات رقمية بعد.
+@msg	No document language is set	لم تُعيّن لغة المستند
 @msg	No documents are open	لا توجد مستندات مفتوحة
 @msg	No file chosen	لم يُختر ملف
 @msg	No fill	بلا تعبئة
@@ -1213,20 +1325,27 @@
 @msg	No inaccessible scripts	لا توجد سكربتات يتعذر الوصول إليها
 @msg	No issues found	لم يُعثر على مشكلات
 @msg	No limit	بلا حد
+@msg	No links to remove	لا توجد روابط لإزالتها
 @msg	No matches	لا توجد تطابقات
 @msg	No matches.	لا توجد تطابقات.
 @msg	No matching tools	لا توجد أدوات مطابقة
 @msg	No model credits were built into this copy.	لم يُضمَّن ذكر النماذج في هذه النسخة.
+@msg	No openly licensed document fonts found. Load a font file.	لم يُعثر على خطوط ذات ترخيص مفتوح. حمّل ملف خط.
+@msg	No page has text: the document appears to be images of pages	لا يوجد نص في أي صفحة؛ يبدو أن المستند صور لصفحات
 @msg	No pages match those choices	لا صفحات تطابق هذه الاختيارات
 @msg	No pages selected	لم تُحدد صفحات
+@msg	No photo chosen	لم تُختر صورة
 @msg	No preview	لا معاينة
 @msg	No problems found: the document conforms to {level}.	لم يُعثر على مشكلات: المستند مطابق لـ {level}.
 @msg	No recent files	لا توجد ملفات أخيرة
+@msg	No results	لا توجد نتائج
 @msg	No security	بلا أمان
 @msg	No sheets	لا أوراق
+@msg	No signature was found in the frame. Move the frame over the signature or raise the ink sensitivity.	لم يُعثر على توقيع داخل الإطار. حرّك الإطار فوق التوقيع أو ارفع حساسية الحبر.
 @msg	No status has been set.	لم تُعيَّن أي حالة.
 @msg	No unlinked web addresses were found in the text	لم يُعثر في النص على عناوين ويب غير مرتبطة
-@msg	None	لا شيء
+@msg	Non-Repudiation	عدم الإنكار
+@msg	None	بدون
 @msg	None (prefix only)	لا شيء (البادئة فقط)
 @msg	None found	لم يُعثر على شيء
 @msg	None of those files can be made into a PDF; use PDFs, images or .txt files	لا يمكن تحويل أي من هذه الملفات إلى PDF؛ استخدم ملفات PDF أو صورًا أو ملفات .txt
@@ -1247,16 +1366,19 @@
 @msg	Odd Pages Only	الصفحات الفردية فقط
 @msg	Odd pages	الصفحات الفردية
 @msg	Odd pages only	الصفحات الفردية فقط
-@msg	Off	متوقف
+@msg	Off	إيقاف
 @msg	Offset from centre	الإزاحة عن المركز
 @msg	Old file:	الملف القديم:
+@msg	On	تشغيل
 @msg	On Blur	عند فقدان التركيز
 @msg	On Focus	عند التركيز
 @msg	On the web, open or drop an image to convert it	على الويب، افتح صورة أو أفلتها لتحويلها
 @msg	One word or phrase per line	كلمة أو عبارة واحدة في كل سطر
 @msg	One {f} file per page, named after the document.	ملف {f} واحد لكل صفحة، يُسمى باسم المستند.
+@msg	Only change the colour of black text or line art	تغيير لون النص الأسود والخطوط فقط
 @msg	Only checked properties will change. Mixed means the selected fields have different values.	الخصائص المؤشَّر عليها فقط ستتغير. «متباين» يعني أن للحقول المحددة قيمًا مختلفة.
 @msg	Only continue if you trust this document. An address can carry information from the document, such as what you typed into its form.	تابع فقط إن كنت تثق بهذا المستند. العنوان قد يحمل معلومات من المستند، مثل ما كتبته في نموذجه.
+@msg	Only the document's owner can change its security (open it with the permissions password)	يمكن لمالك المستند وحده تغيير إعدادات أمانه (افتحه بكلمة مرور الصلاحيات)
 @msg	Only the page content changes: links, comments, form fields and bookmarks on the original pages stay.	يتغير محتوى الصفحة فقط: الروابط والتعليقات وحقول النموذج والإشارات المرجعية على الصفحات الأصلية تبقى.
 @msg	Opacity	العتامة
 @msg	Open	فتح
@@ -1271,6 +1393,7 @@
 @msg	Open arrow	سهم مفتوح
 @msg	Open email app	فتح تطبيق البريد
 @msg	Open file	فتح ملف
+@msg	Open folder	فتح المجلد
 @msg	Open in Full Screen mode	الفتح في وضع ملء الشاشة
 @msg	Open in a new tab	فتح في تبويب جديد
 @msg	Open link	فتح الرابط
@@ -1280,6 +1403,7 @@
 @msg	Open to page	الفتح على الصفحة
 @msg	Opened with	فُتح بـ
 @msg	Opened, but its security settings don't allow combining. Enter the permissions password.	فُتح، لكن إعدادات أمانه لا تسمح بالدمج. أدخل كلمة مرور الأذونات.
+@msg	Opening the browser's print dialog…	جارٍ فتح مربع حوار الطباعة في المتصفح…
 @msg	Opens the printer driver's preferences. They are saved for every print from this computer; the copies, two-sided, grayscale and paper chosen here still apply.	يفتح تفضيلات تعريف الطابعة. تُحفظ لكل طباعة من هذا الحاسوب؛ عدد النسخ والطباعة على الوجهين وتدرج الرمادي والورق المختارة هنا تبقى سارية.
 @msg	Open…	فتح…
 @msg	Optimization cancelled	أُلغي التحسين
@@ -1296,20 +1420,22 @@
 @msg	Optimizing… writing the copy	جارٍ التحسين… كتابة النسخة
 @msg	Optional	اختياري
 @msg	Optional: needs an AI provider you configure	اختياري: يتطلب مزوّد ذكاء اصطناعي تضبطه أنت
-@msg	Options	الخيارات
+@msg	Options	خيارات
 @msg	Options…	خيارات…
 @msg	Orange	برتقالي
 @msg	Organization Name	اسم المؤسسة
 @msg	Organizational Unit	الوحدة التنظيمية
+@msg	Organize	تنظيم
 @msg	Organize pages	تنظيم الصفحات
 @msg	Orientation:	الاتجاه:
 @msg	Original	الأصل
 @msg	Original: replace pages	الأصل: استبدال الصفحات
+@msg	Other colour…	لون آخر…
 @msg	Other elements alternate text	النص البديل للعناصر الأخرى
 @msg	Other elements that require alternate text	عناصر أخرى تتطلب نصًا بديلًا
 @msg	Outdent	إزاحة للخارج
 @msg	Outline	مخطط
-@msg	Output	الناتج
+@msg	Output	الإخراج
 @msg	Output appears here.	يظهر الناتج هنا.
 @msg	Output intent: {list}	هدف الإخراج: {list}
 @msg	Output preview	معاينة الإخراج
@@ -1318,6 +1444,7 @@
 @msg	Owner password (no restrictions apply)	كلمة مرور المالك (لا تنطبق أي قيود)
 @msg	PDF Optimizer	محسِّن PDF
 @msg	PDF or image	PDF أو صورة
+@msg	PDF page: {size}	صفحة PDF: {size}
 @msg	PDF page: {w} × {h} in	صفحة PDF: {w} × {h} بوصة
 @msg	PDF producer	منتِج PDF
 @msg	PDF scale: {scale}%	مقياس PDF: {scale}%
@@ -1331,6 +1458,7 @@
 @msg	Page Range	نطاق الصفحات
 @msg	Page Range Options	خيارات نطاق الصفحات
 @msg	Page Sizing & Handling	حجم الصفحات ومعالجتها
+@msg	Page background	خلفية الصفحة
 @msg	Page display	عرض الصفحات
 @msg	Page display: {layout}	عرض الصفحات: {layout}
 @msg	Page does not require timed responses	الصفحة لا تتطلب استجابات مؤقتة
@@ -1346,8 +1474,14 @@
 @msg	Page transitions	انتقالات الصفحات
 @msg	Page will not cause screen flicker	الصفحة لن تسبب وميضًا في الشاشة
 @msg	Page {label}	صفحة {label}
+@msg	Page {n}	الصفحة {n}
+@msg	Page {n} of {total}	الصفحة {n} من {total}
+@msg	Page {p} doesn't tab in structure order	ترتيب التنقل بمفتاح Tab في الصفحة {p} لا يتبع ترتيب البنية
 @msg	Page {p} of {n}	الصفحة {p} من {n}
-@msg	Pages	الصفحات
+@msg	Page {p}: {n} untagged content item	الصفحة {p}: عناصر المحتوى غير الموسومة: {n}
+@msg	Page {p}: {n} untagged content items	الصفحة {p}: عناصر المحتوى غير الموسومة: {n}
+@msg	Page {} has additional actions	تحتوي الصفحة {} على إجراءات إضافية
+@msg	Pages	صفحات
 @msg	Pages Panel and Page	لوحة الصفحات والصفحة
 @msg	Pages from	الصفحات من
 @msg	Pages of {name} to combine, e.g. 1-3, 6	صفحات {name} المراد دمجها، مثلًا 1-3, 6
@@ -1358,8 +1492,10 @@
 @msg	Pages with links, comments or fields should tab in structure order. The fix sets each page's tab order to Use Document Structure.	الصفحات التي تحتوي على روابط أو تعليقات أو حقول ينبغي أن يتبع التنقل فيها ترتيب البنية. يضبط الإصلاح ترتيب التنقل في كل صفحة على «استخدام بنية المستند».
 @msg	Pages:	الصفحات:
 @msg	Pages: {k} of {n}	الصفحات: {k} من {n}
-@msg	Panel layout could not be restored: {e}	تعذّرت استعادة تخطيط اللوحات: {e}
-@msg	Panels	اللوحات
+@msg	Panel layout could not be restored: {error}	تعذّرت استعادة تخطيط اللوحات: {error}
+@msg	Panel layout could not be restored: {e}	تعذرت استعادة تخطيط اللوحات: {e}
+@msg	Panel move was not applied: {error}	لم يُطبّق نقل اللوحة: {error}
+@msg	Panels	لوحات
 @msg	Paper:	الورق:
 @msg	Part of	جزء من
 @msg	Passed	ناجح
@@ -1368,13 +1504,15 @@
 @msg	Password required	كلمة المرور مطلوبة
 @msg	Password security	أمان بكلمة مرور
 @msg	Password-protected	محمي بكلمة مرور
+@msg	Paste	لصق
 @msg	Paste after	لصق بعد
 @msg	Paste pages	لصق الصفحات
 @msg	Path	مسار
-@msg	Paths	المسارات
+@msg	Paths	مسارات
 @msg	Pattern	النمط
 @msg	Patterns	الأنماط
 @msg	Patterns (graphics objects)	الأنماط (كائنات رسومية)
+@msg	PdfCraft can't check this signature yet: {}.	لا يستطيع PdfCraft فحص هذا التوقيع بعد: {}.
 @msg	PdfCraft didn't shut down normally. These documents had changes that were autosaved:	لم يُغلق PdfCraft بشكل طبيعي. هذه المستندات فيها تغييرات حُفظت تلقائيًا:
 @msg	PdfCraft is drawing without a graphics processor, so it may be slow. Updating the graphics driver may help.	يرسم PdfCraft دون معالج رسوميات، لذا قد يكون بطيئًا. تحديث تعريف بطاقة الرسوميات قد يفيد.
 @msg	PdfCraft on GitHub	PdfCraft على GitHub
@@ -1389,8 +1527,10 @@
 @msg	Permitted actions after certifying	الإجراءات المسموح بها بعد التصديق
 @msg	Phone Number	رقم الهاتف
 @msg	Phone Numbers	أرقام الهواتف
+@msg	Photo	صورة
 @msg	Pick a tool in the quick bar, or type above.	اختر أداة من الشريط السريع، أو اكتب أعلاه.
 @msg	Pictures need alternate text that describes them, or must be marked decorative. Add alternate text to each figure.	الصور تحتاج إلى نص بديل يصفها، أو يجب تعليمها كزخرفية. أضف نصًا بديلًا لكل شكل.
+@msg	Pictures on those pages are recognized too; words already in the page's text are not added again	يُتعرَّف على الصور في هذه الصفحات أيضًا، ولا تُضاف مرة أخرى الكلمات الموجودة بالفعل في نص الصفحة
 @msg	Pin a folder to Home	تثبيت مجلد في الصفحة الرئيسية
 @msg	Pin a folder to list its newest PDFs here, such as where your scanner or a synced cloud drive saves them.	ثبّت مجلدًا لعرض أحدث ملفات PDF فيه هنا، مثل المجلد الذي يحفظ فيه الماسح الضوئي أو قرص سحابي مُزامَن.
 @msg	Pin a folder…	تثبيت مجلد…
@@ -1404,7 +1544,7 @@
 @msg	Planned for milestone	مخطط له في المرحلة
 @msg	Planned for milestone {m} — open to see what it will include	مخطط له في المرحلة {m} — افتح لترى ما سيتضمنه
 @msg	Planned · {m}	مخطط له · {m}
-@msg	Pmt needs a positive number of periods	تحتاج الدالة Pmt إلى عدد موجب من الفترات
+@msg	Pmt needs a positive number of periods	تتطلب Pmt عدداً موجباً من الفترات
 @msg	Points from the page's bottom-left corner.	بالنقاط من الزاوية السفلية اليسرى للصفحة.
 @msg	Polygon	مضلع
 @msg	Polyline	خط متعدد
@@ -1416,9 +1556,9 @@
 @msg	Post	نشر
 @msg	PostScript / EPS	PostScript / EPS
 @msg	PostScript XObjects aren't allowed	كائنات PostScript XObject غير مسموح بها
-@msg	Poster	ملصق
-@msg	Preferences	التفضيلات
-@msg	Preferences…	التفضيلات…
+@msg	Poster	صورة الغلاف
+@msg	Preferences	تفضيلات
+@msg	Preferences…	تفضيلات…
 @msg	Prefix	البادئة
 @msg	Preflight	فحص ما قبل الطباعة
 @msg	Prepare a form	تجهيز نموذج
@@ -1426,10 +1566,13 @@
 @msg	Prepare for accessibility	التجهيز لإمكانية الوصول
 @msg	Prepare for distribution	التجهيز للتوزيع
 @msg	Prepare for distribution…	التجهيز للتوزيع…
+@msg	Preparing sheet {done} of {total} for printing…	جارٍ تجهيز الورقة {done} من {total} للطباعة…
+@msg	Preparing {n} sheets for printing…	جارٍ تجهيز {n} من الأوراق للطباعة…
 @msg	Presentation (.pptx)	عرض تقديمي (.pptx)
 @msg	Preview	معاينة
 @msg	Preview unavailable: {e}	المعاينة غير متاحة: {e}
 @msg	Preview: page {p} of {n}	معاينة: صفحة {p} من {n}
+@msg	Previous	السابق
 @msg	Previous ({key})	السابق ({key})
 @msg	Previous (⇧⌘G)	السابق (⇧⌘G)
 @msg	Previous / next page	الصفحة السابقة / التالية
@@ -1470,15 +1613,17 @@
 @msg	Radio	زر اختيار
 @msg	Radio Button Properties	خصائص زر الاختيار
 @msg	Radio button	زر اختيار
-@msg	Rate needs positive arguments	تحتاج الدالة Rate إلى معاملات موجبة
+@msg	Rate needs positive arguments	تتطلب Rate معاملات موجبة
 @msg	Re-type Password	أعد كتابة كلمة المرور
 @msg	Read	قراءة
 @msg	Read Only	للقراءة فقط
 @msg	Read mode	وضع القراءة
+@msg	Reading colours	ألوان القراءة
 @msg	Ready	جاهز
 @msg	Real name	الاسم الحقيقي
 @msg	Reason	السبب
 @msg	Recent	الأخيرة
+@msg	Recent colours	الألوان الأخيرة
 @msg	Recognize Text	التعرف على النص
 @msg	Recognize text	التعرف على النص
 @msg	Recognize text in multiple files…	التعرف على النص في عدة ملفات…
@@ -1509,6 +1654,7 @@
 @msg	Redo {action}	إعادة {action}
 @msg	Reduce file size	تقليل حجم الملف
 @msg	Reduce file size…	تقليل حجم الملف…
+@msg	Refresh	تحديث
 @msg	Regularity	الانتظام
 @msg	Rejected	مرفوض
 @msg	Reliable character encoding is provided	ترميز محارف موثوق متوفر
@@ -1537,10 +1683,14 @@
 @msg	Remove {n} files	إزالة {n} ملفات
 @msg	Remove {n} pages	إزالة {n} صفحات
 @msg	Removed 1 hidden item. Save to remove them from the file.	أُزيل عنصر مخفي واحد. احفظ لإزالته من الملف.
+@msg	Removed 1 link	تمت إزالة رابط واحد
 @msg	Removed {n} hidden items. Save to remove them from the file.	أُزيل {n} عناصر مخفية. احفظ لإزالتها من الملف.
+@msg	Removed {n} links	الروابط التي أزيلت: {n}
 @msg	Rename	إعادة تسمية
 @msg	Rename bookmark	إعادة تسمية الإشارة المرجعية
 @msg	Rendering: hayro (bootstrap) · UI: egui · Icons: Lucide (ISC) · Fonts: Inter, JetBrains Mono, Dancing Script (OFL)	العرض: hayro (مبدئي) · الواجهة: egui · الأيقونات: Lucide (ISC) · الخطوط: Inter, JetBrains Mono, Dancing Script (OFL)
+@msg	Rendering…	جارٍ التصيير…
+@msg	Reopen Closed Tab	إعادة فتح علامة التبويب المغلقة
 @msg	Reopen the files that were open when PdfCraft last closed	إعادة فتح الملفات التي كانت مفتوحة عند آخر إغلاق لـ PdfCraft
 @msg	Repair log	سجل الإصلاح
 @msg	Repairs	الإصلاحات
@@ -1549,6 +1699,7 @@
 @msg	Replace	استبدال
 @msg	Replace Image…	استبدال الصورة…
 @msg	Replace Pages	استبدال الصفحات
+@msg	Replace document colours	استبدال ألوان المستند
 @msg	Replace image	استبدال الصورة
 @msg	Replace page	استبدال الصفحة
 @msg	Replace pages	استبدال الصفحات
@@ -1563,6 +1714,7 @@
 @msg	Reply	رد
 @msg	Report	تقرير
 @msg	Report Options	خيارات التقرير
+@msg	Report created	تم إنشاء التقرير
 @msg	Report…	تقرير…
 @msg	Required	مطلوب
 @msg	Requires user to enter a password for:	يتطلب من المستخدم إدخال كلمة مرور من أجل:
@@ -1579,11 +1731,18 @@
 @msg	Restrictions	القيود
 @msg	Restrictions lifted	رُفعت القيود
 @msg	Retain existing	الإبقاء على الحالي
+@msg	Rev. {rev}: Certified by an unknown signer	المراجعة {rev}: مصدّق من موقّع غير معروف
+@msg	Rev. {rev}: Certified by {name}	المراجعة {rev}: مصدّق من {name}
+@msg	Rev. {rev}: Signed by an unknown signer	المراجعة {rev}: موقّع من موقّع غير معروف
+@msg	Rev. {rev}: Signed by {name}	المراجعة {rev}: موقّع من {name}
+@msg	Reveal in File Explorer	إظهار في مستكشف الملفات
+@msg	Reveal in Finder	إظهار في Finder
 @msg	Reverse closed arrow	سهم مغلق معكوس
 @msg	Reverse open arrow	سهم مفتوح معكوس
 @msg	Reverse pages	عكس ترتيب الصفحات
 @msg	Reverse the order	عكس الترتيب
-@msg	Revert	استرجاع
+@msg	Revert	استعادة
+@msg	Revert changes	التراجع عن التغييرات
 @msg	Revert to the previously saved version of “{name}”? Changes since then can't be undone afterwards.	هل تريد الرجوع إلى آخر نسخة محفوظة من «{name}»؟ لا يمكن التراجع بعدها عن التغييرات التي أُجريت منذ ذلك الحين.
 @msg	Reverted to the last saved version	تم الرجوع إلى آخر نسخة محفوظة
 @msg	Review	مراجعة
@@ -1614,9 +1773,10 @@
 @msg	Rotate view clockwise (⇧⌘+)	تدوير العرض مع عقارب الساعة (⇧⌘+)
 @msg	Rotate view counterclockwise	تدوير العرض عكس عقارب الساعة
 @msg	Rotate:	تدوير:
-@msg	Rotation	التدوير
+@msg	Rotation	دوران
 @msg	Rotation:	التدوير:
-@msg	Rows	الصفوف
+@msg	Rows	صفوف
+@msg	Rule Name	اسم القاعدة
 @msg	Run	تشغيل
 @msg	Run JavaScript	تشغيل JavaScript
 @msg	Run a JavaScript	تشغيل سكربت JavaScript
@@ -1632,6 +1792,7 @@
 @msg	Sanitizing removes hidden information from the document: metadata, file attachments, comments, form fields (flattened), hidden text and layers, bookmarks, links, actions and scripts, and private application data.	التنظيف يزيل المعلومات المخفية من المستند: البيانات الوصفية والملفات المرفقة والتعليقات وحقول النموذج (تُسطَّح) والنص المخفي والطبقات المخفية والإشارات المرجعية والروابط والإجراءات والسكربتات والبيانات الخاصة بالتطبيقات.
 @msg	Save	حفظ
 @msg	Save & Close	حفظ وإغلاق
+@msg	Save (M4)	حفظ (M4)
 @msg	Save ({key})	حفظ ({key})
 @msg	Save Image As…	حفظ الصورة باسم…
 @msg	Save as PDF	حفظ بصيغة PDF
@@ -1641,11 +1802,16 @@
 @msg	Save as PDF/A-3b	حفظ بصيغة PDF/A-3b
 @msg	Save as PDF/UA	حفظ بصيغة PDF/UA
 @msg	Save as PDF/X	حفظ بصيغة PDF/X
+@msg	Save as {level}	حفظ بصيغة {level}
 @msg	Save as…	حفظ باسم…
 @msg	Save attachment…	حفظ المرفق…
 @msg	Save changes to “{name}” before closing?	هل تريد حفظ التغييرات في «{name}» قبل الإغلاق؟
+@msg	Save changes?	حفظ التغييرات؟
+@msg	Save file	حفظ الملف
 @msg	Save image	حفظ الصورة
+@msg	Save or revert changes before selecting another tag.	احفظ التغييرات أو تراجع عنها قبل تحديد وسم آخر.
 @msg	Save pages	حفظ الصفحات
+@msg	Save tag properties	حفظ خصائص الوسم
 @msg	Save the accessibility report	حفظ تقرير إمكانية الوصول
 @msg	Save the document afterwards: saving rewrites the whole file so no trace of the removed content stays in it.	احفظ المستند بعد ذلك: الحفظ يعيد كتابة الملف كله كي لا يبقى فيه أثر للمحتوى المُزال.
 @msg	Save the document afterwards; saving rewrites the whole file so nothing removed stays in it.	احفظ المستند بعد ذلك؛ الحفظ يعيد كتابة الملف كله كي لا يبقى فيه شيء مما أُزيل.
@@ -1659,6 +1825,7 @@
 @msg	Saved {place}: {before} → {after} ({pct}% smaller){detail}	تم الحفظ {place}: {before} → {after} (أصغر بنسبة {pct}%){detail}
 @msg	Saved, but reopening failed: {e}	تم الحفظ، لكن فشلت إعادة الفتح: {e}
 @msg	Scale relative to target page	المقياس نسبةً إلى الصفحة الهدف
+@msg	Scan	مسح ضوئي
 @msg	Scan & OCR	مسح ضوئي وتعرف على النص
 @msg	Screen flicker	وميض الشاشة
 @msg	Screen readers choose their voice from the document's language. Set it in Document Properties > Advanced > Language.	قارئات الشاشة تختار صوتها من لغة المستند. عيّنها في خصائص المستند > خيارات متقدمة > اللغة.
@@ -1673,6 +1840,7 @@
 @msg	Scroll tabs right	تمرير التبويبات يمينًا
 @msg	Search	بحث
 @msg	Search comments	البحث في التعليقات
+@msg	Search results	نتائج البحث
 @msg	Search tools and commands…	البحث في الأدوات والأوامر…
 @msg	Searchable Image (Exact)	صورة قابلة للبحث (مطابقة)
 @msg	Searching… {s} of {p} pages	جارٍ البحث… {s} من {p} صفحات
@@ -1693,6 +1861,7 @@
 @msg	Select a file for the stamp	حدد ملفًا للختم
 @msg	Select a password-protected file first	حدد أولًا ملفًا محميًا بكلمة مرور
 @msg	Select a word	تحديد كلمة
+@msg	Select all	تحديد الكل
 @msg	Select all pages (Organize)	تحديد كل الصفحات (تنظيم)
 @msg	Select at most 1000 objects at a time.	حدد 1000 عنصر كحد أقصى في المرة الواحدة.
 @msg	Select data files to merge	حدد ملفات البيانات المراد دمجها
@@ -1703,12 +1872,13 @@
 @msg	Select the items to remove from this document.	حدد العناصر المراد إزالتها من هذا المستند.
 @msg	Selected image files: {count}	ملفات الصور المحددة: {count}
 @msg	Selected pages	الصفحات المحددة
-@msg	Selection	التحديد
+@msg	Selection	تحديد
 @msg	Self-signed	موقَّع ذاتيًا
 @msg	Sending to {printer}…	جارٍ الإرسال إلى {printer}…
 @msg	Sensitivity	الحساسية
 @msg	Sent to {printer}	أُرسل إلى {printer}
 @msg	Sent to {printer}: {msg}	أُرسل إلى {printer}: {msg}
+@msg	Separate PDFs	ملفات PDF منفصلة
 @msg	Separator style:	نمط الفاصل:
 @msg	September	سبتمبر
 @msg	Serial number	الرقم التسلسلي
@@ -1759,15 +1929,19 @@
 @msg	Side panels	اللوحات الجانبية
 @msg	Sign	توقيع
 @msg	Sign Here	وقّع هنا
+@msg	Sign a sheet of white paper and take a photo of it in bright, even light (use the flash). Choose the photo or drop it here: PdfCraft finds the signature and removes the paper.	وقّع على ورقة بيضاء والتقط لها صورة في إضاءة ساطعة ومتساوية (استخدم الفلاش). اختر الصورة أو أفلتها هنا: يعثر PdfCraft على التوقيع ويزيل الورق.
 @msg	Sign this field…	توقيع هذا الحقل…
 @msg	Sign with a Digital ID	التوقيع بمعرّف رقمي
 @msg	Sign yourself	وقّع بنفسك
 @msg	Signature	توقيع
 @msg	Signature Details	تفاصيل التوقيع
 @msg	Signature is INVALID:	التوقيع غير صالح:
+@msg	Signature is invalid	التوقيع غير صالح
+@msg	Signature is valid	التوقيع صالح
 @msg	Signature is valid:	التوقيع صالح:
 @msg	Signature panel	لوحة التوقيعات
 @msg	Signature validity is UNKNOWN:	صلاحية التوقيع غير معروفة:
+@msg	Signature validity is unknown	صلاحية التوقيع غير معروفة
 @msg	Signatures	التوقيعات
 @msg	Signatures panel	لوحة التوقيعات
 @msg	Signed and all signatures are valid.	موقَّع وكل التوقيعات صالحة.
@@ -1775,6 +1949,7 @@
 @msg	Signer	الموقِّع
 @msg	Signer's name	اسم الموقّع
 @msg	Signing time	وقت التوقيع
+@msg	Signing time is from the clock on the signer's computer.	يأتي وقت التوقيع من ساعة جهاز الموقّع.
 @msg	Simplified field notation:	صيغة الحقول المبسطة:
 @msg	Single Page	صفحة واحدة
 @msg	Single Page Continuous	صفحة واحدة متواصلة
@@ -1800,7 +1975,7 @@
 @msg	Source	المصدر
 @msg	Space Audit	تدقيق المساحة
 @msg	Special	خاص
-@msg	Split	تقسيم
+@msg	Split	انقسام
 @msg	Split document	تقسيم المستند
 @msg	Split document…	تقسيم المستند…
 @msg	Split into files…	تقسيم إلى ملفات…
@@ -1822,8 +1997,9 @@
 @msg	Status	الحالة
 @msg	Steps	الخطوات
 @msg	Sticky note	ملاحظة لاصقة
+@msg	Still rendering — this page is unusually complex…	ما زال التصيير جارياً؛ هذه الصفحة معقدة بشكل غير معتاد…
 @msg	Strength: {s}	القوة: {s}
-@msg	Strikethrough	شطب
+@msg	Strikethrough	يتوسطه خط
 @msg	Strikethrough text	شطب النص
 @msg	Strong	قوية
 @msg	Structure Info	معلومات البنية
@@ -1831,6 +2007,7 @@
 @msg	Subject	الموضوع
 @msg	Submit a form	إرسال نموذج
 @msg	Subset	مجموعة جزئية
+@msg	Success	نجاح
 @msg	Summarize	تلخيص
 @msg	Summarize Options	خيارات التلخيص
 @msg	Summarize comments	تلخيص التعليقات
@@ -1838,6 +2015,7 @@
 @msg	Switch light / dark theme	التبديل بين السمة الفاتحة والداكنة
 @msg	Switch to List view to change the pages it takes.	انتقل إلى عرض القائمة لتغيير الصفحات التي يأخذها.
 @msg	Switch to two-page view first to show the cover page	انتقل أولًا إلى عرض الصفحتين لإظهار صفحة الغلاف
+@msg	System	نظام
 @msg	TH and TD	TH و TD
 @msg	TH and TD must be children of TR	TH و TD يجب أن يكونا ابنين لـ TR
 @msg	TR must be a child of Table, THead, TBody, or TFoot	TR يجب أن يكون ابنًا لـ Table أو THead أو TBody أو TFoot
@@ -1856,14 +2034,17 @@
 @msg	Tables must contain the same number of columns in each row and rows in each column	الجداول يجب أن تحتوي على العدد نفسه من الأعمدة في كل صف ومن الصفوف في كل عمود
 @msg	Tables must have a summary	الجداول يجب أن يكون لها ملخص
 @msg	Tables should have headers	الجداول ينبغي أن تكون لها رؤوس
+@msg	Tag type	نوع الوسم
 @msg	Tagged PDF	PDF موسوم
 @msg	Tagged annotations	التعليقات التوضيحية الموسومة
 @msg	Tagged content	المحتوى الموسوم
 @msg	Tagged form fields	حقول النموذج الموسومة
 @msg	Tagged multimedia	الوسائط المتعددة الموسومة
+@msg	Tags	الوسوم
 @msg	Tags give the document a logical structure that assistive technology follows. Tag the document (Automatically tag PDF).	الوسوم تمنح المستند بنية منطقية تتبعها التقنيات المساعدة. وسّم المستند (وسم PDF تلقائيًا).
+@msg	Tags panel	لوحة الوسوم
 @msg	Take a snapshot	التقاط لقطة
-@msg	Term needs positive arguments	تحتاج الدالة Term إلى معاملات موجبة
+@msg	Term needs positive arguments	تتطلب Term معاملات موجبة
 @msg	Text	نص
 @msg	Text (plain)	نص (عادي)
 @msg	Text Color:	لون النص:
@@ -1882,63 +2063,133 @@
 @msg	Text to insert	النص المراد إدراجه
 @msg	Text used as a clipping path cannot be moved with this selection.	لا يمكن نقل النص المستخدم كمسار قص مع هذا التحديد.
 @msg	Text, marks and signatures become part of the page. Other comments stay editable.	النص والعلامات والتوقيعات تصبح جزءًا من الصفحة. التعليقات الأخرى تبقى قابلة للتحرير.
+@msg	Thai and Arabic use regular fallback fonts when available.	تستخدم التايلاندية والعربية خطوطًا بديلة بالنمط العادي عند توفرها.
 @msg	That didn't work: an internal error stopped it ({m}).	لم ينجح ذلك: أوقفه خطأ داخلي ({m}).
 @msg	That didn't work: an internal error stopped it ({m}). Your documents are unchanged.	لم ينجح ذلك: أوقفه خطأ داخلي ({m}). مستنداتك لم تتغير.
+@msg	The ECDSA signature is not in canonical DER (trailing bytes, padding or a missing sign byte); it was read anyway.	توقيع ECDSA ليس بترميز DER القياسي (بايتات زائدة أو حشو أو بايت إشارة مفقود)؛ تمت قراءته رغم ذلك.
+@msg	The ECDSA signature is the raw r and s values instead of a DER sequence; it was read anyway.	توقيع ECDSA يتكون من قيمتي r وs الخام بدل تسلسل DER؛ تمت قراءته رغم ذلك.
 @msg	The Keychain's digital IDs couldn't be listed: {e}	تعذّر سرد المعرّفات الرقمية في سلسلة المفاتيح: {e}
+@msg	The PDF text fonts can't draw “{c}” ({code}). Choose supported text.	لا تستطيع خطوط نص PDF عرض «{c}» ({code}). اختر نصًا مدعومًا.
+@msg	The RSA signature value does not have the length of the key's modulus (leading zero bytes dropped or added); it was read anyway.	لا يطابق طول قيمة توقيع RSA طول معامل المفتاح (حُذفت أو أضيفت بايتات صفرية في البداية)؛ تمت قراءته رغم ذلك.
+@msg	The RSA signature's DigestInfo has no NULL parameter (older signers write it so); it was read anyway.	لا تتضمن DigestInfo في توقيع RSA معلمة NULL (تكتبها بعض أدوات التوقيع القديمة هكذا)؛ تمت قراءته رغم ذلك.
 @msg	The Windows store's digital IDs couldn't be listed: {e}	تعذّر سرد المعرّفات الرقمية في مخزن Windows: {e}
+@msg	The certificate of {} does not allow this many CA certificates below it (path length), so it is not used to vouch for {}.	لا تسمح شهادة {} بهذا العدد من شهادات جهات إصدار الشهادات التابعة لها (طول المسار)، لذلك لا تُستخدم لضمان {}.
+@msg	The certificate of {} is not a CA certificate that may issue certificates, so it is not used to vouch for {}.	شهادة {} ليست شهادة جهة إصدار مخوّلة بإصدار شهادات، لذلك لا تُستخدم لضمان {}.
+@msg	The certificate of {} was not valid at the time of signing, so it is not used to vouch for {}.	لم تكن شهادة {} صالحة وقت التوقيع، لذلك لا تُستخدم لضمان {}.
 @msg	The checker found 1 problem which may prevent the document from being fully accessible.	عثر المدقق على مشكلة واحدة قد تمنع المستند من أن يكون سهل الوصول تمامًا.
 @msg	The checker found no problems in this document.	لم يعثر المدقق على مشكلات في هذا المستند.
+@msg	The checker found problems which may prevent the document from being fully accessible.	وجد الفاحص مشكلات قد تمنع إتاحة المستند بالكامل لذوي الاحتياجات.
 @msg	The checker found {n} problems which may prevent the document from being fully accessible.	عثر المدقق على {n} مشكلات قد تمنع المستند من أن يكون سهل الوصول تمامًا.
 @msg	The clipboard has no image or text	الحافظة لا تحتوي على صورة أو نص
 @msg	The document changed while you were choosing a file, so nothing was changed.	تغيّر المستند أثناء اختيارك ملفًا، فلم يُغيَّر شيء.
 @msg	The document changed while you were editing field properties.	تغيّر المستند أثناء تحريرك خصائص الحقل.
 @msg	The document has additional actions (/AA)	المستند له إجراءات إضافية (/AA)
+@msg	The document has been altered or corrupted since the signature was applied.	تم تغيير المستند أو إتلافه بعد تطبيق التوقيع.
+@msg	The document has been altered or corrupted since the timestamp was applied.	تم تغيير المستند أو إتلافه بعد تطبيق الطابع الزمني.
+@msg	The document has been altered since this signature was applied in ways it does not permit ({}).	تم تغيير المستند بعد تطبيق هذا التوقيع بطرق لا يسمح بها ({}).
+@msg	The document has been altered since this timestamp was applied in ways it does not permit ({}).	تم تغيير المستند بعد تطبيق هذا الطابع الزمني بطرق لا يسمح بها ({}).
+@msg	The document has been modified since this signature was applied, but the changes are permitted ({}).	تم تعديل المستند بعد تطبيق هذا التوقيع، لكن التغييرات مسموح بها ({}).
+@msg	The document has been modified since this timestamp was applied, but the changes are permitted ({}).	تم تعديل المستند بعد تطبيق هذا الطابع الزمني، لكن التغييرات مسموح بها ({}).
 @msg	The document has document-level JavaScript	المستند فيه JavaScript على مستوى المستند
 @msg	The document has no XMP metadata	المستند لا يحتوي على بيانات وصفية XMP
+@msg	The document has no tags (structure tree)	لا يحتوي المستند على وسوم (شجرة بنية)
+@msg	The document has no title	لا يوجد عنوان للمستند
 @msg	The document is encrypted	المستند مشفَّر
 @msg	The document is no longer open.	المستند لم يعد مفتوحًا.
+@msg	The document isn't marked as tagged (MarkInfo Marked)	لم يُحدّد المستند على أنه موسوم (MarkInfo Marked)
+@msg	The document isn't tagged, so none of its content is	المستند غير موسوم، ولذلك لا يوجد أي محتوى موسوم فيه
 @msg	The document now conforms to {level}; save it to keep the changes	المستند مطابق الآن لـ {level}؛ احفظه للاحتفاظ بالتغييرات
 @msg	The document opens without a password; this password is needed to change the restrictions. It's applied when you save.	يُفتح المستند دون كلمة مرور؛ كلمة المرور هذه لازمة لتغيير القيود. تُطبَّق عند الحفظ.
 @msg	The document view cannot be collapsed	لا يمكن طيّ عرض المستند
 @msg	The document view cannot float	لا يمكن جعل عرض المستند عائمًا
 @msg	The document view cannot share a tab group	لا يمكن مشاركة مجموعة تبويبات مع عرض المستند
 @msg	The document was closed before it could be saved.	أُغلق المستند قبل أن يمكن حفظه.
+@msg	The document's embedded revocation information shows that the signer's certificate has not been revoked.	تُظهر معلومات الإبطال المضمنة في المستند أن شهادة الموقّع لم تُبطل.
 @msg	The document's security settings don't allow copying text and images	إعدادات أمان المستند لا تسمح بنسخ النصوص والصور
 @msg	The document's security settings don't allow filling in form fields	إعدادات أمان المستند لا تسمح بتعبئة حقول النموذج
 @msg	The document's security settings don't allow this change	إعدادات أمان المستند لا تسمح بهذا التغيير
+@msg	The embedded timestamp token is valid and its authority is trusted; trusted time is {}.	رمز الطابع الزمني المضمن صالح وجهته موثوقة؛ الوقت الموثوق هو {}.
+@msg	The existing action will be preserved.	سيتم الاحتفاظ بالإجراء الحالي.
 @msg	The field properties could not be changed.	تعذّر تغيير خصائص الحقل.
 @msg	The field properties dialog is no longer open.	حوار خصائص الحقل لم يعد مفتوحًا.
 @msg	The field {name} no longer exists.	الحقل {name} لم يعد موجودًا.
+@msg	The file no longer exists	لم يعد الملف موجوداً
+@msg	The font {} isn't embedded	الخط {} غير مضمن
+@msg	The fonts PdfCraft writes with can't draw “{c}” ({code}), so it shows as ? in every PDF viewer. The text is saved.	الخطوط التي يكتب بها PdfCraft لا تستطيع رسم «{c}» ({code})، لذا يظهر بشكل ? في كل برامج عرض PDF. النص محفوظ.
 @msg	The form asks to be submitted to {u}; PdfCraft doesn't send form data. Save the document to keep your entries.	النموذج يطلب إرساله إلى {u}؛ PdfCraft لا يرسل بيانات النماذج. احفظ المستند للاحتفاظ بما أدخلته.
 @msg	The form asks viewers to make appearances (NeedAppearances)	النموذج يطلب من العارضات إنشاء المظاهر (NeedAppearances)
+@msg	The image has been copied ({w} × {h} pixels)	نُسخت الصورة ({w} × {h} بكسل)
+@msg	The image has been copied as a {ext} file	نُسخت الصورة كملف {ext}
 @msg	The key is in the Windows certificate store, which may ask to allow PdfCraft to use it.	المفتاح موجود في مخزن شهادات Windows، وقد يطلب الإذن لـ PdfCraft باستخدامه.
 @msg	The key is in the macOS Keychain, which may ask to allow PdfCraft to use it.	المفتاح موجود في سلسلة مفاتيح macOS، وقد تطلب الإذن لـ PdfCraft باستخدامه.
+@msg	The linked PDF opened, but its named destination was not applied.	فُتح ملف PDF المرتبط، لكن لم تُطبَّق وجهته المسماة.
+@msg	The linked PDF opened, but its page destination was out of range.	فُتح ملف PDF المرتبط، لكن وجهة الصفحة خارج النطاق.
+@msg	The metadata doesn't identify the file as {}	لا تعرّف البيانات الوصفية الملف على أنه {}
 @msg	The newest {n} of {total} PDFs	أحدث {n} من أصل {total} ملف PDF
 @msg	The operation failed.	فشلت العملية.
+@msg	The page has changed; select the image again	تغيّرت الصفحة؛ حدّد الصورة مرة أخرى
 @msg	The pages were extracted but not deleted, because the document changed while you were choosing a folder.	استُخرجت الصفحات لكنها لم تُحذف، لأن المستند تغيّر أثناء اختيارك مجلدًا.
 @msg	The panel layout must contain its document view and bounded hidden panels	يجب أن يتضمن تخطيط اللوحات عرض المستند وعددًا محدودًا من اللوحات المخفية
+@msg	The password is incorrect.	كلمة المرور غير صحيحة.
 @msg	The password is only used to read the file; it isn't saved.	تُستخدم كلمة المرور لقراءة الملف فقط؛ ولا تُحفظ.
-@msg	The password must have at least 6 characters.	يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.
+@msg	The password must have at least 6 characters.	يجب ألا تقل كلمة المرور عن 6 محارف.
 @msg	The passwords do not match.	كلمتا المرور غير متطابقتين.
 @msg	The passwords don't match.	كلمتا المرور غير متطابقتين.
 @msg	The printer driver's own settings for this print: paper tray, paper type, finishing and more.	إعدادات تعريف الطابعة الخاصة بهذه الطباعة: درج الورق ونوع الورق والتشطيب وغيرها.
 @msg	The replacement file doesn't have that many pages.	الملف البديل لا يحتوي على هذا العدد من الصفحات.
 @msg	The same password is tried on each file.	تُجرَّب كلمة المرور نفسها على كل ملف.
+@msg	The security settings don't allow screen readers to read the text	لا تسمح إعدادات الأمان لقارئات الشاشة بقراءة النص
 @msg	The selected area has been copied ({w} × {h} pixels)	نُسخت المنطقة المحددة ({w} × {h} بكسل)
 @msg	The selected fields could not be found. Select them again.	تعذّر العثور على الحقول المحددة. حددها من جديد.
+@msg	The signature algorithm and the SignerInfo's digest algorithm name different hashes; the signature was made with the SignerInfo's.	تحدّد خوارزمية التوقيع وخوارزمية البصمة في SignerInfo دالتي تجزئة مختلفتين؛ أُنشئ التوقيع باستخدام دالة SignerInfo.
+@msg	The signature carries an unverified timestamp ({}): the timestamp authority is not in your list of trusted certificates, so the signing time claimed by the signer is used instead.	يحمل التوقيع طابعًا زمنيًا غير متحقق منه ({}): جهة الطابع الزمني ليست ضمن شهاداتك الموثوقة، لذلك يُستخدم بدلًا منه وقت التوقيع الذي يدّعيه الموقّع.
+@msg	The signature contents are not hexadecimal.	محتويات التوقيع ليست بصيغة سداسية عشرية.
+@msg	The signature could not be checked ({}).	تعذّر فحص التوقيع ({}).
+@msg	The signature could not be read ({}).	تعذّرت قراءة التوقيع ({}).
+@msg	The signature could not be verified ({}).	تعذّر التحقق من التوقيع ({}).
+@msg	The signature has no valid byte range.	لا يوجد نطاق بايتات صالح للتوقيع.
+@msg	The signature includes an embedded timestamp.	يتضمن التوقيع طابعًا زمنيًا مضمنًا.
+@msg	The signature is BER-encoded (indefinite lengths) rather than DER; it was read leniently.	التوقيع بترميز BER (أطوال غير محددة) بدلًا من DER؛ قُرئ بطريقة متساهلة.
+@msg	The signature uses the legacy adbe.x509.rsa_sha1 format.	يستخدم التوقيع التنسيق القديم adbe.x509.rsa_sha1.
+@msg	The signature value does not match the signer's certificate: the signature is corrupt.	لا تطابق قيمة التوقيع شهادة الموقّع؛ التوقيع تالف.
 @msg	The signature will be invisible.	سيكون التوقيع غير مرئي.
+@msg	The signature's byte range does not exclude exactly its contents.	لا يستثني نطاق بايتات التوقيع محتوياته وحدها بدقة.
+@msg	The signature's byte range does not match the file.	لا يطابق نطاق بايتات التوقيع الملف.
+@msg	The signature's timestamp token could not be verified ({}).	تعذّر التحقق من رمز الطابع الزمني للتوقيع ({}).
+@msg	The signature's timestamp token does not cover the signature value.	لا يغطي رمز الطابع الزمني للتوقيع قيمة التوقيع.
+@msg	The signed content is a constructed (segmented) OCTET STRING, as BER allows; it was read anyway.	المحتوى الموقّع OCTET STRING مركّب (مجزّأ) كما يسمح BER؛ تمت قراءته رغم ذلك.
+@msg	The signer's certificate does not allow digital signatures (its key usage has neither digital signature nor non-repudiation).	لا تسمح شهادة الموقّع بالتوقيعات الرقمية (استخدام مفتاحها لا يتضمن التوقيع الرقمي ولا عدم الإنكار).
+@msg	The signer's certificate has been revoked ({}).	أُبطلت شهادة الموقّع ({}).
+@msg	The signer's certificate has critical extensions PdfCraft does not recognize ({}).	تحتوي شهادة الموقّع على امتدادات حاسمة لا يتعرف عليها PdfCraft ({}).
+@msg	The signer's certificate is not in the signature.	شهادة الموقّع غير موجودة في التوقيع.
+@msg	The signer's certificate is not issued for signing documents (its extended key usage has no document-signing purpose).	لم تُصدر شهادة الموقّع لتوقيع المستندات (استخدام مفتاحها الموسّع لا يتضمن هذا الغرض).
+@msg	The signer's certificate was not valid at the time of signing.	لم تكن شهادة الموقّع صالحة وقت التوقيع.
+@msg	The signer's identity is unknown because it has not been included in your list of trusted certificates and none of its parent certificates are trusted certificates.	هوية الموقّع غير معروفة لأن شهادته غير مدرجة ضمن شهاداتك الموثوقة، ولا توجد شهادة موثوقة بين شهاداته الأصلية.
+@msg	The signer's identity is valid.	هوية الموقّع صالحة.
 @msg	The standard fonts can't draw “{c}” ({code}). Only Western European characters can be added as text for now.	الخطوط القياسية لا تستطيع رسم «{c}» ({code}). حاليًا يمكن إضافة محارف أوروبا الغربية فقط كنص.
 @msg	The text is the same	النص متطابق
+@msg	The timestamp authority's certificate was not valid at the time of timestamping.	لم تكن شهادة جهة الطابع الزمني صالحة وقت وضع الطابع.
+@msg	The timestamp contents are not hexadecimal.	محتويات الطابع الزمني ليست بصيغة سداسية عشرية.
+@msg	The timestamp has no valid byte range.	لا يوجد نطاق بايتات صالح للطابع الزمني.
+@msg	The timestamp token could not be read ({}).	تعذّرت قراءة رمز الطابع الزمني ({}).
+@msg	The timestamp token is valid and its authority is trusted.	رمز الطابع الزمني صالح وجهته موثوقة.
+@msg	The timestamp token is valid, but the timestamp authority is not in your list of trusted certificates.	رمز الطابع الزمني صالح، لكن جهته ليست ضمن شهاداتك الموثوقة.
+@msg	The timestamp's byte range does not exclude exactly its contents.	لا يستثني نطاق بايتات الطابع الزمني محتوياته وحدها بدقة.
+@msg	The timestamp's byte range does not match the file.	لا يطابق نطاق بايتات الطابع الزمني الملف.
 @msg	The title in the metadata and the document information differ	العنوان في البيانات الوصفية يختلف عنه في معلومات المستند
 @msg	The value is shown as typed.	تُعرض القيمة كما كُتبت.
 @msg	The window should show a meaningful title rather than the file name. Set a title and Initial View > Show: Document Title.	ينبغي أن تعرض النافذة عنوانًا ذا معنى لا اسم الملف. عيّن عنوانًا واختر العرض الأولي > إظهار: عنوان المستند.
+@msg	The window shows the file name, not the title (Initial View > Show)	تعرض النافذة اسم الملف بدلًا من العنوان (العرض الأولي > إظهار)
+@msg	Theme	سمة
 @msg	There are no redaction marks (mark text, areas or pages first)	لا توجد علامات حجب (علّم نصًا أو مناطق أو صفحات أولًا)
 @msg	There are no redaction marks to apply	لا توجد علامات حجب لتطبيقها
+@msg	There is no folder to save the digital ID in.	لا يوجد مجلد لحفظ الهوية الرقمية فيه.
 @msg	These files can't be read, so they won't be in the combined PDF:	تتعذر قراءة هذه الملفات، لذا لن تكون في ملف PDF المدمج:
 @msg	These objects could not be moved. Select them again and try a smaller move.	تعذر نقل هذه العناصر. حددها مجددًا وحاول نقلها بمسافة أقل.
 @msg	Thick	سميك
 @msg	Thickness	السماكة
 @msg	Thin	رفيع
+@msg	This PDF uses the unsupported {s} action.	يستخدم هذا الملف إجراء {s} غير مدعوم.
 @msg	This area has too many overlapping paths; intersection snapping is limited.	هذه المنطقة فيها مسارات متداخلة كثيرة جدًا؛ الانجذاب إلى التقاطعات محدود.
 @msg	This certificate is in your list of trusted certificates.	هذه الشهادة موجودة في قائمة شهاداتك الموثوقة.
 @msg	This certificate is not trusted. Signatures made with it show an unknown identity.	هذه الشهادة غير موثوقة. التوقيعات المنشأة بها تظهر بهوية غير معروفة.
@@ -1952,6 +2203,7 @@
 @msg	This document has no bookmarks.	هذا المستند لا يحتوي على إشارات مرجعية.
 @msg	This document has no comments to flatten	هذا المستند لا يحتوي على تعليقات لتسطيحها
 @msg	This document has no document-level scripts.	هذا المستند لا يحتوي على سكربتات على مستوى المستند.
+@msg	This document has no editable structure tags.	لا يحتوي هذا المستند على وسوم بنيوية قابلة للتحرير.
 @msg	This document has no form fields to flatten	هذا المستند لا يحتوي على حقول نموذج لتسطيحها
 @msg	This document has no form fields you can fill in	هذا المستند لا يحتوي على حقول نموذج يمكنك تعبئتها
 @msg	This document has no form fields.	هذا المستند لا يحتوي على حقول نموذج.
@@ -1961,22 +2213,29 @@
 @msg	This document has no signatures.	هذا المستند لا يحتوي على توقيعات.
 @msg	This document has no tagged figures.	هذا المستند لا يحتوي على أشكال موسومة.
 @msg	This document has no {kind} to change	هذا المستند لا يحتوي على {kind} لتغييره
+@msg	This document has not been modified since this signature was applied.	لم يُعدّل هذا المستند بعد تطبيق هذا التوقيع.
+@msg	This document has not been modified since this timestamp was applied.	لم يُعدّل هذا المستند بعد تطبيق هذا الطابع الزمني.
 @msg	This document hasn't been checked yet.	لم يُفحص هذا المستند بعد.
 @msg	This document is secured. Some changes are restricted by its security settings.	هذا المستند مؤمَّن. بعض التغييرات مقيدة بإعدادات أمانه.
 @msg	This document isn't password-protected	هذا المستند غير محمي بكلمة مرور
 @msg	This drawing exceeds the snapping limit; only the first paths are used.	هذا الرسم يتجاوز حد الانجذاب؛ تُستخدم المسارات الأولى فقط.
 @msg	This field is locked. Unlock it to change its properties.	هذا الحقل مقفل. ألغِ قفله لتغيير خصائصه.
+@msg	This field's font can't draw “{c}” ({code}), so PdfCraft shows ? in its place. The value is saved, and other PDF viewers redraw the field from it.	خط هذا الحقل لا يستطيع رسم «{c}» ({code})، لذا يعرض PdfCraft علامة ? مكانه. القيمة محفوظة، وتعيد برامج عرض PDF الأخرى رسم الحقل منها.
 @msg	This file changed on disk. Reload it to see the new version; your unsaved changes will be lost.	تغيّر هذا الملف على القرص. أعد تحميله لعرض النسخة الجديدة؛ ستفقد تغييراتك غير المحفوظة.
 @msg	This file is already as small as it can be made ({size}). No copy was saved.	هذا الملف صغير بالفعل قدر الإمكان ({size}). لم تُحفظ أي نسخة.
 @msg	This file was damaged and has been repaired. Saving keeps the repaired version.	هذا الملف كان تالفًا وأُصلح. الحفظ يُبقي النسخة المُصلَحة.
 @msg	This folder isn't available right now. It may have moved, or its drive or cloud sync is offline.	هذا المجلد غير متاح الآن. ربما نُقل، أو أن قرصه أو مزامنته السحابية غير متصلة.
 @msg	This form also contains XFA data, which PdfCraft doesn't read yet. You can fill its fields, but Acrobat may show the XFA values instead.	هذا النموذج يحتوي أيضًا على بيانات XFA، لا يقرؤها PdfCraft بعد. يمكنك تعبئة حقوله، لكن Acrobat قد يعرض قيم XFA بدلًا منها.
+@msg	This form's scripts are turned off because one ran too long. Reopen the document to run them again.	سكربتات هذا النموذج متوقفة لأن أحدها استغرق وقتًا طويلًا جدًا. أعد فتح المستند لتشغيلها من جديد.
 @msg	This is a dynamic XFA form, which PdfCraft can't display yet. What you see is the file's placeholder page.	هذا نموذج XFA ديناميكي، لا يستطيع PdfCraft عرضه بعد. ما تراه هو الصفحة البديلة للملف.
 @msg	This measurement needs at least {n} points.	هذا القياس يحتاج إلى {n} نقاط على الأقل.
 @msg	This page contains objects that cannot be selected together.	تحتوي هذه الصفحة على عناصر لا يمكن تحديدها معًا.
 @msg	This page couldn't be displayed.\n{e}	تعذّر عرض هذه الصفحة.\n{e}
 @msg	This printer offers no settings of its own.	هذه الطابعة لا تقدم إعدادات خاصة بها.
-@msg	This signature image is larger than 4 megapixels (or 4096 pixels per side), so it can't be previewed.	صورة التوقيع أكبر من 4 ميغابكسل أو يتجاوز أحد أضلاعها 4096 بكسل، لذا لا يمكن معاينتها.
+@msg	This printer's driver doesn't take two-sided settings from other programs, so its own setting applies. Change it in Properties…	لا يقبل برنامج تشغيل هذه الطابعة إعدادات الطباعة على الوجهين من البرامج الأخرى، لذا يُطبَّق إعداده الخاص. غيّره من خصائص…
+@msg	This signature image is larger than 4 megapixels (or 4096 pixels per side), so it can't be previewed.	تتجاوز صورة التوقيع هذه 4 ميغابكسل (أو 4096 بكسل لكل جانب)، لذا لا يمكن معاينتها.
+@msg	This signature uses RIPEMD-160, a legacy 160-bit hash algorithm that is no longer recommended for signatures. It still validates, but it should not be relied on.	يستخدم هذا التوقيع RIPEMD-160، وهي خوارزمية تجزئة قديمة بطول 160 بت لم تعد موصى بها للتوقيعات. ما زال التوقيع يجتاز التحقق، لكن لا ينبغي الاعتماد عليه.
+@msg	This signature uses SHA-1, a weak hash algorithm: collisions in it have been demonstrated. It still validates because many documents signed years ago use it, but it should not be relied on.	يستخدم هذا التوقيع SHA-1، وهي خوارزمية تجزئة ضعيفة ثبت إمكان حدوث تصادمات فيها. ما زال التوقيع يجتاز التحقق لأن كثيرًا من المستندات القديمة تستخدمها، لكن لا ينبغي الاعتماد عليه.
 @msg	This web address mixes letters from different alphabets, a common way to imitate another site's name.	عنوان الويب هذا يخلط حروفًا من أبجديات مختلفة، وهي طريقة شائعة لانتحال اسم موقع آخر.
 @msg	This web address uses letters from another alphabet, which can look like familiar ones.	عنوان الويب هذا يستخدم حروفًا من أبجدية أخرى قد تشبه الحروف المألوفة.
 @msg	Thumbnails	المصغرات
@@ -1990,7 +2249,8 @@
 @msg	Today: {date}	اليوم: {date}
 @msg	Toggle fit page / fit width	التبديل بين ملاءمة الصفحة وملاءمة العرض
 @msg	Tool	أداة
-@msg	Tools	الأدوات
+@msg	Tools	أدوات
+@msg	Tools panel side	جانب لوحة الأدوات
 @msg	Tooltip:	تلميح:
 @msg	Top	أعلى
 @msg	Top-level bookmarks ({n})	إشارات المستوى الأعلى ({n})
@@ -2004,7 +2264,7 @@
 @msg	Two-Up Continuous (Facing)	صفحتان متواصلتان (متقابلتان)
 @msg	Two-page view	عرض صفحتين
 @msg	Two-sided:	على الوجهين:
-@msg	Type	النوع
+@msg	Type	نص
 @msg	Type Password	اكتب كلمة المرور
 @msg	Type a password.	اكتب كلمة مرور.
 @msg	Type text	اكتب نصًا
@@ -2019,7 +2279,7 @@
 @msg	Undo	تراجع
 @msg	Undo {action}	التراجع عن {action}
 @msg	Unit	الوحدة
-@msg	Units	الوحدات
+@msg	Units	وحدات
 @msg	Unknown	غير معروف
 @msg	Unknown author	مؤلف غير معروف
 @msg	Unlock	إلغاء القفل
@@ -2032,6 +2292,8 @@
 @msg	Unpin	إلغاء التثبيت
 @msg	Unpin {folder}	إلغاء تثبيت {folder}
 @msg	Unplaced	غير موضوع
+@msg	Unsigned signature field	حقل توقيع غير موقّع
+@msg	Unsigned signature field: {name}	حقل توقيع غير موقّع: {name}
 @msg	Unsupported measurements	قياسات غير مدعومة
 @msg	Up	أعلى
 @msg	Update	تحديث
@@ -2064,7 +2326,7 @@
 @msg	Valid for 5 years, for digital signatures. Self-signed IDs are usually not trusted by others.	صالح لمدة 5 سنوات، للتوقيعات الرقمية. المعرّفات الموقعة ذاتيًا لا يثق بها الآخرون عادةً.
 @msg	Valid from	صالحة من
 @msg	Valid to	صالحة حتى
-@msg	Validate	التحقق
+@msg	Validate	تحقق
 @msg	Validate all	التحقق من الكل
 @msg	Validate all signatures	التحقق من كل التوقيعات
 @msg	Validity ends	نهاية الصلاحية
@@ -2091,11 +2353,13 @@
 @msg	Viewport rectangle in page points (x, y, width, height)	مستطيل منفذ العرض بنقاط الصفحة (x, y, العرض, الارتفاع)
 @msg	Visible Rectangle	مستطيل مرئي
 @msg	Visual	بصري
+@msg	Warning	تحذير
 @msg	Warnings	التحذيرات
 @msg	Watermark	علامة مائية
 @msg	Weak	ضعيفة
 @msg	Welcome to PdfCraft	مرحبًا بك في PdfCraft
 @msg	What word or phrase would you like to search for?	ما الكلمة أو العبارة التي تريد البحث عنها؟
+@msg	White on black	أبيض على أسود
 @msg	Whole words only	كلمات كاملة فقط
 @msg	Width	العرض
 @msg	Width:	العرض:
@@ -2108,6 +2372,7 @@
 @msg	X Object Forms	نماذج X Object
 @msg	XFA form: its fields and its XFA data are kept in step, so other viewers show what you fill in.	نموذج XFA: حقوله وبيانات XFA فيه تبقى متطابقة، فتعرض العارضات الأخرى ما تعبئه.
 @msg	Yellow	أصفر
+@msg	Yellow on black	أصفر على أسود
 @msg	Yes	نعم
 @msg	You are about to apply 1 redaction mark. Text, images and drawings under the marks, and comments and form fields that overlap them, are removed permanently.	أنت على وشك تطبيق علامة حجب واحدة. النصوص والصور والرسومات تحت العلامات، والتعليقات وحقول النموذج المتداخلة معها، تُزال نهائيًا.
 @msg	You are about to apply {n} redaction marks. Text, images and drawings under the marks, and comments and form fields that overlap them, are removed permanently.	أنت على وشك تطبيق {n} علامات حجب. النصوص والصور والرسومات تحت العلامات، والتعليقات وحقول النموذج المتداخلة معها، تُزال نهائيًا.
@@ -2133,153 +2398,228 @@
 @msg	a bookmark cannot be moved inside itself	لا يمكن نقل إشارة مرجعية إلى داخل نفسها
 @msg	a damaged ICC colour space	فضاء ألوان ICC تالف
 @msg	a damaged colour space	فضاء ألوان تالف
-@msg	a decoded prefix exceeds 1024 UTF-8 bytes	تتجاوز البادئة بعد فك ترميزها 1024 بايت بترميز UTF-8
+@msg	a decoded prefix exceeds 1024 UTF-8 bytes	تتجاوز إحدى البادئات المفكوكة الترميز 1024 بايت من UTF-8
 @msg	a document must keep at least one page	يجب أن يحتفظ المستند بصفحة واحدة على الأقل
-@msg	a raw prefix exceeds 2050 bytes	تتجاوز البادئة الخام 2050 بايت
-@msg	an ICC colour space with an unusual number of components	فضاء ألوان ICC يحتوي عددًا غير معتاد من المكوّنات
-@msg	an indexed colour space without a lookup table	فضاء ألوان مفهرس بلا جدول بحث
+@msg	a raw prefix exceeds 2050 bytes	تتجاوز إحدى البادئات الخام 2050 بايت
+@msg	a tag type must be a nonempty PDF name using letters, digits, colon, period, underscore or hyphen	يجب أن يكون نوع الوسم اسماً غير فارغ في PDF يستخدم الحروف أو الأرقام أو النقطتين أو النقطة أو الشرطة السفلية أو الواصلة
+@msg	already a PDF	ملف PDF بالفعل
+@msg	alternate text hides an annotation inside it	يخفي النص البديل تعليقًا توضيحيًا داخله
+@msg	alternate text on an element with no page content	نص بديل على عنصر لا يحتوي على محتوى صفحة
+@msg	an ICC colour space with an unusual number of components	فضاء ألوان ICC بعدد غير معتاد من المكونات
+@msg	an indexed colour space without a lookup table	فضاء ألوان مفهرس دون جدول بحث
 @msg	and {n} more	و{n} أخرى
 @msg	average	المتوسط
 @msg	background	خلفية
 @msg	bad for loop bounds	حدود حلقة for غير صالحة
-@msg	before only applies to a center move	لا ينطبق المعامل before إلا عند النقل إلى الوسط
-@msg	boom	خطأ تجريبي
+@msg	before only applies to a center move	ينطبق before على حركة المركز فقط
+@msg	boom	خلل تجريبي
+@msg	both tags must be distinct, reachable, direct children of the same structure parent	يجب أن يكون الوسمان مختلفين وقابلين للوصول وابنين مباشرين للعنصر الأب نفسه في البنية
 @msg	cancelled	أُلغي
 @msg	cannot assign to that	لا يمكن إسناد قيمة إلى هذا العنصر
-@msg	characters	حرفًا
+@msg	characters	محارف
 @msg	combine-zoom must be between 60 and 200	يجب أن تكون قيمة combine-zoom بين 60 و200
+@msg	command missing	الأمر غير محدد
+@msg	comments	التعليقات
 @msg	continuous must be on or off	يجب أن تكون قيمة continuous هي on أو off
-@msg	couldn't use {0}	تعذّر استخدام {0}
+@msg	couldn't use {0}	تعذر استخدام {0}
 @msg	cover must be on or off	يجب أن تكون قيمة cover هي on أو off
-@msg	custom labels exceed 4 MiB in total	يتجاوز الحجم الإجمالي للتسميات المخصصة 4 ميبيبايت
-@msg	decoded output exceeds the limit of {0} bytes	يتجاوز حجم البيانات بعد فك ترميزها الحد البالغ {0} بايت
+@msg	custom labels exceed 4 MiB in total	يتجاوز إجمالي التسميات المخصصة 4 MiB
+@msg	custom needs background as #rrggbb	يتطلب custom تحديد الخلفية بصيغة #rrggbb
+@msg	custom needs text and background as #rrggbb	يتطلب custom تحديد النص والخلفية بصيغة #rrggbb
+@msg	custom needs text as #rrggbb	يتطلب custom تحديد النص بصيغة #rrggbb
+@msg	decoded output exceeds the limit of {0} bytes	تتجاوز البيانات المفكوكة الترميز الحد البالغ {0} بايت
+@msg	decoded prefixes exceed 4 MiB in total	يتجاوز إجمالي البادئات المفكوكة الترميز 4 MiB
 @msg	default-continuous must be on or off	يجب أن تكون قيمة default-continuous هي on أو off
 @msg	division by zero	قسمة على صفر
+@msg	document security store	مخزن أمان المستند
+@msg	document structure	بنية المستند
 @msg	e.g. My stamps	مثلًا: أختامي
 @msg	e.g. en-US	مثلًا en-US
-@msg	expected `context<TAB>source<TAB>translation`	الصيغة المتوقعة هي `context<TAB>source<TAB>translation`
+@msg	expected `context<TAB>source<TAB>translation`	الصيغة المتوقعة: `context<TAB>source<TAB>translation`
 @msg	flatten-fill-sign must be true or false	يجب أن تكون قيمة flatten-fill-sign هي true أو false
+@msg	font contains an invalid advance	يتضمن الخط مسافة تقدم غير صالحة
+@msg	font contains an unavailable shaped glyph	يتضمن الخط محرفاً مشكّلاً غير متاح
 @msg	for images above	للصور التي تتجاوز
+@msg	form fill	تعبئة النماذج
 @msg	grid-zoom must be between 50 and 300	يجب أن تكون قيمة grid-zoom بين 50 و300
-@msg	grouped Form artwork is not a bitmap; Save Image As is only available for raster images	الرسم المجمّع من نوع Form ليس صورة نقطية؛ يتاح «حفظ الصورة باسم» للصور النقطية فقط
+@msg	grouped Form artwork is not a bitmap; Save Image As is only available for raster images	الرسم المجمّع في كائن Form ليس صورة نقطية؛ يتاح «حفظ الصورة باسم» للصور النقطية فقط
 @msg	header or footer	رأس أو تذييل
 @msg	initials	أحرف أولى
-@msg	internal lock poisoned	تعطّل قفل المزامنة الداخلي
+@msg	internal lock poisoned	تعطل قفل داخلي بعد خطأ سابق
 @msg	is available	متاح
 @msg	is not available yet	غير متاح بعد
-@msg	it is password-protected	الملف محمي بكلمة مرور
-@msg	its security settings don't allow copying pages	لا تسمح إعدادات أمان الملف بنسخ الصفحات
+@msg	it is password-protected	محمي بكلمة مرور
+@msg	its alternate text is inside another element's and will never be read	يقع نصه البديل داخل النص البديل لعنصر آخر ولن يُقرأ
+@msg	its security settings don't allow copying pages	لا تسمح إعدادات الأمان بنسخ الصفحات
 @msg	just now	الآن
-@msg	loading {0}: {e}	تحميل {0}: {e}
-@msg	malformed data: {e}	بيانات غير سليمة: {e}
-@msg	malformed encryption dictionary: {e}	قاموس تشفير غير سليم: {e}
+@msg	links	الروابط
+@msg	loading {0}: {1}	جارٍ تحميل {0}: {1}
+@msg	loading {0}: {e}	جارٍ تحميل {0}: ‏{e}
+@msg	malformed data: {0}	بيانات غير صالحة: {0}
+@msg	malformed data: {e}	بيانات غير سليمة البنية: {e}
+@msg	malformed encryption dictionary: {0}	قاموس تشفير غير صالح: {0}
+@msg	malformed encryption dictionary: {e}	قاموس تشفير غير سليم البنية: {e}
 @msg	maximum	الحد الأقصى
+@msg	metadata	البيانات الوصفية
 @msg	minimum	الحد الأدنى
 @msg	needs an AI provider (off by default)	يتطلب مزوّد ذكاء اصطناعي (متوقف افتراضيًا)
 @msg	nested indexed colour spaces aren't valid	فضاءات الألوان المفهرسة المتداخلة غير صالحة
+@msg	no alternate text	لا يوجد نص بديل
 @msg	no document	لا يوجد مستند
+@msg	no header cells (TH)	لا توجد خلايا رأس (TH)
+@msg	no output folder was chosen	لم يتم اختيار مجلد للإخراج
 @msg	no such document	لا يوجد مستند كهذا
+@msg	no summary	لا يوجد ملخص
+@msg	no unused output name	لا يوجد اسم ناتج غير مستخدم
 @msg	none	لا شيء
-@msg	not a PDF file (no %PDF- header)	هذا ليس ملف PDF؛ ترويسة %PDF- مفقودة
-@msg	not a function	هذا العنصر ليس دالة
-@msg	not an image	هذا العنصر ليس صورة
+@msg	not a PDF file (no %PDF- header)	ليس ملف PDF (لا تتوفر ترويسة %PDF-)
+@msg	not a function	ليس دالة
+@msg	not an image	ليست صورة
+@msg	not in a TR	ليس داخل TR
+@msg	not in a Table, THead, TBody or TFoot	ليس داخل Table أو THead أو TBody أو TFoot
+@msg	not in an L (list)	ليس داخل L (قائمة)
+@msg	not in an LI (list item)	ليس داخل LI (عنصر قائمة)
 @msg	not supported: {0}	غير مدعوم: {0}
 @msg	nothing in the file matches this document	لا شيء في الملف يطابق هذا المستند
-@msg	nothing to create	لا توجد عناصر لإنشائها
-@msg	nothing to import	لا توجد عناصر لاستيرادها
+@msg	nothing to create	لا يوجد شيء لإنشائه
+@msg	nothing to import	لا يوجد شيء لاستيراده
 @msg	nothing to redo	لا شيء لإعادته
 @msg	nothing to undo	لا شيء للتراجع عنه
-@msg	object {0} is missing	الكائن {0} مفقود
-@msg	object {0} is not a dictionary	الكائن {0} ليس قاموسًا
-@msg	object {0} is not a figure	الكائن {0} ليس شكلًا
+@msg	object {0} is missing	الكائن {0} غير موجود
+@msg	object {0} is not a dictionary	الكائن {0} ليس قاموساً
+@msg	object {0} is not a figure	الكائن {0} ليس شكلاً
+@msg	object {0} is not a reachable indirect structure tag	الكائن {0} ليس وسم بنية غير مباشر قابلاً للوصول
+@msg	of	من
 @msg	of the following fields:	للحقول التالية:
 @msg	of {name}	من {name}
 @msg	of {pages}	من {pages}
 @msg	on page {label}	في الصفحة {label}
 @msg	open to see what it will include	افتح لترى ما سيتضمنه
 @msg	operation must be open, close, activate, float, move, moveFloating, resizeSplit, setStackOpen or resizeStack	يجب أن تكون العملية open أو close أو activate أو float أو move أو moveFloating أو resizeSplit أو setStackOpen أو resizeStack
-@msg	page 3 is bad	الصفحة 3 غير سليمة
+@msg	other changes	تغييرات أخرى
+@msg	page 3 is bad	الصفحة 3 غير صالحة
+@msg	page content	محتوى الصفحة
 @msg	page {0} does not exist	الصفحة {0} غير موجودة
+@msg	page {n} is out of range (1–{count})	الصفحة {n} خارج النطاق (1–{count})
 @msg	pages	صفحات
+@msg	pages added or removed	صفحات مضافة أو مزالة
 @msg	placeholders differ from the English source	تختلف العناصر النائبة عن المصدر الإنجليزي
-@msg	plural placeholders differ from the English source	تختلف عناصر الجمع النائبة عن المصدر الإنجليزي
-@msg	plural source must be one|other	يجب أن يكون مصدر الجمع بالصيغة one|other
-@msg	preview scale must be finite and positive	يجب أن يكون مقياس المعاينة عددًا محدودًا وموجبًا
+@msg	plural placeholders differ from the English source	تختلف العناصر النائبة لصيغ الجمع عن المصدر الإنجليزي
+@msg	plural source must be one|other	يجب أن يكون مصدر صيغ الجمع بالشكل one|other
+@msg	preview scale must be finite and positive	يجب أن يكون مقياس المعاينة محدوداً وموجباً
 @msg	product (x)	حاصل الضرب (x)
-@msg	region must be [x0, y0, x1, y1] in points	يجب تحديد المنطقة بالصيغة [x0, y0, x1, y1] بوحدة النقطة
-@msg	rotate: 0, 90, 180 or 270	زوايا التدوير المتاحة: 0 أو 90 أو 180 أو 270
+@msg	region must be [x0, y0, x1, y1] in points	يجب أن تكون المنطقة بالشكل [x0, y0, x1, y1] بالنقاط
+@msg	rotate: 0, 90, 180 or 270	قيمة rotate: 0 أو 90 أو 180 أو 270
+@msg	rows have between {min} and {max} columns	يتراوح عدد الأعمدة في الصفوف بين {min} و{max}
+@msg	select a static instance of this variable font before embedding	حدد نسخة ثابتة من هذا الخط المتغير قبل تضمينه
+@msg	select an openly licensed font whose name table declares its licence (OFL, Apache, Ubuntu, Bitstream Vera or MIT)	حدد خطاً مفتوح الترخيص يعلن جدول أسمائه عن ترخيصه (OFL أو Apache أو Ubuntu أو Bitstream Vera أو MIT)
+@msg	shape one bounded text row at a time	شكّل صفاً واحداً من النص المحدود في كل مرة
+@msg	shaped font mapping exceeds its budget	تتجاوز خريطة محارف الخط المشكّل حدود الموارد المخصصة لها
+@msg	shaped row exceeds its geometry budget	يتجاوز الصف المشكّل حدود الموارد الهندسية المخصصة له
 @msg	ships in milestone {m}	يصدر في المرحلة {m}
 @msg	signature	توقيع
 @msg	sorted ascending	مفروز تصاعديًا
 @msg	sorted descending	مفروز تنازليًا
-@msg	source and translation must be nonempty	يجب ألا يكون المصدر أو الترجمة فارغًا
-@msg	stream data could not be decoded: {e}	تعذّر فك ترميز بيانات التدفق: {e}
+@msg	source and translation must be nonempty	يجب ألا يكون المصدر أو الترجمة فارغاً
+@msg	stream data could not be decoded: {0}	تعذر فك ترميز بيانات التدفق: {0}
+@msg	stream data could not be decoded: {e}	تعذر فك ترميز بيانات الدفق: {e}
 @msg	sum (+)	المجموع (+)
-@msg	switch to two-page view first to show the cover page	انتقل أولًا إلى عرض صفحتين لإظهار صفحة الغلاف
+@msg	switch to two-page view first to show the cover page	انتقل أولاً إلى عرض الصفحتين لإظهار صفحة الغلاف
 @msg	syntax error at byte {offset}: {detail}	خطأ في الصياغة عند البايت {offset}: {detail}
-@msg	text recognition failed: {e}	تعذّر التعرّف على النص: {e}
-@msg	the XFA template could not be read: {e}	تعذّرت قراءة قالب XFA: {e}
+@msg	tag property text is too long (maximum 65536 bytes)	نص خاصية الوسم طويل جداً (65536 بايت كحد أقصى)
+@msg	text recognition failed: {0}	فشل التعرف على النص: {0}
+@msg	text recognition failed: {e}	فشل التعرف على النص: {e}
+@msg	the XFA template could not be read: {0}	تعذرت قراءة قالب XFA: {0}
+@msg	the XFA template could not be read: {e}	تعذرت قراءة قالب XFA: {e}
 @msg	the app has closed	أُغلق التطبيق
-@msg	the area is too large at this zoom	المنطقة كبيرة جدًا عند مستوى التكبير الحالي
-@msg	the clipboard image is empty or malformed	صورة الحافظة فارغة أو غير سليمة
-@msg	the corners are out of range	تقع الزوايا خارج النطاق
-@msg	the date format is empty	صيغة التاريخ فارغة
-@msg	the date format shows no year (y), month (m) or day (d)	لا تتضمن صيغة التاريخ سنة (y) أو شهرًا (m) أو يومًا (d)
+@msg	the area is too large at this zoom	المنطقة كبيرة جداً عند مستوى التكبير هذا
+@msg	the clipboard image is empty or malformed	صورة الحافظة فارغة أو غير صالحة
+@msg	the corners are out of range	الزوايا خارج النطاق
+@msg	the data file is not UTF-8, UTF-16 or ISO-8859-1 text	ملف البيانات ليس نصاً بترميز UTF-8 أو UTF-16 أو ISO-8859-1
+@msg	the date format is empty	تنسيق التاريخ فارغ
+@msg	the date format shows no year (y), month (m) or day (d)	لا يعرض تنسيق التاريخ سنة (y) أو شهراً (m) أو يوماً (d)
 @msg	the document has no form fields	المستند لا يحتوي على حقول نموذج
 @msg	the document has no page tree	المستند ليس له شجرة صفحات
 @msg	the document has no tags	المستند لا يحتوي على وسوم
 @msg	the document is not an XFA form	المستند ليس نموذج XFA
 @msg	the document is protected by a password	المستند محمي بكلمة مرور
-@msg	the document's security settings don't allow {0}; open it with the owner password to make this change	لا تسمح إعدادات أمان المستند بالإجراء {0}؛ افتحه بكلمة مرور المالك لإجراء هذا التغيير
-@msg	the edited document could not be reopened: {e}	تعذّر فتح المستند مجددًا بعد تعديله: {e}
-@msg	the edited document could not be written: {e}	تعذّرت كتابة المستند المعدّل: {e}
-@msg	the file is not a readable PDF: {e}	الملف ليس مستند PDF قابلًا للقراءة: {e}
-@msg	the image has no colour space	لا تحتوي الصورة على فضاء ألوان
-@msg	the image has no size	لم تُحدد أبعاد الصورة
+@msg	the document's security settings don't allow {0}; open it with the owner password to make this change	لا تسمح إعدادات أمان المستند بـ {0}؛ افتحه بكلمة مرور المالك لإجراء هذا التغيير
+@msg	the edited document could not be reopened: {0}	تعذرت إعادة فتح المستند المحرر: {0}
+@msg	the edited document could not be reopened: {e}	تعذرت إعادة فتح المستند المعدّل: {e}
+@msg	the edited document could not be written: {0}	تعذرت كتابة المستند المحرر: {0}
+@msg	the edited document could not be written: {e}	تعذرت كتابة المستند المعدّل: {e}
+@msg	the file is not a readable PDF: {0}	الملف ليس PDF قابلاً للقراءة: {0}
+@msg	the file is not a readable PDF: {e}	الملف ليس PDF قابلًا للقراءة: {e}
+@msg	the file name is not valid	اسم الملف غير صالح
+@msg	the first heading is an H{n}; headings should not skip levels	أول عنوان هو H{n}؛ يجب ألا تتجاوز العناوين مستويات
+@msg	the font family name is invalid	اسم عائلة الخط غير صالح
+@msg	the full font lacks a required contextual glyph; choose the complete source face	يفتقر الخط الكامل إلى محرف سياقي مطلوب؛ اختر وجه الخط الأصلي الكامل
+@msg	the image has no colour space	لا تتوفر مساحة لونية للصورة
+@msg	the image has no size	لا تتوفر أبعاد للصورة
 @msg	the image is empty	الصورة فارغة
-@msg	the move must be finite and non-zero	يجب أن يكون مقدار النقل عددًا محدودًا وغير صفري
-@msg	the number tree has too many pending nodes	تحتوي شجرة الأرقام على عدد كبير جدًا من العقد المعلّقة
-@msg	the number tree is too deep	يتجاوز عمق شجرة الأرقام الحد المسموح
-@msg	the number tree repeats a node or contains a cycle	تكرر شجرة الأرقام عقدة أو تحتوي دورة
-@msg	the optimization was cancelled	أُلغي تحسين الملف
-@msg	the page could not be read as a picture	تعذّرت قراءة الصفحة كصورة
+@msg	the move must be finite and non-zero	يجب أن تكون الحركة محدودة وغير صفرية
+@msg	the number tree has too many pending nodes	تتضمن شجرة الأرقام عدداً زائداً من العقد المعلقة
+@msg	the number tree is too deep	شجرة الأرقام عميقة جداً
+@msg	the number tree repeats a node or contains a cycle	تكرر شجرة الأرقام عقدة أو تتضمن دورة
+@msg	the optimization was cancelled	أُلغي التحسين
+@msg	the page could not be read as a picture	تعذرت قراءة الصفحة كصورة
+@msg	the parent must list each tag exactly once in its /K array	يجب أن يسرد العنصر الأب كل وسم مرة واحدة تماماً في مصفوفة /K
 @msg	the password is incorrect	كلمة المرور غير صحيحة
 @msg	the password is wrong	كلمة المرور غير صحيحة
 @msg	the print job stopped unexpectedly	توقفت مهمة الطباعة على نحو غير متوقع
-@msg	the region is outside the window	المنطقة خارج حدود النافذة
-@msg	the script is nested too deeply	يتجاوز تداخل البرنامج النصي العمق المسموح
+@msg	the region is outside the window	المنطقة خارج النافذة
+@msg	the scan stopped unexpectedly	توقف المسح على نحو غير متوقع
+@msg	the script engine answered out of turn	رد محرك السكربت خارج الترتيب المتوقع
+@msg	the script engine stopped with an internal error	توقف محرك السكربت بسبب خطأ داخلي
+@msg	the script is nested too deeply	السكربت متداخل بعمق زائد
+@msg	the selected font exceeds 16 MiB	يتجاوز حجم الخط المحدد 16 MiB
+@msg	the selected font has no Unicode mapping or valid units per em	لا يتضمن الخط المحدد خريطة Unicode أو قيمة صالحة للوحدات لكل em
+@msg	the selected font has no usable TrueType/CFF outlines and metrics	لا يتضمن الخط المحدد حدوداً ومقاييس قابلة للاستخدام بصيغة TrueType/CFF
+@msg	the selected font has too many Unicode mappings for one PDF font	يتضمن الخط المحدد عدداً زائداً من تعيينات Unicode لخط PDF واحد
+@msg	the selected font maps Unicode to a glyph outside its program	يربط الخط المحدد Unicode بمحرف خارج برنامجه
 @msg	the signature image is damaged	صورة التوقيع تالفة
-@msg	the structure requires compatibility repair	تحتاج البنية إلى إصلاح التوافق
+@msg	the signed version could not be read	تعذرت قراءة النسخة الموقعة
+@msg	the source subset has no contextual substitution tables; select its full font	لا تتضمن المجموعة الفرعية الأصلية جداول استبدال سياقي؛ حدد خطها الكامل
+@msg	the structure requires compatibility repair	تتطلب البنية إصلاحاً للتوافق
+@msg	the tag is already at the requested position	الوسم موجود بالفعل في الموضع المطلوب
 @msg	the text recognition models are not installed (reinstall PdfCraft, or set PDFCRAFT_MODELS to the folder that holds them)	نماذج التعرف على النص غير مثبتة (أعد تثبيت PdfCraft، أو اضبط PDFCRAFT_MODELS على المجلد الذي يحتويها)
 @msg	the title must not be empty	يجب ألا يكون العنوان فارغًا
-@msg	the update check stopped unexpectedly	توقف فحص التحديثات على نحو غير متوقع
+@msg	the update check stopped unexpectedly	توقف فحص التحديث على نحو غير متوقع
+@msg	the web version can't put files on the clipboard yet; use Save Image As	لا تستطيع نسخة الويب وضع ملفات في الحافظة بعد؛ استخدم «حفظ الصورة باسم»
+@msg	the web version can't put images on the clipboard yet; use Save Image As	لا تستطيع نسخة الويب وضع صور في الحافظة بعد؛ استخدم «حفظ الصورة باسم»
 @msg	theme must be light, dark, or system	يجب أن تكون قيمة theme هي light أو dark أو system
 @msg	there are no pages to print	لا توجد صفحات للطباعة
 @msg	there are no redaction marks to apply	لا توجد علامات حجب لتطبيقها
+@msg	there are no sheets to print	لا توجد أوراق للطباعة
 @msg	there is no bookmark at {0}	لا توجد إشارة مرجعية عند {0}
+@msg	this document can't be edited: {0}	لا يمكن تحرير هذا المستند: {0}
 @msg	this document can't be edited: {e}	لا يمكن تحرير هذا المستند: {e}
-@msg	this document has no tagged headings to make bookmarks from	لا يحتوي المستند على عناوين موسومة لإنشاء إشارات مرجعية منها
+@msg	this document has no tagged headings to make bookmarks from	لا يتضمن هذا المستند عناوين موسومة لإنشاء إشارات مرجعية منها
 @msg	this document is signed: rewriting it would invalidate its signatures (save it incrementally instead)	هذا المستند موقَّع: إعادة كتابته ستبطل توقيعاته (احفظه حفظًا تزايديًا بدلًا من ذلك)
-@msg	this document was opened read-only with a decode limit and cannot be saved	فُتح المستند للقراءة فقط مع حد لفك الترميز، ولا يمكن حفظه
+@msg	this document was opened read-only with a decode limit and cannot be saved	فُتح هذا المستند للقراءة فقط مع حد لفك الترميز، ولا يمكن حفظه
 @msg	this file isn't XFDF, FDF, XML or text form data	هذا الملف ليس بيانات نموذج بصيغة XFDF أو FDF أو XML أو نص
+@msg	this font family is excluded by the project's asset policy	تستبعد سياسة موارد المشروع عائلة الخط هذه
+@msg	this font's embedding permissions prohibit editable outline embedding	تمنع أذونات تضمين هذا الخط تضمين حدود محارفه القابلة للتحرير
 @msg	to	إلى
 @msg	to {n}	إلى {n}
-@msg	trailing backslash; use \\\\ for a literal backslash	شرطة مائلة عكسية زائدة في النهاية؛ استخدم \\\\ لإدراج شرطة مائلة عكسية حرفية
-@msg	trailing ellipsis differs from the English source	تختلف علامة الحذف النهائية عن المصدر الإنجليزي
-@msg	ui.click: pass id, label, or x and y	ui.click: مرّر id أو label أو الإحداثيين x وy
-@msg	ui.focus: pass exactly one widget id or label	ui.focus: مرّر معرّف عنصر واحد أو تسميته فقط
-@msg	ui.open needs a file system; on the web, drop the file on the page	يتطلب ui.open نظام ملفات؛ في المتصفح، أسقط الملف على الصفحة
-@msg	ui.quit needs a native window	يتطلب ui.quit نافذة تطبيق أصلية
-@msg	ui.resize needs a native window	يتطلب ui.resize نافذة تطبيق أصلية
-@msg	ui.set: missing parameter value	ui.set: قيمة المعامل مفقودة
+@msg	tools-side must be left or right	يجب أن تكون قيمة tools-side هي left أو right
+@msg	trailing backslash; use \\ for a literal backslash	شرطة مائلة عكسية في النهاية؛ استخدم \\ لتمثيل شرطة مائلة عكسية حرفية
+@msg	trailing backslash; use \\\\ for a literal backslash	شرطة مائلة عكسية في النهاية؛ استخدم \\\\ لكتابة شرطة مائلة عكسية حرفية
+@msg	trailing ellipsis differs from the English source	تختلف علامة الحذف في النهاية عن المصدر الإنجليزي
+@msg	ui.click: pass id, label, or x and y	ui.click: مرّر id أو label أو x وy
+@msg	ui.focus: pass exactly one widget id or label	ui.focus: مرّر معرّف عنصر واجهة واحداً أو تسمية واحدة فقط
+@msg	ui.open needs a file system; on the web, drop the file on the page	يتطلب ui.open نظام ملفات؛ في نسخة الويب، أفلت الملف على الصفحة
+@msg	ui.quit needs a native window	يتطلب ui.quit نافذة أصلية
+@msg	ui.resize needs a native window	يتطلب ui.resize نافذة أصلية
+@msg	ui.set: missing parameter value	ui.set: قيمة المعامل غير محددة
 @msg	unsupported filter: {0}	مرشح غير مدعوم: {0}
 @msg	unsupported security handler: {0}	معالج أمان غير مدعوم: {0}
-@msg	unsupported security: {0}	نظام أمان غير مدعوم: {0}
+@msg	unsupported security: {0}	آلية أمان غير مدعومة: {0}
 @msg	watermark	علامة مائية
 @msg	yesterday	أمس
 @msg	yyyy or yy year · m or mm month · mmm or mmmm month name · d or dd day · ddd or dddd weekday. H, h, M, s and t are time letters and can't be used on their own: put {escape} before a letter to show it as is.	yyyy أو yy السنة · m أو mm الشهر · mmm أو mmmm اسم الشهر · d أو dd اليوم · ddd أو dddd يوم الأسبوع. H و h و M و s و t أحرف الوقت ولا يمكن استخدامها وحدها: ضع {escape} قبل الحرف لإظهاره كما هو.
-@msg	zone must be center, left, right, top or bottom	يجب أن تكون قيمة zone هي center أو left أو right أو top أو bottom
-@msg	{0} isn't possible in a signed document: it would rewrite the file and invalidate the signatures	لا يمكن إجراء {0} على مستند موقّع؛ سيُعاد إنشاء الملف وتُبطل توقيعاته
+@msg	zone must be center, left, right, top or bottom	يجب أن تكون zone إحدى القيم center أو left أو right أو top أو bottom
+@msg	{0} isn't possible in a signed document: it would rewrite the file and invalidate the signatures	لا يمكن تنفيذ {0} في مستند موقّع: سيؤدي ذلك إلى إعادة كتابة الملف وإبطال التوقيعات
 @msg	{0}: {1}	{0}: {1}
 @msg	{chars} can't be written into the PDF yet: Fill & Sign text is Western European only. Pick a numeric format such as dd.mm.yyyy.	{chars} لا يمكن كتابتها في ملف PDF بعد: نص التعبئة والتوقيع يقتصر على أوروبا الغربية. اختر تنسيقًا رقميًا مثل dd.mm.yyyy.
 @msg	{c} of {n}{more}	{c} من {n}{more}
@@ -2287,6 +2627,7 @@
 @msg	{field}: {e}	{field}: {e}
 @msg	{file} is too large for a stamp (at most {n} MB)	{file} أكبر من أن يكون ختمًا ({n} ميغابايت على الأكثر)
 @msg	{filter}: corrupt data: {detail}	{filter}: بيانات تالفة: {detail}
+@msg	{filter}: بيانات تالفة: {detail}	{filter}: بيانات تالفة: {detail}
 @msg	{folder} is already pinned to Home	{folder} مثبت بالفعل في الصفحة الرئيسية
 @msg	{kind} Properties	خصائص {kind}
 @msg	{kind} field	حقل {kind}
@@ -2323,14 +2664,19 @@
 @msg	{n} measurements use an unsupported format and are left out.	{n} قياسات تستخدم صيغة غير مدعومة واستُبعدت.
 @msg	{n} min ago	قبل {n} دقيقة
 @msg	{n} pages	{n} صفحات
+@msg	{n} pages and no bookmarks	{n} صفحة دون إشارات مرجعية
 @msg	{n} pages selected	{n} صفحات محددة
 @msg	{n} pages selected.	حُددت {n} صفحات.
 @msg	{n} selected	{n} محددة
+@msg	{n} tags	{n} وسوم
 @msg	{n} word(s) or phrase(s)	{n} كلمة أو عبارة
 @msg	{n} {kind}	{n} {kind}
+@msg	{page} is not a page number or label	{page} ليس رقم صفحة أو تسمية صفحة
 @msg	{rule} - {status}	{rule} - {status}
 @msg	{s} action	إجراء {s}
 @msg	{s} actions run in the JavaScript engine (M6)	إجراءات {s} تعمل في محرك JavaScript (M6)
+@msg	{ty} element on page {p}: {what}	عنصر {ty} في الصفحة {p}: ‏{what}
+@msg	{ty} element: {what}	عنصر {ty}: ‏{what}
 @msg	{verb} Background	{verb} الخلفية
 @msg	{verb} Header and Footer	{verb} الرأس والتذييل
 @msg	{verb} Watermark	{verb} العلامة المائية
@@ -2341,14 +2687,28 @@
 @msg	{who} in this document wants to open your email app with this address:	{who} في هذا المستند يريد فتح تطبيق بريدك بهذا العنوان:
 @msg	{who} في هذا المستند حاول فتح عنوان لن يفتحه PdfCraft: {e}.	{who} في هذا المستند حاول فتح عنوان لن يفتحه PdfCraft: {e}.
 @msg	{who} في هذا المستند حاول فتح عنوان لن يفتحه PdfCraft: {e}. روابط الويب (http, https) والبريد (mailto) وحدها تُفتح من المستندات.	{who} في هذا المستند حاول فتح عنوان لن يفتحه PdfCraft: {e}. روابط الويب (http, https) والبريد (mailto) وحدها تُفتح من المستندات.
+@msg	{who}, certificate issued by an unknown issuer.	{who}، شهادة صادرة عن جهة إصدار غير معروفة.
+@msg	{who}, certificate issued by {issuer}.	{who}، شهادة صادرة عن {issuer}.
 @msg	{words} on {pages}	{words} في {pages}
+@msg	{} annotation on page {p} isn't tagged	التعليق {} في الصفحة {p} غير موسوم
+@msg	{} annotations aren't allowed	تعليقات {} غير مسموح بها
 @msg	ΔLOC	ΔLOC
 @msg	المعاينة غير متاحة: {e}	المعاينة غير متاحة: {e}
+@msg	الملف ليس PDF قابلًا للقراءة: {e}	الملف ليس PDF قابلًا للقراءة: {e}
 @msg	الوضع المحمول متوقف: تتعذر الكتابة في {folder} ({error}). تُحفظ الإعدادات في مجلد المستخدم بدلًا منه.	الوضع المحمول متوقف: تتعذر الكتابة في {folder} ({error}). تُحفظ الإعدادات في مجلد المستخدم بدلًا منه.
+@msg	بيانات غير سليمة البنية: {e}	بيانات غير سليمة البنية: {e}
 @msg	تتعذر قراءته: {e}	تتعذر قراءته: {e}
+@msg	تعذر فك ترميز بيانات الدفق: {e}	تعذر فك ترميز بيانات الدفق: {e}
+@msg	تعذر فك ترميز صورة التوقيع: {e}	تعذر فك ترميز صورة التوقيع: {e}
+@msg	تعذرت إعادة فتح المستند المعدّل: {e}	تعذرت إعادة فتح المستند المعدّل: {e}
+@msg	تعذرت استعادة تخطيط اللوحات: {e}	تعذرت استعادة تخطيط اللوحات: {e}
+@msg	تعذرت قراءة صورة التوقيع: {e}	تعذرت قراءة صورة التوقيع: {e}
+@msg	تعذرت قراءة قالب XFA: {e}	تعذرت قراءة قالب XFA: {e}
+@msg	تعذرت كتابة المستند المعدّل: {e}	تعذرت كتابة المستند المعدّل: {e}
 @msg	تعذّر إلغاء قفل {name}: {e}	تعذّر إلغاء قفل {name}: {e}
 @msg	تعذّر إنشاء ملف PDF: {e}	تعذّر إنشاء ملف PDF: {e}
 @msg	تعذّر استخدام {name}: {e}	تعذّر استخدام {name}: {e}
+@msg	تعذّر استخدام الصورة: {e}	تعذّر استخدام الصورة: {e}
 @msg	تعذّر استخراج الصفحات: {e}	تعذّر استخراج الصفحات: {e}
 @msg	تعذّر استيراد صورة التوقيع: {e}	تعذّر استيراد صورة التوقيع: {e}
 @msg	تعذّر التحقق من التحديثات: {e}	تعذّر التحقق من التحديثات: {e}
@@ -2369,18 +2729,35 @@
 @msg	تعذّر فتح النتيجة: {e}	تعذّر فتح النتيجة: {e}
 @msg	تعذّر فتح النسخة الموقعة: {e}	تعذّر فتح النسخة الموقعة: {e}
 @msg	تعذّر فتح تفضيلات الطابعة: {e}	تعذّر فتح تفضيلات الطابعة: {e}
+@msg	تعذّر فتح ملف PDF المرتبط: {reason}	تعذّر فتح ملف PDF المرتبط: {reason}
+@msg	تعذّر نسخ الصورة: {e}	تعذّر نسخ الصورة: {e}
 @msg	تعذّرت إضافة {name}: {e}	تعذّرت إضافة {name}: {e}
 @msg	تعذّرت إعادة تحميل {name}: {e}	تعذّرت إعادة تحميل {name}: {e}
 @msg	تعذّرت استعادة {name}: {e}	تعذّرت استعادة {name}: {e}
+@msg	تعذّرت استعادة تخطيط اللوحات: {error}	تعذّرت استعادة تخطيط اللوحات: {error}
+@msg	تعذّرت الطباعة من المتصفح ({e})؛ نُزّل {name} لطباعته بدلًا من ذلك	تعذّرت الطباعة من المتصفح ({e})؛ نُزّل {name} لطباعته بدلًا من ذلك
 @msg	تعذّرت الكتابة في {path}: {e}	تعذّرت الكتابة في {path}: {e}
 @msg	تعذّرت قراءة {name}: {e}	تعذّرت قراءة {name}: {e}
 @msg	تعذّرت كتابة {name}: {e}	تعذّرت كتابة {name}: {e}
 @msg	تعذّرت ملاءمة المحتوى المرئي: {e}	تعذّرت ملاءمة المحتوى المرئي: {e}
+@msg	تم الحفظ {place}: {before} → {after} (أصغر بنسبة {pct}%){detail}	تم الحفظ {place}: {before} → {after} (أصغر بنسبة {pct}%){detail}
+@msg	تم الحفظ {place}: {before} → {after} (ليس أصغر){detail}	تم الحفظ {place}: {before} → {after} (ليس أصغر){detail}
 @msg	تم الحفظ، لكن فشلت إعادة الفتح: {e}	تم الحفظ، لكن فشلت إعادة الفتح: {e}
 @msg	توقف التصدير: {e}	توقف التصدير: {e}
+@msg	جارٍ تحميل {0}: ‏{e}	جارٍ تحميل {0}: ‏{e}
+@msg	خطأ في الصياغة عند البايت {offset}: {detail}	خطأ في الصياغة عند البايت {offset}: {detail}
 @msg	فشل {label}: {e}	فشل {label}: {e}
+@msg	فشل التعرف على النص: {e}	فشل التعرف على النص: {e}
+@msg	قاموس تشفير غير سليم البنية: {e}	قاموس تشفير غير سليم البنية: {e}
+@msg	لا يمكن تحرير هذا المستند: {e}	لا يمكن تحرير هذا المستند: {e}
+@msg	لم يُطبّق نقل اللوحة: {error}	لم يُطبّق نقل اللوحة: {error}
 @msg	— (protection is applied when you save)	— (تُطبَّق الحماية عند الحفظ)
 @msg	“{name}” has security restrictions. Enter its permissions password to lift them.	«{name}» عليه قيود أمان. أدخل كلمة مرور الأذونات الخاصة به لرفعها.
 @msg	“{name}” is protected. Enter a password to open it.	«{name}» محمي. أدخل كلمة مرور لفتحه.
+@msg	… and {n} more	… و{n} أخرى
 @msg	−Bin	−Bin
 @msg	−LOC	−LOC
+@msg	page {page}: {reason}	الصفحة {page}: {reason}
+@msg	text extraction returned no result	لم تُرجع عملية استخراج النص أي نتيجة
+@msg	the PDF has no document catalog	لا يحتوي ملف PDF على فهرس المستند
+@msg	the document already has a structure tree; review its existing tags instead	يحتوي المستند بالفعل على شجرة بنية؛ راجع علاماته الحالية

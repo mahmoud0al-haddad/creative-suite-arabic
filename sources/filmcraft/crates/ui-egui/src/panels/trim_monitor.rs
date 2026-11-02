@@ -42,7 +42,7 @@ pub fn advance(app: &mut FilmcraftApp, ctx: &egui::Context) {
     }
     let clock = ctx.input(|i| i.time);
     if let Err(e) = app.session.execute("trim.tick", json!({"clock": clock})) {
-        app.ui.status = e.to_string();
+        app.ui.status = crate::diagnostics::message(&e.to_string());
     }
     ctx.request_repaint();
 }
@@ -258,7 +258,8 @@ pub fn show(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Rect) {
         if resp.drag_stopped() {
             let total = ui.ctx().data_mut(|d| d.remove_temp::<f32>(egui::Id::new("trim-monitor-dx")).unwrap_or(0.0));
             let n = (total * fpp).round() as i64;
-            if n != 0 {
+            // egui ends a drag on Escape: that stop abandons it (#580)
+            if n != 0 && !ui.input(|i| i.key_pressed(egui::Key::Escape)) {
                 drag_trim(app, which, n);
             }
         }
@@ -323,7 +324,7 @@ pub fn show(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Rect) {
                 _ => app.session.execute("trim.applyDefaultTransition", json!({})),
             };
             if let Err(e) = res {
-                app.ui.status = e.to_string();
+                app.ui.status = crate::diagnostics::message(&e.to_string());
             }
         }
         x += w + 4.0;
@@ -358,6 +359,6 @@ fn drag_trim(app: &mut FilmcraftApp, which: &str, frames: i64) {
         let _ = app.session.execute("trim.selectEditPoint", json!({"clip": clip.0, "edge": edge, "kind": kind}));
     }
     if let Err(e) = app.session.execute("trim.nudge", json!({"frames": frames})) {
-        app.ui.status = e.to_string();
+        app.ui.status = crate::diagnostics::message(&e.to_string());
     }
 }

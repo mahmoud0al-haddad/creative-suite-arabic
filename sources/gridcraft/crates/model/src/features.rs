@@ -48,6 +48,23 @@ pub struct TableColumn {
     pub totals_label: Option<String>,
     /// Calculated column formula.
     pub formula: Option<String>,
+    /// `uniqueName`: the name XML maps know the column by.
+    #[serde(default)]
+    pub unique_name: Option<String>,
+    /// Binding to an element of an XML map. It moves with the column and goes when the column is
+    /// deleted; inserted columns are unmapped.
+    #[serde(default)]
+    pub xml: Option<XmlColumnPr>,
+}
+
+/// A table column's binding to an XML map (`<xmlColumnPr>`).
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct XmlColumnPr {
+    pub map_id: u32,
+    pub xpath: String,
+    /// `xmlDataType` as written in the file (`string`, `boolean`, `integer`…).
+    pub data_type: String,
+    pub denormalized: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -65,6 +82,17 @@ pub struct Table {
     pub first_col: bool,
     pub last_col: bool,
     pub filter_button: bool,
+    /// Criteria of the table's AutoFilter (column offset within the table → criterion). With
+    /// criteria present, hidden data rows are filtered out rather than hidden by hand, which
+    /// SUBTOTAL distinguishes.
+    #[serde(default)]
+    pub filter: Vec<(u32, FilterCriterion)>,
+    /// `tableType` when it isn't a plain worksheet table: `xml` for a table bound to an XML map.
+    #[serde(default)]
+    pub table_type: Option<String>,
+    /// The connection (`xl/connections.xml`) an XML table is bound through.
+    #[serde(default)]
+    pub connection_id: Option<u32>,
 }
 
 impl Table {
@@ -299,9 +327,14 @@ pub struct Comment {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Hyperlink {
-    /// URL, `mailto:`, or an in-workbook location like `Sheet2!A1`.
+    /// URL, `mailto:`, a file path (`Book.xlsx`, `Book.xlsx#Sheet1!A2`), or an in-workbook location
+    /// like `Sheet2!A1`.
     pub target: String,
     pub tooltip: Option<String>,
+    /// The target is outside this workbook (Excel's "Existing File or Web Page"): a relationship in
+    /// the file, not a `location`. A bare file name can't be told from a defined name by its text.
+    #[serde(default)]
+    pub external: bool,
 }
 
 // ---------------------------------------------------------------- drawing objects
@@ -388,6 +421,65 @@ pub struct Series {
     /// Draw line segments as a smoothed (spline) curve.
     #[serde(default)]
     pub smooth: bool,
+    /// Trendlines fitted to this series (Excel allows several per series).
+    #[serde(default)]
+    pub trendlines: Vec<Trendline>,
+}
+
+/// Regression a trendline fits (`c:trendlineType`).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TrendlineKind {
+    #[default]
+    Linear,
+    /// `y = c·e^(b·x)`.
+    Exponential,
+    /// `y = c·ln(x) + b`.
+    Logarithmic,
+    /// Polynomial of this order (2..=6).
+    Polynomial(u8),
+    /// `y = c·x^b`.
+    Power,
+    /// Average of this many consecutive points (2..=255).
+    MovingAverage(u32),
+}
+
+/// DrawingML preset line dash (`a:prstDash`).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub enum LineDash {
+    #[default]
+    Solid,
+    Dot,
+    Dash,
+    LgDash,
+    DashDot,
+    LgDashDot,
+    LgDashDotDot,
+    SysDash,
+    SysDot,
+    SysDashDot,
+    SysDashDotDot,
+}
+
+/// A chart trendline (Add Chart Element ▸ Trendline, Format Trendline pane).
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct Trendline {
+    pub kind: TrendlineKind,
+    /// Custom name shown in the legend; `None` = automatic ("Linear (Sales)").
+    pub name: Option<String>,
+    /// Forecast past the last point, in x units (categories on a category axis).
+    pub forward: f64,
+    /// Forecast before the first point, in x units.
+    pub backward: f64,
+    /// Set Intercept: fixed y at x = 0 (linear, exponential, polynomial).
+    pub intercept: Option<f64>,
+    pub display_equation: bool,
+    pub display_r_squared: bool,
+    /// Line colour; `None` = the series colour.
+    pub color: Option<Color>,
+    /// Line width in points; `None` = default.
+    pub width: Option<f32>,
+    /// Line dash; `None` = default.
+    pub dash: Option<LineDash>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -448,6 +540,50 @@ pub struct Shape {
     pub fill: Color,
     pub line: Color,
     pub text: String,
+    /// Outline visibility and text formatting (DrawingML `a:ln`, `a:bodyPr`, `a:pPr`, `a:rPr`).
+    #[serde(default)]
+    pub format: ShapeFormat,
+}
+
+/// Horizontal alignment of a shape's text (`a:pPr algn`).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ShapeTextAlign {
+    #[default]
+    Left,
+    Center,
+    Right,
+}
+
+/// Vertical anchor of a shape's text in its box (`a:bodyPr anchor`).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ShapeTextAnchor {
+    #[default]
+    Top,
+    Middle,
+    Bottom,
+}
+
+/// How a shape's outline and text look. The text properties apply to the whole text (the first
+/// run's properties when a file has several).
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct ShapeFormat {
+    /// No outline (`a:ln/a:noFill`), whatever `Shape::line` says.
+    pub no_line: bool,
+    /// Text size in points (`a:rPr sz` / 100); `None` is the default size.
+    pub font_size: Option<f32>,
+    pub bold: bool,
+    pub italic: bool,
+    /// Typeface (`a:latin typeface`); `None` is the default font.
+    pub font: Option<String>,
+    /// Text fill colour; `None` is the default (black in text boxes).
+    pub text_color: Option<Color>,
+    /// Text outline (`a:rPr/a:ln`): colour and width in points.
+    pub text_outline: Option<(Color, f32)>,
+    /// `None`: the shape's default (left for text boxes, centred for other shapes).
+    pub align: Option<ShapeTextAlign>,
+    /// `None`: the shape's default (top for text boxes, middle for other shapes).
+    pub anchor: Option<ShapeTextAnchor>,
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -490,6 +626,12 @@ pub enum FilterCriterion {
     AboveAverage(bool),
     FillColor(Color),
     FontColor(Color),
+    /// Rows whose cell shows icon `id` (0-based; `None` = no icon) of conditional-format icon set
+    /// `set` (`iconFilter`). Kept from files; re-applying the filter leaves those rows as they are.
+    Icon {
+        set: String,
+        id: Option<u32>,
+    },
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -543,10 +685,98 @@ pub struct PrintSettings {
     pub headings: bool,
     pub center_h: bool,
     pub center_v: bool,
+    /// The header and footer of odd pages, and of every page unless the variants below apply.
     pub header: String,
     pub footer: String,
     pub row_breaks: Vec<u32>,
     pub col_breaks: Vec<u32>,
+    /// Different First Page: the sheet's first printed page uses `first_header`/`first_footer`.
+    #[serde(default)]
+    pub different_first: bool,
+    /// Different Odd & Even Pages: even-numbered pages use `even_header`/`even_footer`.
+    #[serde(default)]
+    pub different_odd_even: bool,
+    #[serde(default)]
+    pub first_header: String,
+    #[serde(default)]
+    pub first_footer: String,
+    #[serde(default)]
+    pub even_header: String,
+    #[serde(default)]
+    pub even_footer: String,
+    /// Scale with Document / Align with Page Margins (both on unless a file turned them off).
+    #[serde(default = "yes")]
+    pub hf_scale_with_doc: bool,
+    #[serde(default = "yes")]
+    pub hf_align_with_margins: bool,
+}
+
+fn yes() -> bool {
+    true
+}
+
+/// Which header/footer pair a printed page uses.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum HfPage {
+    Odd,
+    Even,
+    First,
+}
+
+impl HfPage {
+    pub fn id(self) -> &'static str {
+        match self {
+            HfPage::Odd => "odd",
+            HfPage::Even => "even",
+            HfPage::First => "first",
+        }
+    }
+    pub fn parse(id: &str) -> Option<HfPage> {
+        match id {
+            "odd" | "all" => Some(HfPage::Odd),
+            "even" => Some(HfPage::Even),
+            "first" => Some(HfPage::First),
+            _ => None,
+        }
+    }
+}
+
+impl PrintSettings {
+    /// The pair used by page `number` (1-based, as `&P` prints it); `first` is the sheet's first page.
+    pub fn hf_page(&self, first: bool, number: usize) -> HfPage {
+        if self.different_first && first {
+            HfPage::First
+        } else if self.different_odd_even && number.is_multiple_of(2) {
+            HfPage::Even
+        } else {
+            HfPage::Odd
+        }
+    }
+    /// The header (`footer` false) or footer of a page kind.
+    pub fn hf(&self, page: HfPage, footer: bool) -> &String {
+        match (page, footer) {
+            (HfPage::Odd, false) => &self.header,
+            (HfPage::Odd, true) => &self.footer,
+            (HfPage::Even, false) => &self.even_header,
+            (HfPage::Even, true) => &self.even_footer,
+            (HfPage::First, false) => &self.first_header,
+            (HfPage::First, true) => &self.first_footer,
+        }
+    }
+    pub fn hf_mut(&mut self, page: HfPage, footer: bool) -> &mut String {
+        match (page, footer) {
+            (HfPage::Odd, false) => &mut self.header,
+            (HfPage::Odd, true) => &mut self.footer,
+            (HfPage::Even, false) => &mut self.even_header,
+            (HfPage::Even, true) => &mut self.even_footer,
+            (HfPage::First, false) => &mut self.first_header,
+            (HfPage::First, true) => &mut self.first_footer,
+        }
+    }
+    /// Any header or footer text at all (on any kind of page).
+    pub fn has_header_footer(&self) -> bool {
+        [&self.header, &self.footer, &self.first_header, &self.first_footer, &self.even_header, &self.even_footer].iter().any(|t| !t.is_empty())
+    }
 }
 
 impl Default for PrintSettings {
@@ -568,14 +798,28 @@ impl Default for PrintSettings {
             footer: String::new(),
             row_breaks: vec![],
             col_breaks: vec![],
+            different_first: false,
+            different_odd_even: false,
+            first_header: String::new(),
+            first_footer: String::new(),
+            even_header: String::new(),
+            even_footer: String::new(),
+            hf_scale_with_doc: true,
+            hf_align_with_margins: true,
         }
     }
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct SheetProtection {
-    /// Hash of the password (our own salted FNV; never the password itself).
-    pub password_hash: Option<u64>,
+    /// Hash of the password (Excel-compatible, written to XLSX `sheetProtection`; never the
+    /// password itself).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub password: Option<crate::PasswordHash>,
+    /// The internal hash older GridCraft JSON workbooks stored ([`password_hash`]); still
+    /// verified when unprotecting, never written for new passwords.
+    #[serde(rename = "password_hash", default, skip_serializing_if = "Option::is_none")]
+    pub legacy_password_hash: Option<u64>,
     pub select_locked: bool,
     pub select_unlocked: bool,
     pub format_cells: bool,
@@ -607,8 +851,8 @@ impl EditRange {
     }
 }
 
-/// Simple non-cryptographic password hash for sheet protection (like Excel's, protection is a
-/// convenience, not security).
+/// The non-cryptographic password hash older GridCraft versions stored for sheet protection
+/// (only verified now, see [`SheetProtection::legacy_password_hash`]).
 pub fn password_hash(pw: &str) -> u64 {
     let mut h: u64 = 0xcbf29ce484222325 ^ 0x5348_4545_5443;
     for b in pw.bytes() {
@@ -759,6 +1003,12 @@ pub struct PivotTable {
     pub last_range: Option<RangeRef>,
     /// Calculated fields, usable in the Values area by name.
     pub calculated_fields: Vec<PivotCalcField>,
+    /// The Σ Values pseudo-field (it exists with two or more value fields) sits in Rows rather
+    /// than Columns (Excel's "values on rows").
+    pub values_on_rows: bool,
+    /// Position of Σ Values among the row fields (`None` = after the last). Only used with
+    /// `values_on_rows`: in Columns Σ Values always comes after the last column field.
+    pub values_position: Option<usize>,
 }
 
 /// A calculated field: a formula over other fields (`=Sales*0.1`, `='Unit Price'*Units`). As in
@@ -791,6 +1041,8 @@ impl Default for PivotTable {
             show_headers: true,
             last_range: None,
             calculated_fields: vec![],
+            values_on_rows: false,
+            values_position: None,
         }
     }
 }

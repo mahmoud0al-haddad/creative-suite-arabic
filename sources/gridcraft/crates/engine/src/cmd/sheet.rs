@@ -167,27 +167,8 @@ fn shift_sheet_features(sh: &mut Sheet, axis: Axis, at: u32, count: u32, insert:
     sh.validations.retain(|dv| !dv.ranges.is_empty());
     for t in sh.tables.iter_mut() {
         if let Some(r) = map_range(t.range) {
-            // Columns inserted inside a table become new table columns.
-            if axis == Axis::Cols && insert && at > t.range.start.col && at <= t.range.end.col {
-                let idx = (at - t.range.start.col) as usize;
-                for k in 0..count {
-                    let name = format!("Column{}", t.columns.len() + 1);
-                    t.columns.insert(
-                        (idx + k as usize).min(t.columns.len()),
-                        gridcraft_model::TableColumn { name, totals: Default::default(), totals_label: None, formula: None },
-                    );
-                }
-            }
-            if axis == Axis::Cols && !insert {
-                let lo = at.max(t.range.start.col);
-                let hi = (at + count).min(t.range.end.col + 1);
-                if hi > lo {
-                    let a = (lo - t.range.start.col) as usize;
-                    let b = (hi - t.range.start.col) as usize;
-                    if b <= t.columns.len() {
-                        t.columns.drain(a..b);
-                    }
-                }
+            if axis == Axis::Cols {
+                shift_table_columns(t, at, count, insert);
             }
             t.range = r;
         } else {
@@ -268,10 +249,14 @@ fn cancel_copy_mode(s: &mut Session) {
 
 fn insert_lines(s: &mut Session, p: &Json, axis: Axis) -> Result<Json> {
     let (at, count) = lines(s, p, axis)?;
+    let limit = if axis == Axis::Rows { MAX_ROWS } else { MAX_COLS };
+    if at.checked_add(count).is_none_or(|end| end > limit) {
+        let cmd = if axis == Axis::Rows { "home.insertRows" } else { "home.insertColumns" };
+        return Err(bad(cmd, "the inserted lines would extend past the end of the worksheet"));
+    }
     check_lines_protection(s, p, axis, at, count, true)?;
     let sheet = target_sheet(s, p)?;
     // Refuse to push data off the sheet.
-    let limit = if axis == Axis::Rows { MAX_ROWS } else { MAX_COLS };
     if let Some(u) = s.doc()?.wb.sheet(sheet).and_then(|sh| sh.used_range()) {
         let last = if axis == Axis::Rows { u.end.row } else { u.end.col };
         if last >= at && last as u64 + count as u64 >= limit as u64 {
@@ -307,27 +292,65 @@ fn insert_lines(s: &mut Session, p: &Json, axis: Axis) -> Result<Json> {
     Ok(out)
 }
 
+/// The areas a line delete/insert targets as `(first line, count)`, merged and sorted from the
+/// last line to the first so deleting one never shifts the next. A comma-separated list
+/// (`"3:3,7:8"`) or a multi-area selection yields several; `count` forces the single-area form.
+fn delete_areas(s: &Session, p: &Json, axis: Axis) -> Result<Vec<(u32, u32)>> {
+    let key = if axis == Axis::Rows { "rows" } else { "cols" };
+    let spans: Vec<(u32, u32)> = if u32_param(p, "count").is_some() {
+        let (at, count) = lines(s, p, axis)?;
+        let limit = if axis == Axis::Rows { MAX_ROWS } else { MAX_COLS };
+        // Deleting past the last line only removes up to the end of the worksheet.
+        let count = count.min(limit.saturating_sub(at)).max(1);
+        vec![(at, at.saturating_add(count - 1))]
+    } else if let Some(t) = str_param(p, key).or_else(|| str_param(p, "range")) {
+        t.split(',')
+            .map(|part| {
+                let r = RangeRef::parse(part).ok_or_else(|| bad(key, format!("not a range: {part}")))?;
+                Ok(if axis == Axis::Rows { (r.start.row, r.end.row) } else { (r.start.col, r.end.col) })
+            })
+            .collect::<Result<_>>()?
+    } else {
+        s.doc()?.selection.ranges.iter().map(|r| if axis == Axis::Rows { (r.start.row, r.end.row) } else { (r.start.col, r.end.col) }).collect()
+    };
+    let mut spans: Vec<(u32, u32)> = spans.into_iter().map(|(a, b)| (a.min(b), a.max(b))).collect();
+    spans.sort_unstable();
+    let mut merged: Vec<(u32, u32)> = Vec::new();
+    for (a, b) in spans {
+        match merged.last_mut() {
+            Some(last) if a <= last.1.saturating_add(1) => last.1 = last.1.max(b),
+            _ => merged.push((a, b)),
+        }
+    }
+    Ok(merged.into_iter().rev().map(|(a, b)| (a, b - a + 1)).collect())
+}
+
 fn delete_lines(s: &mut Session, p: &Json, axis: Axis) -> Result<Json> {
-    let (at, count) = lines(s, p, axis)?;
-    check_lines_protection(s, p, axis, at, count, false)?;
+    let areas = delete_areas(s, p, axis)?;
+    for &(at, count) in &areas {
+        check_lines_protection(s, p, axis, at, count, false)?;
+    }
     let sheet = target_sheet(s, p)?;
     let out = edit(s, |cx| {
         let name = cx.wb.sheet(sheet).map(|s| s.name.clone()).unwrap_or_default();
         cx.protection_checked = true;
-        {
-            let sh = cx.sheet_mut(sheet)?;
-            let block = match axis {
-                Axis::Rows => RangeRef::rows(at, (at + count - 1).min(MAX_ROWS - 1)),
-                Axis::Cols => RangeRef::cols(at, (at + count - 1).min(MAX_COLS - 1)),
-            };
-            sh.take_cells(block);
-            match axis {
-                Axis::Rows => sh.cells.shift_rows(at + count, -(count as i64)),
-                Axis::Cols => sh.cells.shift_cols(at + count, -(count as i64)),
+        // Last area first, so the earlier ones keep their positions.
+        for (at, count) in areas {
+            {
+                let sh = cx.sheet_mut(sheet)?;
+                let block = match axis {
+                    Axis::Rows => RangeRef::rows(at, (at + count - 1).min(MAX_ROWS - 1)),
+                    Axis::Cols => RangeRef::cols(at, (at + count - 1).min(MAX_COLS - 1)),
+                };
+                sh.take_cells(block);
+                match axis {
+                    Axis::Rows => sh.cells.shift_rows(at + count, -(count as i64)),
+                    Axis::Cols => sh.cells.shift_cols(at + count, -(count as i64)),
+                }
+                shift_sheet_features(sh, axis, at, count, false);
             }
-            shift_sheet_features(sh, axis, at, count, false);
+            rewrite(&mut cx.wb, &name, &Edit::Delete { axis, at, count });
         }
-        rewrite(&mut cx.wb, &name, &Edit::Delete { axis, at, count });
         cx.structural = true;
         Ok(Json::Null)
     })?;
@@ -444,6 +467,9 @@ fn insert_cells(s: &mut Session, p: &Json) -> Result<Json> {
     }
     let e = Edit::InsertCells { axis: if shift == "right" { Axis::Cols } else { Axis::Rows }, range: r };
     let sheet = target_sheet(s, p)?;
+    if let Some(sh) = s.doc()?.wb.sheet(sheet) {
+        check_table_shift(sh, &e)?;
+    }
     let right = shift == "right";
     let out = edit(s, |cx| {
         let sh = cx.sheet_mut(sheet)?;
@@ -472,6 +498,9 @@ fn delete_cells(s: &mut Session, p: &Json) -> Result<Json> {
     }
     let e = Edit::DeleteCells { axis: if shift == "left" { Axis::Cols } else { Axis::Rows }, range: r };
     let sheet = target_sheet(s, p)?;
+    if let Some(sh) = s.doc()?.wb.sheet(sheet) {
+        check_table_shift(sh, &e)?;
+    }
     let left = shift == "left";
     let out = edit(s, |cx| {
         let name = cx.wb.sheet(sheet).map(|s| s.name.clone()).unwrap_or_default();
@@ -798,8 +827,16 @@ fn move_sheet(s: &mut Session, p: &Json) -> Result<Json> {
         if copy {
             let mut sh = (*src).clone();
             let base = sh.name.clone();
-            let name = (2..).map(|k| format!("{base} ({k})")).find(|nm| cx.wb.sheet_index(nm).is_none()).unwrap_or(base.clone());
-            sh.name = name.chars().take(31).collect();
+            // `Name (2)`: the name is shortened so the suffix fits in Excel's 31 characters.
+            let name = (2..)
+                .map(|k| {
+                    let suffix = format!(" ({k})");
+                    let keep = 31usize.saturating_sub(suffix.chars().count());
+                    format!("{}{suffix}", base.chars().take(keep).collect::<String>().trim_end())
+                })
+                .find(|nm| cx.wb.sheet_index(nm).is_none())
+                .unwrap_or(base.clone());
+            sh.name = name;
             sh.tables.clear(); // table names must be unique
             sh.preserved = None; // kept file content (form controls, OLE objects…) stays with the original
             let at = to.min(n);
@@ -910,7 +947,7 @@ fn step_sheet(s: &mut Session, dir: i64) -> Result<Json> {
 }
 
 /// Where a range of the edited sheet goes after a structural edit (`None` = deleted).
-fn map_range(r: RangeRef, e: &Edit) -> Option<RangeRef> {
+pub(crate) fn map_range(r: RangeRef, e: &Edit) -> Option<RangeRef> {
     let expr = gridcraft_formula::Expr::Ref(gridcraft_formula::Reference {
         sheet: gridcraft_formula::SheetSel::Current,
         kind: gridcraft_formula::RefKind::Range(
@@ -942,9 +979,16 @@ fn shift_cell_features(sh: &mut Sheet, e: &Edit) {
     }
     sh.validations.retain(|dv| !dv.ranges.is_empty());
     for t in sh.tables.iter_mut() {
+        // Cells inserted or deleted across a table's full height add or remove table columns.
+        if let Edit::InsertCells { axis: Axis::Cols, range } | Edit::DeleteCells { axis: Axis::Cols, range } = *e
+            && range.start.row <= t.range.start.row
+            && range.end.row >= t.range.end.row
+        {
+            shift_table_columns(t, range.start.col, range.width(), matches!(e, Edit::InsertCells { .. }));
+        }
         t.range = map_range(t.range, e).unwrap_or_default();
     }
-    sh.tables.retain(|t| t.range != RangeRef::default());
+    sh.tables.retain(|t| t.range != RangeRef::default() && !t.columns.is_empty());
     if let Some(af) = sh.autofilter.as_mut() {
         match map_range(af.range, e) {
             Some(r) => af.range = r,
@@ -963,4 +1007,72 @@ fn shift_cell_features(sh: &mut Sheet, e: &Edit) {
     if let Some(pa) = sh.print.print_area {
         sh.print.print_area = map_range(pa, e);
     }
+}
+
+/// Columns inserted inside a table become new table columns (with names no other column has);
+/// deleted ones leave it.
+fn shift_table_columns(t: &mut gridcraft_model::Table, at: u32, count: u32, insert: bool) {
+    if insert {
+        if at > t.range.start.col && at <= t.range.end.col {
+            let idx = (at - t.range.start.col) as usize;
+            let mut n = t.columns.len();
+            for k in 0..count as usize {
+                let name = loop {
+                    n += 1;
+                    let name = format!("Column{n}");
+                    if !t.columns.iter().any(|c| c.name.eq_ignore_ascii_case(&name)) {
+                        break name;
+                    }
+                };
+                let col = gridcraft_model::TableColumn {
+                    name,
+                    totals: Default::default(),
+                    totals_label: None,
+                    formula: None,
+                    unique_name: None,
+                    xml: None,
+                };
+                t.columns.insert((idx + k).min(t.columns.len()), col);
+            }
+        }
+        return;
+    }
+    let lo = at.max(t.range.start.col);
+    let hi = at.saturating_add(count).min(t.range.end.col + 1);
+    if hi > lo {
+        let a = (lo - t.range.start.col) as usize;
+        let b = (hi - t.range.start.col) as usize;
+        if b <= t.columns.len() {
+            t.columns.drain(a..b);
+        }
+    }
+}
+
+/// Like Excel, Insert/Delete Cells never shifts part of a table: cells shifted up or down must
+/// hold whole table columns, cells shifted left or right whole table rows, and deleting cells
+/// never takes a table's header row without the whole table.
+pub(crate) fn check_table_shift(sh: &Sheet, e: &Edit) -> Result<()> {
+    let (axis, r, delete) = match *e {
+        Edit::InsertCells { axis, range } => (axis, range, false),
+        Edit::DeleteCells { axis, range } => (axis, range, true),
+        _ => return Ok(()),
+    };
+    for t in &sh.tables {
+        let tr = t.range;
+        let ok = match axis {
+            Axis::Rows => {
+                let moves = tr.end.row >= r.start.row && tr.start.col <= r.end.col && tr.end.col >= r.start.col;
+                let header_alone = delete && t.header_row && r.start.row <= tr.start.row && r.end.row >= tr.start.row && r.end.row < tr.end.row;
+                !moves || (r.start.col <= tr.start.col && r.end.col >= tr.end.col && !header_alone)
+            }
+            Axis::Cols => {
+                let moves = tr.end.col >= r.start.col && tr.start.row <= r.end.row && tr.end.row >= r.start.row;
+                !moves || (r.start.row <= tr.start.row && r.end.row >= tr.end.row)
+            }
+        };
+        if !ok {
+            return Err(EngineError::Other("This operation isn't allowed: it would shift cells in a table on your worksheet.".into()));
+        }
+    }
+    Ok(())
 }

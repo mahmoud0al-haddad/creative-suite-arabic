@@ -59,7 +59,9 @@ The exported PdfCraft `Cargo.toml` points at `../../build-inputs/aws-lc-sys-0.45
 
 ## Release verification
 
-Run each workspace's CI plus its Arabic catalog/placeholder, bidi, editing and native workflow tests. Compare public source hashes before builds. Inspect Arabic/English screenshots at narrow sizes and mixed-text inputs. Exercise real launcher Open buttons for all twelve installed applications, verify independent installed paths, test Arabic filenames and document save/reopen, and verify required runtime modules on a clean Windows machine. Optional gates must be explicitly recorded as passed, failed or skipped.
+Run each workspace's CI plus its Arabic catalog/placeholder, bidi, editing and native workflow tests. Compare public source hashes before builds. Inspect Arabic/English screenshots at narrow sizes and mixed-text inputs. Exercise real launcher Open buttons for all thirteen installed applications in both languages (26 launches), verify independent installed paths, test Arabic filenames and document save/reopen, and verify required runtime modules on a clean Windows machine. Optional gates must be explicitly recorded as passed, failed or skipped.
+
+On Windows with Inno Setup 6, run `scripts/test-runtime-prerequisite.ps1 -OutputDirectory <owned-test-output>` to compile the actual Pascal prerequisite evaluator into an isolated test harness. It checks 43 version/registry and silent-setup cases in each installer language. Its registry fixtures use a unique HKCU test key, are removed afterward, and never alter the machine's runtime registration. The harness ends before installation; a missing-runtime clean-machine installation still needs its separate VM/manual check. Keep its `verified.json` tied to the runtime helper's recorded SHA-256.
 
 The scripts pin input/tool versions and use Cargo lockfiles; they do not claim byte-for-byte deterministic output across different machines, SDKs, signatures or build paths. Publish SHA-256 for the actual released Setup and matching source archive.
 
@@ -67,6 +69,12 @@ The scripts pin input/tool versions and use Cargo lockfiles; they do not claim b
 
 Use [packaging/public-setup.iss](packaging/public-setup.iss) and its prerequisite include with a **separate public payload copy**. Never re-use the personal Setup unchanged. See [WINDOWS-RUNTIME.md](WINDOWS-RUNTIME.md) and [RELEASING.md](RELEASING.md). These scripts do not publish, sign, upload or install anything automatically.
 
-## Verify source before building
+## Release path privacy
 
-With Python 3.11 or newer, run `python scripts/verify-source.py` from the repository root. This verifies every exported source/input byte hash and all thirteen upstream pins. After intentional source edits, keep the original release manifest as provenance and prepare a new reviewed manifest for the next release.
+The release helper remaps Rust build paths. For PdfCraft on the pinned MSVC toolchain, its AWS-LC C build also uses `/experimental:deterministic` and `/pathmap` through `AWS_LC_SYS_CFLAGS`; the algorithm source is unchanged. OCR release lookup uses the configured model folder or the directories beside the installed executable. Only debug builds retain the source-tree fallback. Scan the final executable for the build root and profile in UTF-8, UTF-16LE and the build machine's ANSI encoding before publishing.
+
+DeckCraft additionally reads `fonts/community-ui-manifest.txt` under the pinned craft-fonts input for open Korean and Chinese interface fallbacks. The original OFL texts, source commits and SHA-256 records are retained beside those files. Other applications do not read this separate optional manifest.
+
+For licensed screenshots of the launcher, set `ARTCRAFT_LAUNCHER_NO_SYSTEM_FONTS=1` before startup to use its embedded Noto Sans Arabic fallback. Keep the real Windows `SystemRoot` so graphics initialization can find the platform libraries.
+
+To exercise the installer's actual launch-ownership predicate without starting an installation, run `./scripts/test-suite-update-mode.ps1 -OutputDirectory <owned-test-output>`. Its six cases preserve the manual Finish-page launcher option and suppress it only for `/SUITEUPDATE=1`. During an integrated update, the helper alone restarts the launcher after verifying installed files and writing the completion result. The final visible Setup and real GitHub update still require their separate integration checks.

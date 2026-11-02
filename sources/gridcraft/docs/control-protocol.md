@@ -15,6 +15,10 @@ Then send newline-delimited JSON to `127.0.0.1:7979`. Every request line gets on
 
 Errors come back as `{"id": …, "ok": false, "error": "…"}`.
 
+A line that is not a JSON object with a string `method` (an HTTP request, text that isn't JSON,
+bytes that aren't UTF-8, a line over 64 MiB) gets one error reply and the server closes the
+connection; nothing sent after it runs. Blank lines are skipped.
+
 ## Methods
 
 | Method | Params | What it does |
@@ -36,7 +40,7 @@ Errors come back as `{"id": …, "ok": false, "error": "…"}`.
 | `ui.screenshot` | `{path?}` | PNG of the window (base64 when no path). Animations are settled first: the picture shows the final state |
 | `ui.set` | `{dark?, formulaBar?, ribbonCollapsed?, animations?}` | UI preferences (`formulaBar` runs `view.formulaBar`) |
 | `ui.resize` / `ui.focus` | `{width, height}` | Window control |
-| `app.open` / `app.save` / `app.quit` | `{path}` / `{path?}` | Files and lifetime |
+| `app.open` / `app.save` / `app.quit` | `{path, password?}` / `{path?}` | Files and lifetime. `password` opens a password-protected workbook; without it, such a workbook returns an error (never a dialog) |
 
 Any other method name that is a command id (e.g. `home.bold`) runs that command.
 
@@ -56,5 +60,27 @@ the View ▸ Animations checkbox, saved with the other UI preferences and on by 
 document text. The choice is saved in `ui.json`; with nothing saved the desktop app follows the
 system language.
 
+`{command: "file.open", params: {path: "Secret.xlsx", password: "…"}}` opens a password-protected
+workbook (Agile or Standard encryption). Without `password` it returns an error containing
+"is password-protected. Enter its password to open it." and never opens a dialog; a wrong
+password returns "The password is incorrect." The password is left out of the journal and never
+quoted in an error. The opened workbook has no save path, so Save asks where to save it, without
+the password, and never replaces the encrypted original.
+
 For a headless equivalent (no window), use `gridcraft-cli mcp` or `gridcraft-cli run`;
 see [`mcp.md`](mcp.md) and [`cli.md`](cli.md).
+
+### Native printing
+
+Desktop `engine.commands {"search":"print"}` (and connected MCP `list_commands`)
+lists `ui.printSettings` and `ui.printSubmit` with their parameter and result fields.
+
+`engine.execute` can call `ui.printSettings` with `{}` to inspect the printer list, selected
+printer, copies, duplex, grayscale, discovery/submission status and backend receipt/error.
+`{"refresh":true}` starts background discovery; poll the same command until `discovering` is
+false. Set `printer` to a discovered name, integer `copies` from 1 to 999, `duplex` to
+`printerDefault`, `off`, `longEdge` or `shortEdge`, and boolean `grayscale`. Invalid updates are
+rejected without changing earlier settings. `ui.printSubmit` explicitly submits the current
+print-ready PDF without opening a dialog; inspect `ui.printSettings` until `busy` becomes false
+and check `status`/`detail`. The browser keeps its own print hook. PDF export remains separate.
+GridCraft accepts the existing `file.print` sheet/pagination params on `ui.printSubmit`; the engine `file.print` command returns the PDF without spooling.

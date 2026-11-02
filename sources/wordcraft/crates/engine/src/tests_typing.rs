@@ -50,6 +50,94 @@ fn typed(keys: &str) -> Session {
 }
 
 #[test]
+fn sample_text_formulas_expand_on_enter() {
+    for name in ["rand", "lorem"] {
+        for (args, paragraphs, sentences) in [
+            ("", 5, 3),
+            ("2", 2, 3),
+            (" 2 ", 2, 3),
+            ("2,4", 2, 4),
+            ("2, 4", 2, 4),
+            (" 2 , 4 ", 2, 4),
+            ("1,1", 1, 1),
+            ("200,1", 200, 1),
+            ("1,200", 1, 200),
+        ] {
+            let mut s = typed(&format!("={name}({args})"));
+            let depth = s.undo_depth();
+            typ(&mut s, "\n");
+            let generated: Vec<_> = paras(&s).into_iter().map(|p| p.0).collect();
+            assert_eq!(generated.len(), paragraphs + 1, "{name}({args})");
+            for text in generated.iter().take(paragraphs) {
+                assert_eq!(text.matches('.').count(), sentences);
+                assert!(text.starts_with(if name == "lorem" { "Lorem ipsum" } else { "A blank page" }), "{name}({args}): {text:?}");
+            }
+            assert_eq!(generated.last().unwrap(), "");
+            assert_eq!(s.sel.focus, Pos::body(paragraphs, 0));
+            assert_eq!(s.undo_depth(), depth + 1);
+            let expanded = s.doc.clone();
+            run(&mut s, "edit.undo", json!({}));
+            assert_eq!(texts(&s), [format!("={name}({args})")]);
+            run(&mut s, "edit.redo", json!({}));
+            assert_eq!(s.doc, expanded);
+        }
+    }
+}
+
+#[test]
+fn sample_text_invalid_parameters_use_defaults() {
+    for name in ["rand", "lorem"] {
+        for args in ["0", "-1", "201", "abc", "1.5", "99999999999999999999999999999", "2,0", "0,4", "2,201", "2,no", "2,", ",4", "1,2,3"] {
+            let s = typed(&format!("={name}({args})\n"));
+            let texts = texts(&s);
+            assert_eq!(texts.len(), 6, "{name}({args})");
+            assert!(texts.iter().take(5).all(|text| text.matches('.').count() == 3));
+        }
+    }
+}
+
+#[test]
+fn sample_text_requires_an_exact_paragraph_and_caret_at_end() {
+    for formula in [" =rand()", "=rand() ", "prefix =rand()", "=lorem() suffix", "=other()", "=rand(", "=rand(())"] {
+        assert_eq!(texts(&typed(&format!("{formula}\n"))), [formula, ""]);
+    }
+    let mut s = typed("=rand()");
+    run(&mut s, "caret.home", json!({}));
+    typ(&mut s, "\n");
+    assert_eq!(texts(&s), ["", "=rand()"]);
+    let mut s = typed("=rand()suffix");
+    s.sel = crate::Selection { anchor: Pos::body(0, 7), focus: Pos::body(0, 13) };
+    typ(&mut s, "\n");
+    assert_eq!(texts(&s), ["=rand()", ""]);
+}
+
+#[test]
+fn sample_text_preserves_typing_and_paragraph_formatting() {
+    let mut s = s();
+    run(&mut s, "format.bold", json!({}));
+    run(&mut s, "para.alignCenter", json!({}));
+    typ(&mut s, "=rand(2,1)\n");
+    for p in s.doc.body.iter().filter_map(|b| b.as_para()).take(2) {
+        assert_eq!(p.props.align, Some(wordcraft_doc::props::Align::Center));
+        assert_eq!(p.props_at(0).bold, Some(true));
+    }
+}
+
+#[test]
+fn sample_text_replacement_tracks_changes() {
+    let mut s = typed("=lorem(2,1)");
+    run(&mut s, "review.trackChanges", json!({}));
+    typ(&mut s, "\n");
+    assert!(s.doc.body.iter().filter_map(|b| b.as_para()).flat_map(|p| &p.runs).any(|r| r.props.ins.is_some()));
+    run(&mut s, "review.rejectAll", json!({}));
+    assert_eq!(texts(&s), ["=lorem(2,1)"]);
+    run(&mut s, "edit.undo", json!({}));
+    run(&mut s, "review.acceptAll", json!({}));
+    assert_eq!(texts(&s).len(), 3);
+    assert!(!s.doc.plain_text(StoryRef::Body).contains("=lorem"));
+}
+
+#[test]
 fn enter_twice_after_a_list_item_ends_the_list() {
     let s = typed("* item\n\ntext");
     assert_eq!(paras(&s), vec![para("Item", Some(0)), para("text", None)]);
@@ -104,9 +192,12 @@ fn shift_tab_and_tab_change_list_levels() {
 fn backspace_at_the_start_of_an_item_removes_the_number_then_the_indent() {
     let mut s = typed("* One\nTwo");
     run(&mut s, "caret.home", json!({}));
+    let text_x = |s: &mut Session| s.layout().caret(&Pos::body(1, 0)).map(|c| c.x);
+    let before = text_x(&mut s);
     typ(&mut s, "\u{8}");
-    // Number gone, still indented with the list.
+    // Number gone, still indented with the list: the text stays where it was.
     assert_eq!(paras(&s)[1], ("Two".to_string(), None, true));
+    assert_eq!(text_x(&mut s), before);
     typ(&mut s, "\u{8}|");
     // Second Backspace: Normal paragraph, not joined to the one above.
     assert_eq!(paras(&s), vec![para("One", Some(0)), para("|Two", None)]);
@@ -185,6 +276,65 @@ fn autocorrect_as_you_type() {
     assert_eq!(s.doc.plain_text(StoryRef::Body), "½ cup. iPhone. See readme.txt ");
 }
 
+/// #835: the English replacement list applies only to English text. Polish "i" ("and") stays
+/// lowercase; symbols still change; English and untagged text still get "I".
+#[test]
+fn autocorrect_replacement_list_follows_the_texts_language() {
+    // Polish as the document's default language.
+    let mut s = s();
+    run(&mut s, "review.language", json!({"lang": "pl-PL", "default": true}));
+    typ(&mut s, "Ala i kot. kawa i herbata teh (c) ");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "Ala i kot. Kawa i herbata teh © ");
+    // Polish on the run only: the word's own language counts.
+    let mut s = self::s();
+    typ(&mut s, "Ala");
+    run(&mut s, "select.all", json!({}));
+    run(&mut s, "review.language", json!({"lang": "pl-PL"}));
+    run(&mut s, "caret.docEnd", json!({}));
+    typ(&mut s, " i kot ");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "Ala i kot ");
+    // English (any region) and untagged text (the default proofing language is English).
+    let mut s = self::s();
+    run(&mut s, "review.language", json!({"lang": "en-GB", "default": true}));
+    typ(&mut s, "so i think teh end ");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "So I think the end ");
+    let s = typed("so i think teh end ");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "So I think the end ");
+    // A Polish interface: a new document is Polish by its default language, and text with no
+    // language at all (a .docx without `w:lang`) follows the editing language too.
+    let mut s = self::s();
+    s.set_editing_language(Some("pl-PL"));
+    typ(&mut s, "Ala i kot ");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "Ala i kot ", "document default from the editing language");
+    let mut s = self::s();
+    s.set_editing_language(Some("pl-PL"));
+    s.doc.styles.default_chr.lang = None;
+    typ(&mut s, "Ala i kot ");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "Ala i kot ", "untagged text in the editing language");
+    // `eng` is English too, as for proofing.
+    let mut s = self::s();
+    run(&mut s, "review.language", json!({"lang": "eng", "default": true}));
+    typ(&mut s, "so i think ");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "So I think ");
+}
+
+#[test]
+fn autocorrect_options_change_what_typing_does() {
+    let mut s = s();
+    // A user entry, a deleted built-in entry, an added exception; names of days.
+    run(&mut s, "tools.autocorrect", json!({"add": {"from": "wc", "to": "WordCraft"}}));
+    run(&mut s, "tools.autocorrect", json!({"delete": "teh"}));
+    run(&mut s, "tools.autocorrect", json!({"addException": "approx."}));
+    typ(&mut s, "wc ships on monday. teh end is approx. three weeks ");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "WordCraft ships on Monday. Teh end is approx. three weeks ");
+    // AutoFormat options off: straight quotes, no dashes, no list; sentences not capitalised.
+    let mut s = self::s();
+    run(&mut s, "tools.autocorrect", json!({"smartQuotes": false, "dashes": false, "bullets": false, "capSentences": false, "capDays": false}));
+    typ(&mut s, "* \"hi\" a -- b sunday ");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "* \"hi\" a -- b sunday ");
+    assert_eq!(paras(&s)[0].1, None);
+}
+
 #[test]
 fn enter_finishes_a_word_for_autocorrect() {
     let s = typed("hello\nteh end\n");
@@ -217,8 +367,8 @@ fn web_addresses_become_links() {
 
 #[test]
 fn dashes() {
-    let s = typed("a -- b and c - d and e--f ");
-    assert_eq!(s.doc.plain_text(StoryRef::Body), "A – b and c – d and e—f ");
+    let s = typed("a -- b and c - d and e--f and café--g ");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "A – b and c – d and e—f and café—g ");
 }
 
 #[test]
@@ -238,6 +388,59 @@ fn border_line_autoformat() {
     assert_eq!(s.doc.plain_text(StoryRef::Body), "\nText");
     assert!(s.doc.para_at(&Pos::body(0, 0)).and_then(|p| p.props.borders).is_some());
     assert!(s.doc.para_at(&Pos::body(1, 0)).unwrap().props.borders.is_none());
+}
+
+#[test]
+fn undo_right_after_a_border_line_brings_the_characters_back() {
+    let mut s = typed("Above\n---\n");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "Above\n");
+    run(&mut s, "edit.undo", json!({}));
+    // The AutoFormat is undone on its own: the characters are back, the Enter stays.
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "Above\n---\n");
+    assert!(s.doc.body.iter().filter_map(|b| b.as_para()).all(|p| p.props.borders.is_none()));
+    assert_eq!(s.sel.focus, Pos::body(2, 0));
+    run(&mut s, "edit.undo", json!({}));
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "Above\n---");
+}
+
+#[test]
+fn plus_and_hyphen_line_becomes_a_table() {
+    let mut s = typed("+--+------+\nA");
+    let Some(wordcraft_doc::Block::Table(t)) = s.doc.body.first().map(|b| &**b) else { panic!("no table: {:?}", paras(&s)) };
+    assert_eq!(t.rows.len(), 1);
+    assert_eq!(t.grid.len(), 2);
+    assert!((t.grid[1] / t.grid[0] - 3.0).abs() < 0.01, "widths follow the hyphens: {:?}", t.grid);
+    assert_eq!(t.rows[0].cells[0].blocks[0].as_para().map(|p| p.text.as_str()), Some("A"), "the caret is in the first cell");
+    assert!(s.doc.body.get(1).and_then(|b| b.as_para()).is_some_and(|p| p.is_empty()), "a paragraph follows the table");
+    // Undo right after brings the typed characters back, the Enter stays.
+    run(&mut s, "edit.undo", json!({}));
+    run(&mut s, "edit.undo", json!({}));
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "+--+------+\n");
+    assert!(s.doc.body.iter().all(|b| b.as_para().is_some()));
+    // Not a table: text around it, or more columns than a table can hold.
+    let s = typed("x +--+--+\n");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "X +--+--+\n");
+    let s = typed(&format!("+{}\n", "-+".repeat(64)));
+    assert!(s.doc.body.iter().all(|b| b.as_para().is_some()));
+}
+
+#[test]
+fn arrow_bullets() {
+    for (keys, bullet) in [("> ", "\u{27A2}"), ("-> ", "\u{2794}"), ("=> ", "\u{21E8}")] {
+        let s = typed(&format!("{keys}item\nnext"));
+        assert_eq!(paras(&s), vec![para("Item", Some(0)), para("next", Some(0))], "{keys}");
+        assert_eq!(label_at(&s, 0), bullet, "{keys}");
+    }
+    // An arrow list doesn't join a plain bullet list.
+    let s = typed("* a\n\n> b");
+    assert_eq!(label_at(&s, 0), "\u{2022}");
+    assert_eq!(label_at(&s, 1), "\u{27A2}");
+}
+
+#[test]
+fn smileys_are_replaced_inside_words_too() {
+    let s = typed("so ok:) sad:( meh:| :) fine:-) ");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "So ok\u{263A} sad\u{2639} meh\u{1F610} \u{263A} fine\u{263A} ");
 }
 
 #[test]
@@ -378,6 +581,88 @@ fn typing_at_either_end_of_a_link_is_not_linked() {
     assert_eq!(links(&s), [("sixte".into(), false), (String::new(), false)]);
 }
 
+#[test]
+fn typing_then_selecting_then_typing_are_two_undo_steps() {
+    // #419: a selection that moves the insertion point ends the typing group, like a caret move.
+    let mut s = typed("alpha");
+    run(&mut s, "select.text", json!({"text": "ph"}));
+    run(&mut s, "text.insert", json!({"text": "X"}));
+    assert_eq!(s.doc.para_at(&Pos::body(0, 0)).unwrap().text, "alXa");
+    run(&mut s, "edit.undo", json!({}));
+    assert_eq!(s.doc.para_at(&Pos::body(0, 0)).unwrap().text, "alpha");
+    assert_eq!(s.selected_text(), "ph");
+    assert!(s.can_undo());
+    run(&mut s, "edit.undo", json!({}));
+    assert_eq!(s.doc.para_at(&Pos::body(0, 0)).unwrap().text, "");
+    // Uninterrupted typing (a read-only command in between included) is still one step.
+    let mut s = typed("alpha");
+    run(&mut s, "document.inspect", json!({}));
+    typ(&mut s, "X");
+    run(&mut s, "edit.undo", json!({}));
+    assert_eq!(s.doc.para_at(&Pos::body(0, 0)).unwrap().text, "");
+}
+
+#[test]
+fn undoing_bold_at_the_caret_turns_bold_typing_off_again() {
+    // #424: Bold at a caret in an empty paragraph, Undo, type: the text isn't bold.
+    let mut s = s();
+    run(&mut s, "format.bold", json!({"value": true}));
+    run(&mut s, "edit.undo", json!({}));
+    assert_ne!(s.typing_props().bold, Some(true));
+    typ(&mut s, "abc");
+    let p = s.doc.para_at(&Pos::body(0, 0)).unwrap();
+    assert_eq!(p.text, "abc");
+    assert_ne!(p.props_of_char(0).bold, Some(true));
+    // Redo brings bold typing back.
+    let mut s = Session::new(wordcraft_doc::Document::new());
+    run(&mut s, "format.bold", json!({"value": true}));
+    run(&mut s, "edit.undo", json!({}));
+    run(&mut s, "edit.redo", json!({}));
+    typ(&mut s, "abc");
+    assert_eq!(s.doc.para_at(&Pos::body(0, 0)).unwrap().props_of_char(0).bold, Some(true));
+}
+
+/// Myanmar (#604): typed in memory order (consonant, medial, then the prevowel ေ that is drawn
+/// before it), the caret steps over whole syllables and Backspace removes one sign at a time.
+#[test]
+fn myanmar_typing_steps_by_syllable_and_backspaces_by_sign() {
+    // ကြေး ("money"): က + ြ + ေ + း, then မြန်မာ.
+    let word = "\u{1000}\u{103C}\u{1031}\u{1038}";
+    let mut s = typed(word);
+    assert_eq!(paras(&s), vec![para(word, None)]);
+    // Backspace takes the visarga, then the vowel sign: the consonant and medial stay.
+    typ(&mut s, "\u{8}");
+    assert_eq!(paras(&s)[0].0, "\u{1000}\u{103C}\u{1031}");
+    typ(&mut s, "\u{8}\u{1031}\u{1038}");
+    assert_eq!(paras(&s)[0].0, word, "retyped");
+    // Left from the end skips the whole syllable (the visarga and aa signs aren't grapheme
+    // extenders, so a grapheme step would stop inside it).
+    let mut s = typed("\u{1019}\u{102C}\u{1005}\u{102C}"); // မာစာ
+    run(&mut s, "caret.left", json!({}));
+    assert_eq!(s.sel.focus.off, 6);
+    run(&mut s, "caret.left", json!({}));
+    assert_eq!(s.sel.focus.off, 0);
+    run(&mut s, "caret.right", json!({}));
+    assert_eq!(s.sel.focus.off, 6);
+    // Delete removes the whole syllable after the caret.
+    run(&mut s, "text.delete", json!({}));
+    assert_eq!(paras(&s)[0].0, "\u{1019}\u{102C}");
+}
+
+/// Devanagari and Khmer: Backspace removes the last character (a matra), not the conjunct.
+#[test]
+fn indic_and_khmer_backspace_removes_one_character() {
+    let mut s = typed("\u{0915}\u{094D}\u{0937}\u{093F}\u{8}"); // क्षि ⌫
+    assert_eq!(paras(&s)[0].0, "\u{0915}\u{094D}\u{0937}");
+    typ(&mut s, "\u{8}");
+    assert_eq!(paras(&s)[0].0, "\u{0915}\u{094D}");
+    let s = typed("\u{1781}\u{17D2}\u{1798}\u{17C2}\u{8}"); // ខ្មែ ⌫
+    assert_eq!(paras(&s)[0].0, "\u{1781}\u{17D2}\u{1798}");
+    // Latin keeps grapheme Backspace: e + combining acute goes as one.
+    let s = typed("ae\u{301}\u{8}");
+    assert_eq!(paras(&s)[0].0, "a");
+}
+
 /// Press a shortcut the way the keyboard does: run the command bound to it.
 fn press(s: &mut Session, combo: &str) -> Result<serde_json::Value, crate::CmdError> {
     let id = s.registry.by_shortcut(combo).map(|c| c.id).unwrap_or_else(|| panic!("nothing bound to {combo}"));
@@ -445,6 +730,34 @@ fn alt_shift_left_and_right_promote_and_demote_headings_and_list_items() {
 }
 
 #[test]
+fn down_and_up_from_a_line_start_beside_a_table_go_into_it() {
+    let mut s = typed("Intro line\n");
+    run(&mut s, "insert.table", json!({"rows": 2, "cols": 2}));
+    let (table, _, _) = s.sel.focus.path.cell().unwrap();
+    typ(&mut s, "a");
+    let cell = |r: u32, c: u32| {
+        let mut p = table.0.clone();
+        p.extend([r, c, 0]);
+        wordcraft_doc::Path(p)
+    };
+    // From the start of the line above, left of the cells' text: the first cell, then the one
+    // below, not the paragraph after the table.
+    run(&mut s, "caret.docStart", json!({}));
+    run(&mut s, "caret.down", json!({}));
+    assert_eq!(s.sel.focus.path, cell(0, 0));
+    run(&mut s, "caret.down", json!({}));
+    assert_eq!(s.sel.focus.path, cell(1, 0), "then the cell below");
+    // Up from the start of the paragraph after it: the last row's first cell.
+    run(&mut s, "caret.docEnd", json!({}));
+    run(&mut s, "caret.up", json!({}));
+    assert_eq!(s.sel.focus.path, cell(1, 0));
+    // Shift+Down from the line above takes the first row, not the whole table.
+    run(&mut s, "caret.docStart", json!({}));
+    run(&mut s, "caret.down", json!({"extend": true}));
+    assert_eq!(s.sel.focus.path, cell(0, 1));
+}
+
+#[test]
 fn alt_x_toggles_between_a_character_and_its_code() {
     if !cfg!(target_os = "macos") {
         assert_eq!(s().registry.by_shortcut("Alt+X").map(|c| c.id), Some("text.toggleUnicode"));
@@ -468,6 +781,102 @@ fn alt_x_toggles_between_a_character_and_its_code() {
 }
 
 #[test]
+fn alt_numpad_codes_map_like_word_on_windows() {
+    use crate::cmd::text::{alt_code_char, oem_code_page};
+    let c = |code| alt_code_char(code, 1252, 437);
+    // Leading 0: Windows-1252.
+    assert_eq!(c("0233"), Some('é'));
+    assert_eq!(c("0128"), Some('€'));
+    assert_eq!(c("0150"), Some('–'));
+    assert_eq!(c("065"), Some('A'));
+    assert_eq!(c("0032"), Some(' '));
+    assert_eq!(c("0255"), Some('ÿ'));
+    // No leading 0: the OEM code page (437 here, 850 in Western Europe).
+    assert_eq!(c("233"), Some('Θ'));
+    // The issue said 233 → é in 850; the CP850 mapping file has Ú at 0xE9 (é is 130 in both).
+    assert_eq!(alt_code_char("233", 1252, 850), Some('Ú'));
+    assert_eq!(alt_code_char("130", 1252, 850), Some('é'));
+    assert_eq!(c("130"), Some('é'));
+    assert_eq!(alt_code_char("155", 1252, 850), Some('ø'));
+    assert_eq!(c("155"), Some('¢'));
+    assert_eq!(c("65"), Some('A'));
+    assert_eq!(c("1"), Some('☺'));
+    assert_eq!(c("7"), Some('•'));
+    assert_eq!(c("127"), Some('⌂'));
+    assert_eq!(c("176"), Some('░'));
+    // Above 255: the Unicode character with that decimal value.
+    assert_eq!(c("8364"), Some('€'));
+    assert_eq!(c("09733"), Some('★'));
+    assert_eq!(c("128512"), Some('😀'));
+    // Nothing for junk, 0, control characters, surrogates or values past Unicode.
+    for bad in ["", "0", "000", "0009", "0013", "0127", "0129", "x1", "-5", "55296", "1114112", "99999999999999999999", "4294967361"] {
+        assert_eq!(c(bad), None, "{bad:?}");
+    }
+    assert_eq!(oem_code_page(None), 437);
+    assert_eq!(oem_code_page(Some("en-US")), 437);
+    assert_eq!(oem_code_page(Some("en_GB.UTF-8")), 850);
+    assert_eq!(oem_code_page(Some("fr-FR")), 850);
+    assert_eq!(oem_code_page(Some("de")), 850);
+    assert_eq!(oem_code_page(Some("ru-RU")), 437, "only 437/850 without the shell's code pages");
+}
+
+#[test]
+fn alt_numpad_codes_follow_the_system_code_pages() {
+    use crate::cmd::text::{alt_code_char, windows_code_pages};
+    // Polish (1250/852): Alt+0185 and Alt+165 are both ą, not ¹ / Ñ.
+    assert_eq!(alt_code_char("0185", 1250, 852), Some('ą'));
+    assert_eq!(alt_code_char("165", 1250, 852), Some('ą'));
+    assert_eq!(alt_code_char("0185", 1252, 437), Some('¹'));
+    // Russian (1251/866), Greek (1253/737), Turkish (1254/857).
+    assert_eq!(alt_code_char("0207", 1251, 866), Some('П'));
+    assert_eq!(alt_code_char("143", 1251, 866), Some('П'));
+    assert_eq!(alt_code_char("0193", 1253, 737), Some('Α'));
+    assert_eq!(alt_code_char("128", 1253, 737), Some('Α'));
+    assert_eq!(alt_code_char("0253", 1254, 857), Some('ı'));
+    assert_eq!(alt_code_char("141", 1254, 857), Some('ı'));
+    // Above 255 the code page doesn't matter.
+    assert_eq!(alt_code_char("8364", 1251, 866), Some('€'));
+    // A byte the code page leaves unassigned types nothing.
+    assert_eq!(alt_code_char("213", 1254, 857), None);
+    assert_eq!(alt_code_char("0219", 874, 437), None);
+    assert_eq!(windows_code_pages(None), (1252, 437));
+    assert_eq!(windows_code_pages(Some("en-US")), (1252, 437));
+    assert_eq!(windows_code_pages(Some("de-DE")), (1252, 850));
+    assert_eq!(windows_code_pages(Some("pl-PL")), (1250, 852));
+    assert_eq!(windows_code_pages(Some("sr-Latn-RS")), (1250, 852));
+    assert_eq!(windows_code_pages(Some("ru_RU.UTF-8")), (1251, 866));
+    assert_eq!(windows_code_pages(Some("el-GR")), (1253, 737));
+    assert_eq!(windows_code_pages(Some("tr-TR")), (1254, 857));
+    assert_eq!(windows_code_pages(Some("ja-JP")), (1252, 437));
+}
+
+#[test]
+fn alt_numpad_code_types_one_character() {
+    // `texts` lowercases; the capitals matter here.
+    let raw = |s: &Session| paras(s).into_iter().map(|p| p.0).collect::<Vec<_>>();
+    let mut s = s();
+    run(&mut s, "text.insert", json!({"text": "caf"}));
+    run(&mut s, "text.typeCode", json!({"code": "0233"}));
+    run(&mut s, "text.insert", json!({"text": " "}));
+    run(&mut s, "text.typeCode", json!({"code": "233", "oem": 437}));
+    run(&mut s, "text.insert", json!({"text": " "}));
+    run(&mut s, "text.typeCode", json!({"code": "155", "oem": 850}));
+    assert_eq!(raw(&s), ["Café Θ ø"]);
+    run(&mut s, "edit.undo", json!({}));
+    assert_eq!(raw(&s), ["Café Θ "], "one undo step per code");
+    assert!(s.run("text.typeCode", &json!({"code": "0"})).is_err());
+    assert!(s.run("text.typeCode", &json!({"code": "65", "oem": 855})).is_err());
+    assert!(s.run("text.typeCode", &json!({"code": "065", "ansi": 932})).is_err());
+    assert!(s.run("text.typeCode", &json!({"code": "065", "ansi": 70000})).is_err());
+    assert_eq!(raw(&s), ["Café Θ "]);
+    // The system's code pages: Polish Alt+0185 and Alt+165 both type ą.
+    run(&mut s, "text.typeCode", json!({"code": "0185", "ansi": 1250, "oem": 852}));
+    run(&mut s, "text.typeCode", json!({"code": "165", "ansi": 1250, "oem": 852}));
+    run(&mut s, "text.typeCode", json!({"code": "143", "oem": 866}));
+    assert_eq!(raw(&s), ["Café Θ ąąП"]);
+}
+
+#[test]
 fn shift_f5_goes_back_through_the_last_edits() {
     let mut s = typed("One\nTwo\nThree");
     run(&mut s, "caret.docStart", json!({}));
@@ -480,4 +889,254 @@ fn shift_f5_goes_back_through_the_last_edits() {
     assert_eq!(back(), Pos::body(0, 3));
     assert_eq!(back(), Pos::body(2, 5), "then round again");
     assert!(Session::new(wordcraft_doc::Document::new()).run("edit.goBack", &json!({})).is_err(), "nothing edited yet");
+}
+
+#[test]
+fn shift_right_at_the_end_of_a_cell_selects_the_cell_first() {
+    let mut s = s();
+    run(&mut s, "insert.table", json!({"rows": 2, "cols": 2}));
+    let (table, _, _) = s.sel.focus.path.cell().unwrap();
+    typ(&mut s, "ab");
+    run(&mut s, "caret.left", json!({}));
+    let shift_right = |s: &mut Session| {
+        run(s, "caret.right", json!({"extend": true}));
+        s.cell_range().map(|r| (r.rows, r.cols))
+    };
+    assert_eq!(shift_right(&mut s), None, "the letter first");
+    assert_eq!((s.sel.anchor.off, s.sel.focus.off), (1, 2));
+    assert_eq!(shift_right(&mut s), Some(((0, 0), (0, 0))), "then the cell alone");
+    assert_eq!(shift_right(&mut s), Some(((0, 0), (0, 1))), "then the next cell with it");
+    // In an empty cell the first press takes it.
+    let mut empty = table.0.clone();
+    empty.extend([1, 0, 0]);
+    let pos = Pos { story: StoryRef::Body, path: wordcraft_doc::Path(empty), off: 0 };
+    run(&mut s, "caret.set", json!({"pos": pos}));
+    assert_eq!(shift_right(&mut s), Some(((1, 1), (0, 0))));
+}
+
+#[test]
+fn two_initial_capitals_are_corrected() {
+    let s = typed("the WOrd and THe end, not IDs or CDs. TV is fine ");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "The Word and The end, not IDs or CDs. TV is fine ");
+    // "TEh" loses its second capital, then the replacement list fixes the typo.
+    assert_eq!(typed("TEh ").doc.plain_text(StoryRef::Body), "The ");
+    // A user exception.
+    let mut s = typed("");
+    run(&mut s, "tools.autocorrect", json!({"addInitialCapsException": "WCraft"}));
+    typ(&mut s, "WCraft ");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "WCraft ");
+}
+
+#[test]
+fn accidental_caps_lock_is_corrected() {
+    let s = typed("a wORD and hELLO there. iOS stays ");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "A Word and Hello there. iOS stays ");
+}
+
+#[test]
+fn capitalisation_fixes_undo_and_turn_off() {
+    let mut s = typed("WOrd");
+    typ(&mut s, " ");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "Word ");
+    run(&mut s, "edit.undo", json!({}));
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "WOrd ");
+    let mut s = typed("x wORD");
+    typ(&mut s, " ");
+    run(&mut s, "edit.undo", json!({}));
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "X wORD ");
+    let mut s = typed("");
+    run(&mut s, "tools.autocorrect", json!({"twoInitialCaps": false, "capsLock": false}));
+    typ(&mut s, "x WOrd wORD ");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "X WOrd wORD ");
+}
+
+#[test]
+fn first_letter_of_a_table_cell_is_capitalised() {
+    let cell_text = |s: &Session, c: usize| {
+        s.doc.body.iter().find_map(|b| b.as_table()).and_then(|t| t.rows.first()?.cells.get(c)?.blocks.first()?.as_para().map(|p| p.text.clone()))
+    };
+    let mut s = typed("");
+    run(&mut s, "insert.table", json!({"rows": 1, "cols": 2}));
+    typ(&mut s, "apples and pears\tplums ");
+    assert_eq!(cell_text(&s, 0).as_deref(), Some("Apples and pears"));
+    assert_eq!(cell_text(&s, 1).as_deref(), Some("Plums "));
+    run(&mut s, "edit.undo", json!({}));
+    assert_eq!(cell_text(&s, 1).as_deref(), Some("plums "));
+    let mut s = typed("");
+    run(&mut s, "tools.autocorrect", json!({"capCells": false}));
+    run(&mut s, "insert.table", json!({"rows": 1, "cols": 1}));
+    typ(&mut s, "plums ");
+    assert_eq!(cell_text(&s, 0).as_deref(), Some("plums "));
+}
+
+/// File › Options › Advanced, "Typing replaces selected text" (#485): on (Word's default) the
+/// typed text replaces the selection; off, it goes in front of the selection and keeps it.
+#[test]
+fn typing_over_a_selection_follows_the_replace_selection_option() {
+    let mut s = typed("One two");
+    run(&mut s, "select.text", json!({"text": "two"}));
+    typ(&mut s, "X");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "One X");
+    let mut s = typed("One two");
+    run(&mut s, "file.options", json!({"typingReplacesSelection": false}));
+    run(&mut s, "select.text", json!({"text": "two"}));
+    typ(&mut s, "XY");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "One XYtwo");
+}
+
+/// Overtype (#485): typed characters replace the ones after the caret, never past the end of the
+/// paragraph; the Insert key toggles it only with "Use the Insert key to control overtype" on
+/// (the UI checks that option; `text.overtype` is the switch).
+#[test]
+fn overtype_replaces_the_characters_after_the_caret() {
+    let mut s = typed("Abcdef\nXy");
+    run(&mut s, "caret.set", json!({"pos": Pos::body(0, 1)}));
+    run(&mut s, "text.overtype", json!({"value": true}));
+    typ(&mut s, "XY");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "AXYdef\nXy");
+    run(&mut s, "caret.set", json!({"pos": Pos::body(0, 5)}));
+    typ(&mut s, "123");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "AXYde123\nXy", "the paragraph mark isn't typed over");
+    run(&mut s, "text.overtype", json!({}));
+    run(&mut s, "caret.set", json!({"pos": Pos::body(0, 0)}));
+    typ(&mut s, "Z");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "ZAXYde123\nXy", "insert mode again");
+}
+
+#[test]
+fn reject_all_takes_out_the_paragraph_breaks_a_tracked_paste_inserted() {
+    // Issue #417: Paste's paragraph marks weren't tracked, so Reject All left the split.
+    for text in ["X\nY", "\n"] {
+        let mut s = s();
+        run(&mut s, "text.insert", json!({"text": "AB", "raw": true}));
+        run(&mut s, "caret.set", json!({"pos": {"block": 0, "off": 1}}));
+        run(&mut s, "review.trackChanges", json!({"value": true}));
+        run(&mut s, "edit.paste", json!({"text": text}));
+        let (head, tail) = text.split_once('\n').unwrap_or_default();
+        assert_eq!(texts(&s), [format!("a{}", head.to_lowercase()), format!("{}b", tail.to_lowercase())], "{text:?}");
+        let pasted = texts(&s);
+        run(&mut s, "review.rejectAll", json!({}));
+        assert_eq!(texts(&s), ["ab"], "{text:?}");
+        assert!(s.doc.revisions.is_empty(), "{text:?}");
+        run(&mut s, "edit.undo", json!({}));
+        run(&mut s, "review.acceptAll", json!({}));
+        assert_eq!(texts(&s), pasted, "{text:?}: accepting keeps the break");
+    }
+}
+
+#[test]
+fn plain_text_paste_keeps_an_empty_paragraph_in_a_list() {
+    // Issue #422: the pasted paragraph separators went through Enter, which ends the list on an
+    // empty item, so `A\n\nB` lost its empty paragraph.
+    for (id, v) in [("edit.pasteText", json!({"text": "A\n\nB"})), ("edit.pasteSpecial", json!({"as": "text", "text": "A\n\nB"}))] {
+        let mut s = s();
+        run(&mut s, "para.bullets", json!({}));
+        run(&mut s, id, v);
+        assert_eq!(texts(&s), ["a", "", "b"], "{id}");
+    }
+    // Enter twice still ends the list.
+    let mut s = s();
+    run(&mut s, "para.bullets", json!({}));
+    typ(&mut s, "A\n\nB");
+    assert_eq!(paras(&s), vec![para("A", Some(0)), para("B", None)]);
+}
+
+/// #713: Arabic or Hebrew typed into an empty paragraph makes it right-to-left; a paragraph that
+/// already has letters, or whose style sets a direction, keeps its own.
+#[test]
+fn typing_rtl_letters_into_an_empty_paragraph_makes_it_rtl() {
+    let bidi = |s: &Session, i: usize| s.doc.body.iter().filter_map(|b| b.as_para()).nth(i).and_then(|p| p.props.bidi);
+    // Empty paragraph: the first Arabic letter flips it, the rest keep it.
+    let s = typed("سلام");
+    assert_eq!(bidi(&s, 0), Some(true));
+    // Digits first, then Arabic: still no letters before, so it flips.
+    let s = typed("1. سلام");
+    assert_eq!(bidi(&s, 0), Some(true));
+    // Latin first: Arabic typed later doesn't flip the paragraph.
+    let s = typed("Hello سلام");
+    assert_eq!(bidi(&s, 0), None);
+    // A new paragraph after an RTL one starts its own detection.
+    let s = typed("سلام\nHello");
+    assert_eq!(bidi(&s, 1), Some(true), "Enter carries the paragraph's direction on, as in Word");
+    // A style that sets left-to-right wins.
+    let mut doc = Session::new(wordcraft_doc::Document::new());
+    if let Some(st) = doc.doc.styles.get_mut("Normal") {
+        st.para.bidi = Some(false);
+    }
+    typ(&mut doc, "سلام");
+    assert_eq!(bidi(&doc, 0), None);
+    // An opened paragraph without w:bidi lays out left-to-right whatever its text: the caret
+    // after the Arabic word sits near the left margin, not the right one.
+    let mut doc = typed("سلام");
+    let path = doc.sel.focus.path.clone();
+    if let Ok(p) = doc.doc.para_mut(StoryRef::Body, &path) {
+        p.props.bidi = None;
+        p.touch();
+    }
+    let x = doc.layout().caret(&doc.sel.focus).map(|c| c.x).unwrap_or(f32::MAX);
+    assert!(x < 300.0, "left-to-right paragraph: caret at {x}");
+}
+
+/// Select All then Delete or Backspace empties the document, tables included (Word, #1198):
+/// whether the text starts with a table or with a paragraph.
+#[test]
+fn select_all_then_delete_removes_tables() {
+    let tables = |s: &Session| s.doc.body.iter().filter(|b| b.as_table().is_some()).count();
+    // With the caret in a table, Select All grows the selection a step at a time (cell, row,
+    // table, document; #1478): press it until the whole document is selected.
+    let select_whole_document = |s: &mut Session| {
+        for _ in 0..6 {
+            let before = s.sel.clone();
+            run(s, "select.all", json!({}));
+            if s.sel == before {
+                break;
+            }
+        }
+    };
+    for key in ["text.delete", "text.backspace"] {
+        let mut s = typed("");
+        run(&mut s, "insert.table", json!({"rows": 2, "cols": 2}));
+        typ(&mut s, "cell");
+        assert_eq!(tables(&s), 1);
+        select_whole_document(&mut s);
+        run(&mut s, key, json!({}));
+        assert_eq!(tables(&s), 0, "{key}: a table at the start of the document goes");
+        assert_eq!(s.doc.plain_text(StoryRef::Body), "", "{key}");
+
+        let mut s = typed("before\n");
+        run(&mut s, "insert.table", json!({"rows": 2, "cols": 2}));
+        typ(&mut s, "cell");
+        assert_eq!(tables(&s), 1);
+        select_whole_document(&mut s);
+        run(&mut s, key, json!({}));
+        assert_eq!(tables(&s), 0, "{key}: a table after text goes");
+        assert_eq!(s.doc.plain_text(StoryRef::Body), "", "{key}");
+    }
+}
+
+/// #898: a click just after a citation at the end of a paragraph puts the caret before the
+/// citation's hidden field end; what is typed there goes after the citation, as in Word, instead
+/// of into its result (Zotero then reports the citation as edited by hand).
+#[test]
+fn typing_after_a_citation_goes_outside_its_field() {
+    use wordcraft_doc::props::CharProps;
+    use wordcraft_doc::{InlineObject, Path};
+    let mut doc = wordcraft_doc::Document::from_text("Cats purr ");
+    let c = CharProps::default();
+    let p = doc.para_mut(StoryRef::Body, &Path::top(0)).unwrap();
+    let start = p.len();
+    p.insert_object(start, InlineObject::FieldStart { instr: "ADDIN ZOTERO_ITEM CSL_CITATION {}".into(), locked: false, dirty: false }, &c).unwrap();
+    let n = p.insert_text(p.len(), "(Smith 2020)", &c).unwrap();
+    p.insert_object(start + 3 + n, InlineObject::FieldEnd, &c).unwrap();
+    let mut s = Session::new(doc);
+    let end = Pos::body(0, s.doc.para(StoryRef::Body, &Path::top(0)).unwrap().len());
+    let at = s.layout().caret(&end).unwrap();
+    let hit = s.layout().hit(at.page, at.x + 20.0, at.top + at.height / 2.0, StoryRef::Body).unwrap();
+    s.sel = crate::Selection::caret(hit);
+    typ(&mut s, ". Dogs bark.");
+    assert_eq!(s.doc.plain_text(StoryRef::Body), "Cats purr (Smith 2020). Dogs bark.");
+    let f = s.doc.field_ranges(StoryRef::Body);
+    assert_eq!(f.len(), 1);
+    let inside = Pos { off: f[0].start.off + wordcraft_doc::para::OBJ.len_utf8(), ..f[0].start.clone() };
+    assert_eq!(s.doc.copy_range(&inside, &f[0].end).plain_text(), "(Smith 2020)");
 }

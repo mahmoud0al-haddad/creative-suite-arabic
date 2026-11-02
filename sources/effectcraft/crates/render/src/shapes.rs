@@ -6,7 +6,9 @@
 //!   the paths of nested groups;
 //! - paint items (fills, strokes, gradient fills/strokes) paint the paths above them, *as modified
 //!   by every operator in the stack* — a Trim Paths below a Stroke still trims it;
-//! - items higher in the list draw on top.
+//! - items higher in the list draw on top;
+//! - surface items (Front, Bevel, Side, Back) colour those surfaces of the Advanced 3D
+//!   extrusion of every paint in their group and its nested groups (the innermost wins).
 
 use effectcraft_color::{BlendMode, blend_pixel};
 use effectcraft_effects::Buf;
@@ -53,7 +55,13 @@ struct Draw {
     xf: Mat3,
     opacity: f32,
     blend: BlendMode,
+    /// Front / Bevel / Side / Back colours of the paint's extrusion (Advanced 3D).
+    surfaces: SurfaceColors,
 }
+
+/// Straight RGB colours of an extrusion's surfaces, by [`effectcraft_model::extrude::Surface`]
+/// index (Front, Bevel, Side, Back); `None` keeps the paint's colour.
+pub type SurfaceColors = [Option<[f32; 3]>; 4];
 
 fn mat_path(path: &BezPath, m: &Mat3) -> BezPath {
     effectcraft_path::transform(std::slice::from_ref(path), m).pop().unwrap_or_default()
@@ -179,6 +187,7 @@ fn collect(ctx: &EvalCtx, layer: &Layer, contents: &PropGroup, arena: &mut Vec<B
     let mut draws: Vec<Draw> = Vec::new();
     let mut live: Vec<usize> = Vec::new();
     let opacity = |g: &PropGroup| (ctx.f(layer, g, "opacity", 100.0) / 100.0) as f32;
+    let mut surfaces: SurfaceColors = [None; 4];
     for node in &contents.children {
         let Node::Group(g) = node else { continue };
         if !g.enabled {
@@ -224,6 +233,7 @@ fn collect(ctx: &EvalCtx, layer: &Layer, contents: &PropGroup, arena: &mut Vec<B
                     xf: Mat3::IDENTITY,
                     opacity: opacity(g),
                     blend: blend_mode(ctx, layer, g),
+                    surfaces: [None; 4],
                 });
             }
             "stroke" => {
@@ -236,6 +246,7 @@ fn collect(ctx: &EvalCtx, layer: &Layer, contents: &PropGroup, arena: &mut Vec<B
                     xf: Mat3::IDENTITY,
                     opacity: opacity(g),
                     blend: blend_mode(ctx, layer, g),
+                    surfaces: [None; 4],
                 });
             }
             "gfill" | "gstroke" => {
@@ -258,6 +269,7 @@ fn collect(ctx: &EvalCtx, layer: &Layer, contents: &PropGroup, arena: &mut Vec<B
                     xf: Mat3::IDENTITY,
                     opacity: opacity(g),
                     blend: blend_mode(ctx, layer, g),
+                    surfaces: [None; 4],
                 });
             }
             "trim" => {
@@ -386,7 +398,24 @@ fn collect(ctx: &EvalCtx, layer: &Layer, contents: &PropGroup, arena: &mut Vec<B
                     }
                 }
             }
-            _ => {}
+            m => {
+                if let Some(i) = effectcraft_project::build::SHAPE_SURFACES.iter().position(|(s, _)| *s == m)
+                    && g.get("color").is_some()
+                    && let Some(slot) = surfaces.get_mut(i)
+                {
+                    let c = ctx.color(layer, g, "color");
+                    *slot = Some([c[0], c[1], c[2]]);
+                }
+            }
+        }
+    }
+    // Surface items colour every paint of the group, wherever they sit in it; nested groups'
+    // own surface items were applied first and win.
+    if surfaces.iter().any(Option::is_some) {
+        for d in &mut draws {
+            for (s, g) in d.surfaces.iter_mut().zip(surfaces) {
+                *s = s.or(g);
+            }
         }
     }
     (draws, live)
@@ -513,8 +542,23 @@ fn draw_bounds(d: &Draw, paths: &[BezPath]) -> Option<kurbo::Rect> {
         Paint::Gradient { stroke: Some(style), .. } => Some(style),
         _ => None,
     };
-    let grow = stroke.map_or(1.0, |style| style.width * style.miter.max(1.0) * 0.5 * d.xf.mean_scale().max(1.0) + 1.0);
+    let grow = stroke.map_or(1.0, |style| style.width * stroke_reach(style, paths) * 0.5 * d.xf.mean_scale().max(1.0) + 1.0);
     Some(b.inflate(grow, grow))
+}
+
+/// How far a stroke can reach past its path, in half widths: the miter limit only where a
+/// miter join exists (a path of two or more segments, or a closed one), √2 at square cap
+/// corners, else one. Padding every stroke by the miter limit made a 1080 px straight line
+/// (a wipe matte) a 4326×6366 buffer, ~440 MB per layer per frame.
+fn stroke_reach(style: &StrokeStyle, paths: &[BezPath]) -> f64 {
+    if style.is_variable() {
+        // Taper and Wave can widen the stroke: keep the widest padding.
+        return style.miter.max(std::f64::consts::SQRT_2);
+    }
+    let joins =
+        style.join == Join::Miter && paths.iter().any(|p| p.segments().nth(1).is_some() || p.elements().iter().any(|e| matches!(e, kurbo::PathEl::ClosePath)));
+    let cap = if style.cap == Cap::Square { std::f64::consts::SQRT_2 } else { 1.0 };
+    if joins { style.miter.max(cap) } else { cap }
 }
 
 /// Local-space visual bounds of a draw, as After Effects' layer bounds (`sourceRectAtTime` with
@@ -622,8 +666,9 @@ pub fn fill_outlines(ctx: &EvalCtx, layer: &Layer, contents: &PropGroup) -> Vec<
 
 /// The painted regions of a shape layer for Advanced 3D extrusion, bottom paint first: fills
 /// (gradient fills: the colour half way along) and strokes, each stroke turned into the region
-/// it covers (outline of the stroke with its width, joins, caps and dashes, overlaps resolved).
-pub fn extrusion_outlines(ctx: &EvalCtx, layer: &Layer, contents: &PropGroup) -> Vec<(Vec<BezPath>, [f32; 4])> {
+/// it covers (outline of the stroke with its width, joins, caps and dashes, overlaps resolved),
+/// with the colours of their extrusion's surfaces.
+pub fn extrusion_outlines(ctx: &EvalCtx, layer: &Layer, contents: &PropGroup) -> Vec<(Vec<BezPath>, [f32; 4], SurfaceColors)> {
     let mut arena = Vec::new();
     let (draws, _) = collect(ctx, layer, contents, &mut arena);
     draws
@@ -641,7 +686,7 @@ pub fn extrusion_outlines(ctx: &EvalCtx, layer: &Layer, contents: &PropGroup) ->
                 Paint::Stroke { color, style } => (*color, vec![stroke_region(&paths, style)?]),
                 Paint::Gradient { g, stroke: Some(style), .. } => (g.sample(0.5), vec![stroke_region(&paths, style)?]),
             };
-            Some((region, [c[0], c[1], c[2], c[3] * d.opacity]))
+            Some((region, [c[0], c[1], c[2], c[3] * d.opacity], d.surfaces))
         })
         .collect()
 }

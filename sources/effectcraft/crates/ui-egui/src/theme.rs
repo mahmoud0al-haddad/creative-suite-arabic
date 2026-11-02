@@ -340,6 +340,13 @@ pub fn install(ctx: &egui::Context, t: &Tokens, language: &str) {
     fonts.families.entry(FontFamily::Monospace).or_default().insert(0, "jbmono".into());
     fonts.families.insert(FontFamily::Name("semibold".into()), vec!["inter-semibold".into(), "inter".into()]);
     fonts.families.insert(FontFamily::Name("medium".into()), vec!["inter-medium".into(), "inter".into()]);
+    // Inter and egui's own fallbacks have no small triangles (the `▸` of "File ▸ Import"), which
+    // would draw as missing-glyph boxes: JetBrains Mono fills in the symbols the others lack.
+    for (family, stack) in &mut fonts.families {
+        if *family != FontFamily::Monospace {
+            stack.push("jbmono".into());
+        }
+    }
     install_script_fallbacks(&mut fonts, language);
     add_normal_arabic(&mut fonts);
     ctx.set_fonts(fonts);
@@ -391,7 +398,6 @@ fn install_script_fallbacks(family_fonts: &mut FontDefinitions, language: &str) 
         // Kana is unambiguously Japanese; Han ideographs are shared, so the order decides which
         // language's face draws them.
         const KANA: (char, &str) = ('あ', "japanese-system");
-        const HAN: (char, &str) = ('文', "chinese-system");
         // Hangul is probed last: with no Korean font installed the lookup can land on a catch-all
         // face (Unifont) that also covers Arabic or Indic text but can't shape it, so the
         // script-specific faces must be registered ahead of it. A face already seen is skipped.
@@ -399,7 +405,8 @@ fn install_script_fallbacks(family_fonts: &mut FontDefinitions, language: &str) 
         // Han text follows the interface language, not the operating system's locale.
         fonts::set_cjk_locale(cjk_locale(language));
         let base = fonts::resolve("Inter", "Regular").face;
-        let cjk = if is_chinese(language) { [HAN, KANA] } else { [KANA, HAN] };
+        let han = (han_probe(language), "chinese-system");
+        let cjk = if is_chinese(language) { [han, KANA] } else { [KANA, han] };
         let mut names = Vec::new();
         let mut seen = Vec::new();
         for &(probe, name) in cjk.iter().chain(SCRIPT_PROBES).chain(std::iter::once(&HANGUL)) {
@@ -434,6 +441,15 @@ fn cjk_locale(language: &str) -> &str {
         "ja" | "zh-hans" | "zh-hant" => language,
         _ => "",
     }
+}
+
+/// The Han character that picks the Chinese fallback face. A Simplified Chinese interface asks for
+/// a simplified-only hanzi: a Japanese face covers the shared ideographs (文) but not 页, 选 or 删,
+/// and the fallback takes a face already loaded first, so the Japanese face loaded for kana would
+/// draw the Chinese interface with boxes (#1141).
+#[cfg(not(target_arch = "wasm32"))]
+fn han_probe(language: &str) -> char {
+    if language == "zh-hans" { '页' } else { '文' }
 }
 
 /// Whether `language` is one of the Chinese catalogs.
@@ -501,6 +517,9 @@ pub fn apply_visuals(ctx: &egui::Context, t: &Tokens) {
         // Scroll bars always show (egui's float in only over the list), so long menus and lists
         // can be dragged without a mouse wheel or touchpad (#269).
         s.spacing.scroll = egui::style::ScrollStyle::solid();
+        // The handle takes the text colour: the fill it would otherwise get is the colour of its
+        // track (both are the field background), which left it invisible until hovered.
+        s.spacing.scroll.foreground_color = true;
         s.text_styles.insert(TextStyle::Body, FontId::new(12.0, FontFamily::Proportional));
         s.text_styles.insert(TextStyle::Button, FontId::new(12.0, FontFamily::Proportional));
         s.text_styles.insert(TextStyle::Small, FontId::new(11.0, FontFamily::Proportional));
@@ -577,6 +596,34 @@ mod script_font_tests {
         }
     }
 
+    /// #1141: switching the interface to Simplified Chinese drew most labels as boxes. The English
+    /// interface had already loaded a Japanese face for kana, and that face covers the Han probe,
+    /// so it became the Chinese fallback too, without the simplified-only hanzi.
+    #[test]
+    fn simplified_chinese_interface_draws_simplified_hanzi_after_another_language() {
+        let ctx = egui::Context::default();
+        let tokens = super::Tokens::for_kind(super::ThemeKind::Dark);
+        super::install(&ctx, &tokens, "en");
+        super::install(&ctx, &tokens, "zh-hans");
+        let mut out = ctx.run_ui(egui::RawInput::default(), |_| {});
+        out.textures_delta.clear();
+        let font = egui::FontId::new(13.0, egui::FontFamily::Proportional);
+        let missing: String = ctx.fonts_mut(|fonts| {
+            let replacement = fonts.layout_no_wrap("\u{10ffff}".into(), font.clone(), egui::Color32::WHITE).rows[0].glyphs[0].uv_rect;
+            // Simplified-only hanzi of the zh-hans catalog (选择, 删除, 图层, 设置, 导入, 页面).
+            "选删层设导页"
+                .chars()
+                .filter(|ch| {
+                    let uv = fonts.layout_no_wrap(ch.to_string(), font.clone(), egui::Color32::WHITE).rows[0].glyphs[0].uv_rect;
+                    (uv.min, uv.max) == (replacement.min, replacement.max)
+                })
+                .collect()
+        });
+        // Asked after the layout: the coverage lookup itself loads a face with these hanzi.
+        let drawable: String = missing.chars().filter(|&ch| installed(ch)).collect();
+        assert!(drawable.is_empty(), "an installed face covers {drawable}, but the Simplified Chinese interface draws boxes");
+    }
+
     /// egui shapes each run of one face: Arabic letters take their joined forms, and an Arabic
     /// word reads right to left (its first letter drawn rightmost).
     #[test]
@@ -651,6 +698,25 @@ mod tests {
     }
 
     #[test]
+    fn every_family_reaches_the_symbol_fallback() {
+        let ctx = egui::Context::default();
+        install(&ctx, &Tokens::for_kind(Default::default()), "en");
+        ctx.run_ui(Default::default(), |_| {}).textures_delta.clear();
+        for family in [FontFamily::Proportional, FontFamily::Monospace, FontFamily::Name("medium".into()), FontFamily::Name("semibold".into())] {
+            let id = FontId::new(12.0, family);
+            // Not has_glyph: it compares face keys, so Inter's `•` reads as missing when no face in
+            // the stack has egui's `◻` and Inter's `?` becomes the replacement, as happens once
+            // another test has loaded a system face without `◻` (the fallback tries loaded faces first).
+            let uv = |s: String| ctx.fonts_mut(|f| f.layout_no_wrap(s, id.clone(), egui::Color32::WHITE).rows[0].glyphs[0].uv_rect);
+            let missing = uv("\u{10ffff}".into());
+            for c in "▸•›·▶◀●○⚠…×".chars() {
+                let drawn = uv(c.to_string());
+                assert_ne!((drawn.min, drawn.max), (missing.min, missing.max), "{c} has no glyph in {id:?}");
+            }
+        }
+    }
+
+    #[test]
     fn hangul_gets_a_face_when_one_is_installed() {
         use effectcraft_text::fonts;
         let mut fonts_def = FontDefinitions::default();
@@ -700,9 +766,19 @@ fn add_normal_arabic(fonts: &mut FontDefinitions) {
         for stack in fonts.families.values_mut() {
             stack.insert(usize::from(!stack.is_empty()), "arabic-system-normal".into());
         }
+        return;
     }
-    #[cfg(not(target_os = "windows"))]
-    let _ = fonts;
+    add_open_arabic(fonts);
+}
+
+/// Ordinary Arabic fallback from the optional OFL build input, independent of installed fonts.
+fn add_open_arabic(fonts: &mut FontDefinitions) {
+    if let Some(face) = effectcraft_text::fonts::CRAFT_FONTS.iter().find(|face| face.family == "Noto Sans Arabic" && face.style == "Regular") {
+        fonts.font_data.insert("arabic-open-normal".into(), Arc::new(FontData::from_static(face.bytes)));
+        for stack in fonts.families.values_mut() {
+            stack.insert(usize::from(!stack.is_empty()), "arabic-open-normal".into());
+        }
+    }
 }
 
 #[cfg(all(test, target_os = "windows"))]
@@ -712,6 +788,26 @@ mod arabic_layout_tests {
     fn arabic_ui_font_shapes_wraps_and_keeps_latin_values() {
         let ctx = egui::Context::default();
         install(&ctx, &Tokens::for_kind(Default::default()), "ar");
+        check_arabic_layout(&ctx);
+    }
+
+    #[test]
+    fn arabic_open_ui_font_shapes_wraps_without_system_fonts() {
+        if effectcraft_text::fonts::CRAFT_FONTS.is_empty() {
+            eprintln!("optional craft-fonts input is absent");
+            return;
+        }
+        // Deliberately install only egui's default Latin faces and the OFL Arabic input.
+        // No system scanner or Windows font is called by this path.
+        let mut definitions = FontDefinitions::default();
+        add_open_arabic(&mut definitions);
+        assert!(definitions.font_data.contains_key("arabic-open-normal"));
+        let ctx = egui::Context::default();
+        ctx.set_fonts(definitions);
+        check_arabic_layout(&ctx);
+    }
+
+    fn check_arabic_layout(ctx: &egui::Context) {
         let mut output = ctx.run_ui(egui::RawInput::default(), |_| {});
         output.textures_delta.clear();
         ctx.fonts_mut(|fonts| {
@@ -728,14 +824,27 @@ mod arabic_layout_tests {
                 let galley = fonts.layout_no_wrap(source.into(), font.clone(), egui::Color32::WHITE);
                 let visible: String = galley.rows[0].row.glyphs.iter().map(|g| g.chr).collect();
                 assert!(visible.contains("PhotoCraft") && visible.contains("0.5.0"), "{visible}");
-                assert!(visible.ends_with("مت"), "Arabic text must be laid out right to left: {visible}");
-                assert_eq!(visible.chars().count(), source.chars().count());
+                assert_eq!(galley.job.text, source);
+                assert_eq!(galley.rows[0].row.char_count_excluding_newline().0, source.chars().count());
+                assert!(
+                    galley.rows[0]
+                        .row
+                        .bidi
+                        .as_ref()
+                        .is_some_and(|bidi| { bidi.is_rtl && bidi.cursor_x[0] > bidi.cursor_x[1] && bidi.cursor_x[1] > bidi.cursor_x[2] })
+                );
                 let paragraph = "تم تحديث التطبيق بنجاح ويمكن الآن فتحه واستخدام جميع أدواته وإعداداته";
                 let wrapped = fonts.layout(paragraph.into(), font, egui::Color32::WHITE, 150.0);
                 assert!(wrapped.rows.len() > 1);
-                let first: String = wrapped.rows[0].row.glyphs.iter().map(|g| g.chr).collect();
-                assert!(first.trim().ends_with("مت"), "wrapped lines must begin with the first logical words: {first}");
-                assert_eq!(wrapped.rows.iter().map(|r| r.row.glyphs.len()).sum::<usize>(), paragraph.chars().count());
+                assert_eq!(wrapped.job.text, paragraph);
+                assert!(
+                    wrapped.rows[0]
+                        .row
+                        .bidi
+                        .as_ref()
+                        .is_some_and(|first| { first.is_rtl && first.cursor_x[0] > first.cursor_x[1] && first.cursor_x[1] > first.cursor_x[2] })
+                );
+                assert_eq!(wrapped.rows.iter().map(|r| r.row.char_count_excluding_newline().0).sum::<usize>(), paragraph.chars().count());
             }
         });
     }

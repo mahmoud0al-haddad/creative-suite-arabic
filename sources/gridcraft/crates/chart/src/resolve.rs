@@ -5,15 +5,19 @@ use gridcraft_core::{CellRef, RangeRef, Value, number_to_text};
 use gridcraft_model::{Chart, ChartKind, Theme, Workbook, style::apply_tint};
 use gridcraft_numfmt::{NumberFormat, format_value};
 
-use crate::{ChartData, Rgba, SeriesData};
+use crate::{ChartData, Rgba, SeriesData, TrendlineData};
 
 /// Cap on points per series (keeps whole-column references from exploding).
 pub(crate) const MAX_POINTS: usize = 100_000;
 /// Cap on series per chart.
 pub(crate) const MAX_SERIES: usize = 255;
+/// Cap on trendlines drawn per series.
+pub(crate) const MAX_TRENDLINES: usize = 16;
 
 /// Tints used for series beyond the six theme accents: lighter, darker, lighter still…
 const CYCLE_TINTS: [f64; 6] = [0.0, 0.4, -0.25, 0.6, -0.5, 0.2];
+/// `series_color` repeats after this many colours (six accents × the tints).
+pub(crate) const PALETTE_CYCLE: usize = 6 * CYCLE_TINTS.len();
 
 /// Colour of the `i`-th series: theme accents 1–6, then tinted variations of them.
 pub fn series_color(theme: &Theme, i: usize) -> Rgba {
@@ -143,7 +147,7 @@ fn category_texts(wb: &Workbook, sheet: usize, formula: &str) -> Vec<String> {
                 if let Some(c) = at {
                     let code = &wb.styles.get(s.style_id(c)).num_fmt.0;
                     if !code.eq_ignore_ascii_case("general") {
-                        return format_value(v, &NumberFormat::parse(code), wb.date_system).text;
+                        return format_value(v, &NumberFormat::parse_cached(code), wb.date_system).text;
                     }
                 }
             }
@@ -181,6 +185,11 @@ fn effective_kind(chart_kind: ChartKind, series_kind: Option<ChartKind>, i: usiz
     }
 }
 
+/// The kind series `i` of `chart` is drawn as: its own kind in a combo chart, else the chart's.
+pub fn series_plot_kind(chart: &Chart, i: usize) -> ChartKind {
+    if chart.kind == ChartKind::Combo { effective_kind(chart.kind, chart.series.get(i).and_then(|s| s.kind), i) } else { chart.kind }
+}
+
 /// Evaluates a chart's series formulas: names, values, categories (default "1", "2", …), X
 /// values (scatter/bubble), bubble sizes, number formats and colours (explicit, else the
 /// default palette derived from the workbook theme accents).
@@ -208,6 +217,15 @@ pub fn resolve(wb: &Workbook, sheet: usize, chart: &Chart) -> ChartData {
             }
         }
         let sizes = s.bubble_sizes.as_deref().map(|f| nums(wb, sheet, f));
+        let trendlines = s
+            .trendlines
+            .iter()
+            .take(MAX_TRENDLINES)
+            .map(|t| TrendlineData {
+                spec: t.clone(),
+                color: t.color.as_ref().and_then(|c| c.resolve(&wb.theme)).map(|[r, g, b]| [r, g, b, 0xFF]).unwrap_or(color),
+            })
+            .collect();
         series.push(SeriesData {
             name,
             values,
@@ -217,10 +235,12 @@ pub fn resolve(wb: &Workbook, sheet: usize, chart: &Chart) -> ChartData {
             kind,
             secondary: s.secondary,
             smooth: s.smooth,
+            trendlines,
             number_format: ref_format(wb, sheet, &s.values),
         });
     }
     let n = series.iter().map(|s| s.values.len()).max().unwrap_or(0);
     let categories = categories.unwrap_or_else(|| (1..=n).map(|i| i.to_string()).collect());
-    ChartData { categories, series }
+    let palette = default_palette(&wb.theme, n.min(PALETTE_CYCLE));
+    ChartData { categories, series, palette }
 }

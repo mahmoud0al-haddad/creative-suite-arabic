@@ -119,10 +119,23 @@ impl CCursorRange {
             }
 
             Key::ArrowLeft | Key::ArrowRight if modifiers.is_none() && !self.is_empty() => {
+                let mut ends = self.sorted_cursors();
+                let first = galley.layout_from_cursor(ends[0]);
+                let last = galley.layout_from_cursor(ends[1]);
+                // A selection inside a bidi row collapses to its visual side. Logical
+                // index order is reversed within an RTL run. Keep upstream behavior
+                // for selections spanning rows and for ordinary left-to-right text.
+                if first.row == last.row
+                    && let Some(row) = galley.rows.get(first.row)
+                    && row.bidi.is_some()
+                    && row.x_offset(first.column) > row.x_offset(last.column)
+                {
+                    ends.swap(0, 1);
+                }
                 if key == Key::ArrowLeft {
-                    *self = Self::one(self.sorted_cursors()[0]);
+                    *self = Self::one(ends[0]);
                 } else {
-                    *self = Self::one(self.sorted_cursors()[1]);
+                    *self = Self::one(ends[1]);
                 }
                 true
             }

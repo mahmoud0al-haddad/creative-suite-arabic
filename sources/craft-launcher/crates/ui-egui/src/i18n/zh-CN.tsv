@@ -1,6 +1,6 @@
-# Simplified Chinese (zh-CN) catalog for Creative Suite Launcher.
+# Simplified Chinese (zh-CN) catalog for ArtCraft Launcher.
 # Format: context<TAB>English source<TAB>translation.
-# Original translations from the English UI. Product and app names (Creative Suite Launcher and its
+# Original translations from the English UI. Product and app names (ArtCraft Launcher and its
 # "Launcher" tag, Craft App Suite, PhotoCraft…) and third-party names stay unchanged.
 # Shown with the system's Chinese font (PingFang, Microsoft YaHei, Noto Sans CJK…): see cjk_font.rs.
 # Chinese has one plural form. Placeholders and trailing ellipses are preserved.
@@ -21,7 +21,6 @@
 	Sort	排序
 	Suite order	默认顺序
 	Name	名称
-	Inspired by	参考软件
 	Status	状态
 	Installed version	已安装版本
 	Latest version	最新版本
@@ -56,7 +55,7 @@
 	Reinstall	重新安装
 	Uninstall…	卸载…
 	All releases	所有版本
-	Creative Suite Launcher {version} is available.	Creative Suite Launcher {version} 已可更新。
+	ArtCraft Launcher {version} is available.	ArtCraft Launcher {version} 已可更新。
 	Dismiss	忽略
 	Update and restart	更新并重启
 	A new version is available. Would you like to relaunch with the updated version?	有新版本可用。是否使用更新后的版本重新启动？
@@ -66,23 +65,24 @@
 	Released {date}	发布于 {date}
 	Open on GitHub	在 GitHub 上打开
 	Close	关闭
-	Creative Suite Launcher {version}	Creative Suite Launcher {version}
+	ArtCraft Launcher {version}	ArtCraft Launcher {version}
 	Only when I ask	仅手动检查
 	Automatically download and install updates	自动下载并安装更新
 	Notify me when an installed app has an update	已安装应用有更新时通知我
 	Include pre-releases (betas and release candidates)	包含预发布版本（测试版和候选版）
 	Installing on Linux	Linux 安装设置
+	Installing on Windows	Windows 安装设置
 	Install new apps as	新应用安装格式
 	System package (recommended)	系统软件包（推荐）
 	Updates always use the format an app was installed with.	更新时始终使用应用原来的安装格式。
 	Running in the background	后台运行
 	Keep running in the tray when the window is closed	关闭窗口后继续在系统托盘中运行
 	Show the window on the current desktop	在当前桌面显示窗口
-	Start Creative Suite Launcher when I log in	登录时启动 Creative Suite Launcher
+	Start ArtCraft Launcher when I log in	登录时启动 ArtCraft Launcher
 	Community	社区
 	Questions, ideas and news from the ArtCraft team	与 ArtCraft 团队交流问题、想法和动态
 	Appearance	外观
-	Quit Creative Suite Launcher	退出 Creative Suite Launcher
+	Quit ArtCraft Launcher	退出 ArtCraft Launcher
 	Done	完成
 	Uninstall {name}?	卸载 {name}？
 	The app will be moved to the Trash. Your documents and settings stay.	应用将移到废纸篓。你的文档和设置会保留。
@@ -127,10 +127,11 @@ month	Dec	12月
 	{version} installed → {latest} released	已安装 {version} → 最新 {latest}
 	Version {version}	版本 {version}
 	{installed} installed · latest {latest}	已安装 {installed} · 最新 {latest}
+	Installed · latest {latest}	已安装 · 最新 {latest}
 	Version {version} installed	已安装版本 {version}
 	Version {latest}	版本 {latest}
 	No release published yet	尚未发布版本
-	Creative Suite Launcher	Creative Suite Launcher
+	ArtCraft Launcher	ArtCraft Launcher
 	App	应用
 	Latest	最新
 	Released	发布日期
@@ -140,7 +141,6 @@ month	Dec	12月
 	Descending	降序
 	Click to reverse the order	点击切换排序方向
 	Click to sort by this column	点击按此列排序
-	Like {name}	类似 {name}
 	{done} of {total}	{done} / {total}
 	Downloading	正在下载
 	Verifying checksum…	正在验证校验和…
@@ -150,7 +150,6 @@ month	Dec	12月
 	Checking for updates…	正在检查更新…
 	Downloads the new version, replaces this one and opens it again	下载新版本，替换当前版本并重新打开
 	Couldn't check for updates: {f}	无法检查更新：{f}
-	Website (coming soon)	网站（即将上线）
 	GitHub repository	GitHub 仓库
 	ArtCraft	ArtCraft
 	Update 1 app	更新 1 个应用
@@ -165,7 +164,7 @@ month	Dec	12月
 	Full changelog	完整更新日志
 	link	链接
 	No apps match	没有匹配的应用
-	Open Creative Suite Launcher to update.	打开 Creative Suite Launcher 进行更新。
+	Open ArtCraft Launcher to update.	打开 ArtCraft Launcher 进行更新。
 	{name} {v} is available	{name} {v} 已可更新
 	{count} updates are available	有 {count} 个可用更新
 	These notes weren't fetched (GitHub's request limit was reached). They're on the release page.	未能获取更新说明（已达到 GitHub 请求上限）。可前往版本发布页面查看。
@@ -176,6 +175,7 @@ column	Installed	已安装版本
 column	Latest	最新版本
 column	Released	发布日期
 filter	Installed	已安装
+	{name} details	{name} 详情
 @plural	{n} min ago|{n} min ago	{n} 分钟前
 @plural	{n} h ago|{n} h ago	{n} 小时前
 @plural	{n} day ago|{n} days ago	{n} 天前
@@ -195,7 +195,7 @@ filter	Installed	已安装
 @id	launcher.notes	更新内容
 @id	launcher.dismiss	忽略
 @id	settings.open	设置
-@id	settings.quit	退出 Creative Suite Launcher
+@id	settings.quit	退出 ArtCraft Launcher
 @id	view.grid	网格
 @id	view.table	表格
 @id	filter.all	全部
@@ -204,7 +204,6 @@ filter	Installed	已安装
 @id	filter.notinstalled	未安装
 @id	sort.suite	默认顺序
 @id	sort.name	名称
-@id	sort.inspired	参考软件
 @id	sort.status	状态
 @id	sort.installed	已安装版本
 @id	sort.latest	最新版本
@@ -219,7 +218,7 @@ filter	Installed	已安装
 @id	linux.preferred_kind	新应用安装格式
 @id	tray.close_to_tray	关闭窗口后继续在系统托盘中运行
 @id	tray.show_on_current_desktop	在当前桌面显示窗口
-@id	tray.login_item	登录时启动 Creative Suite Launcher
+@id	tray.login_item	登录时启动 ArtCraft Launcher
 @id	appearance.theme	外观
 	Update	更新
 	New	新
@@ -230,12 +229,12 @@ filter	Installed	已安装
 	Restore	还原
 	Show in Finder	在访达中显示
 	Show in Explorer	在资源管理器中显示
-	Show Creative Suite Launcher	显示 Creative Suite Launcher
+	Show ArtCraft Launcher	显示 ArtCraft Launcher
 	Check for Updates	检查更新
 	Visit getartcraft.com	访问 getartcraft.com
 	ArtCraft on GitHub	ArtCraft 的 GitHub 主页
 	Join the ArtCraft Discord	加入 ArtCraft Discord 社区
-@plural	Creative Suite Launcher · {n} update available|Creative Suite Launcher · {n} updates available	Creative Suite Launcher · 有 {n} 个可用更新
+@plural	ArtCraft Launcher · {n} update available|ArtCraft Launcher · {n} updates available	ArtCraft Launcher · 有 {n} 个可用更新
 @plural	{n} app|{n} apps	{n} 个应用
 photocraft	Image editing	图像编辑
 vectorcraft	Vector illustration	矢量插画
@@ -249,9 +248,10 @@ deckcraft	Presentations and slide shows	演示文稿与幻灯片
 gridcraft	Spreadsheets and data	电子表格与数据处理
 cadcraft	Computer-aided design and drafting	计算机辅助设计与制图
 soundcraft	Recording, editing and mixing audio	音频录制、编辑与混音
+figcraft	Interface design and prototyping	界面设计与原型制作
 
 	Show in Files	在文件管理器中显示
-	Loading Creative Suite Launcher…	正在加载 Creative Suite Launcher…
+	Loading ArtCraft Launcher…	正在加载 ArtCraft Launcher…
 	Download cancelled	下载已取消
 	Automatically	自动
 	Checked {ago} · using {sources}	上次检查：{ago} · 来源：{sources}
@@ -265,6 +265,10 @@ soundcraft	Recording, editing and mixing audio	音频录制、编辑与混音
 	Apps on this computer	此电脑上的应用
 	Installed apps with a newer version	有新版本的已安装应用
 	Apps you can install	可安装的应用
+	Hide App	隐藏应用
+	Unhide App	取消隐藏应用
+	Hidden Apps	已隐藏的应用
+	Apps you hid	你隐藏的应用
 	Cancel update	取消更新
 	Stop waiting; the update can be started again later	停止等待；稍后可重新开始更新
 	Download again	重新下载
@@ -286,6 +290,19 @@ soundcraft	Recording, editing and mixing audio	音频录制、编辑与混音
 	RPM package (.rpm)	RPM 软件包 (.rpm)
 	Flatpak bundle	Flatpak 包
 	Tarball (.tar.gz)	压缩包 (.tar.gz)
+	App details	应用详情
+	Close (Esc)	关闭（Esc）
+	Features	功能特性
+	Latest release	最新发布
+	Version	版本
+	Platforms	平台
+	Releases	版本发布
+	Enlarge picture	放大图片
+	Click to enlarge	点击放大
+	Previous picture (←)	上一张（←）
+	Next picture (→)	下一张（→）
+	Loading pictures…	正在加载图片…
+	Pictures couldn't be loaded. Reopen this page to try again.	无法加载图片。重新打开此页面可重试。
 
 # Message templates (@msg): toasts from the backend. {placeholders} match any text.
 @msg	Couldn't open {name}: {e}	无法打开 {name}：{e}
@@ -296,3 +313,40 @@ soundcraft	Recording, editing and mixing audio	音频录制、编辑与混音
 @msg	{name} installed: {version} (this release publishes no checksum, so only its size was checked)	{name} 已安装：{version}（此版本未发布校验和，因此只检查了文件大小）
 @msg	{name} was removed	{name} 已卸载
 @msg	{name} is running. Quit it, then try again.	{name} 正在运行。请先退出，然后重试。
+	Install folder	安装文件夹
+	Default install folder	默认安装文件夹
+	System default	系统默认
+	Browse…	浏览…
+	Use default	使用默认
+	New installs use this folder. Updates stay in their current location.	新安装的应用使用此文件夹。更新时保留当前位置。
+	Custom folders use AppImage on Linux.	在 Linux 上，自定义文件夹使用 AppImage。
+	The system manages install locations here.	此环境中的安装位置由系统管理。
+@msg	couldn't use install folder {path}: {reason}	无法使用安装文件夹 {path}：{reason}
+@msg	this release has no AppImage for a custom install folder	此版本没有可用于自定义安装文件夹的 AppImage
+@msg	custom install folders aren't supported on this system	此系统不支持自定义安装文件夹
+@msg	{path} already exists and wasn't installed by ArtCraft Launcher	{path} 已存在，且并非由 ArtCraft Launcher 安装
+@msg	couldn't move {path} to Trash ({reason}). Remove it in Finder instead.	无法将 {path} 移到废纸篓（{reason}）。请在 Finder 中移除。
+	Apps are placed inside this folder.	应用会放置在此文件夹内。
+	Replace what's there?	替换现有内容？
+	{path} already exists. Installing {name} will overwrite it.	{path} 已存在。安装 {name} 将覆盖它。
+	Replace	替换
+	Creative Suite Launcher {version} is available.	Creative Suite Launcher {version} 已可更新。
+	Creative Suite Launcher {version}	Creative Suite Launcher {version}
+	Start Creative Suite Launcher when I log in	登录时启动 Creative Suite Launcher
+	Quit Creative Suite Launcher	退出 Creative Suite Launcher
+	Creative Suite Launcher	Creative Suite Launcher
+	Open Creative Suite Launcher to update.	打开 Creative Suite Launcher 进行更新。
+	Show Creative Suite Launcher	显示 Creative Suite Launcher
+@plural	Creative Suite Launcher · {n} update available|Creative Suite Launcher · {n} updates available	Creative Suite Launcher · 有 {n} 个可用更新
+	Loading Creative Suite Launcher…	正在加载 Creative Suite Launcher…
+	Arabic suite update	Arabic suite update
+	Save your work and close the suite applications before continuing. The verified setup updates the launcher and all translated applications together, preserves your settings, and opens the launcher again.	Save your work and close the suite applications before continuing. The verified setup updates the launcher and all translated applications together, preserves your settings, and opens the launcher again.
+	Download and open setup	Download and open setup
+	Arabic edition updates from GitHub	Arabic edition updates from GitHub
+	Update Arabic suite	Update Arabic suite
+	Arabic edition is up to date	Arabic edition is up to date
+	No Arabic release has been published yet	No Arabic release has been published yet
+	Could not check Arabic updates. Try again when connected.	Could not check Arabic updates. Try again when connected.
+	Check for updates to the complete Arabic edition	Check for updates to the complete Arabic edition
+	Automatic checks run once a day. Setup opens only when you choose to update.	Automatic checks run once a day. Setup opens only when you choose to update.
+	Arabic edition {tag} is available. Open the launcher to update the complete suite.	Arabic edition {tag} is available. Open the launcher to update the complete suite.

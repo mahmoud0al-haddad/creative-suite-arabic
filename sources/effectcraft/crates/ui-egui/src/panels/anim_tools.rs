@@ -392,7 +392,7 @@ pub fn mask_interpolation(app: &mut EffectcraftApp, ui: &mut egui::Ui, rect: Rec
     if !changes.is_empty()
         && let Err(e) = app.session.execute("mask.interpolationOptions", serde_json::Value::Object(changes))
     {
-        app.ui.status = e.to_string();
+        app.ui.status = crate::diagnostics::message(&e.to_string());
     }
     let b = Rect::from_min_size(pos2(rect.max.x - 92.0, y), vec2(80.0, 24.0));
     let enabled = app.session.state.selected_keys.len() >= 2;

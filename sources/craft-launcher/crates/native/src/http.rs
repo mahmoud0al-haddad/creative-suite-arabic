@@ -160,6 +160,27 @@ impl Http {
         }
     }
 
+    /// GET a small binary file (following redirects). `Ok(None)` for a 404. A file of more than
+    /// `max` bytes is refused: by its announced length before a byte is read, and by a hard limit
+    /// on the body when the length wasn't announced or was wrong.
+    pub fn get_bytes(&self, url: &str, max: usize) -> Result<Option<Vec<u8>>, String> {
+        let mut resp = self.small.get(url).call().map_err(|e| format!("couldn't reach {} ({e})", host(url)))?;
+        match resp.status().as_u16() {
+            200 => {
+                let announced = resp.headers().get("content-length").and_then(|v| v.to_str().ok()).and_then(|v| v.parse::<u64>().ok());
+                let too_big = || format!("{} sent more than {max} bytes", host(url));
+                if announced.is_some_and(|n| n > max as u64) {
+                    return Err(too_big());
+                }
+                // ureq errors once the limit is reached, so ask for one byte more than we accept.
+                let body = resp.body_mut().with_config().limit(max as u64 + 1).read_to_vec().map_err(|e| format!("unreadable answer ({e})"))?;
+                if body.len() > max { Err(too_big()) } else { Ok(Some(body)) }
+            }
+            404 => Ok(None),
+            s => Err(format!("{} answered HTTP {s}", host(url))),
+        }
+    }
+
     /// Where `url` redirects to, without following it.
     pub fn redirect_target(&self, url: &str) -> Result<Option<String>, String> {
         let resp = self.no_redirect.head(url).call().map_err(|e| format!("couldn't reach {} ({e})", host(url)))?;
@@ -178,24 +199,15 @@ impl Http {
     /// its partial file; a file that fails its checksum is fetched once more from scratch before
     /// giving up. When the connection stays down, the download ends paused (`PAUSED`), never
     /// losing what it has. `stop` pauses or cancels it between reads.
-    pub fn download(
-        &self,
-        url: &str,
-        dest: &Path,
-        size: u64,
-        sha256: Option<&str>,
-        stop: &Stop,
-        progress: &mut dyn FnMut(Transfer),
-    ) -> Result<Verified, String> {
+    pub fn download(&self, url: &str, dest: &Path, size: u64, sha256: &str, stop: &Stop, progress: &mut dyn FnMut(Transfer)) -> Result<(), String> {
         if let Some(dir) = dest.parent() {
             std::fs::create_dir_all(dir).map_err(|e| format!("couldn't create {} ({e})", dir.display()))?;
         }
-        let verified = if sha256.is_some() { Verified::Checksum } else { Verified::SizeOnly };
         // A finished copy from an earlier attempt that never got installed. Marking it as just
         // used, before checking it, keeps `clean_downloads` away from it while it's installed.
-        if dest.is_file() && touch(dest) && matches_published(dest, size, sha256) {
+        if dest.is_file() && touch(dest) && matches_published(dest, sha256) {
             progress(Transfer::Bytes { done: size, total: size });
-            return Ok(verified);
+            return Ok(());
         }
         // The partial file is named after the release file and its size; if it still turns out
         // to belong to something else, the checksum catches it and the download starts over.
@@ -210,9 +222,9 @@ impl Http {
                 }
                 return Err(e);
             }
-            if matches_published(&part, size, sha256) {
+            if matches_published(&part, sha256) {
                 std::fs::rename(&part, dest).map_err(|e| format!("couldn't save the download ({e})"))?;
-                return Ok(verified);
+                return Ok(());
             }
             let _ = std::fs::remove_file(&part);
             if fresh_start_used {
@@ -250,7 +262,7 @@ impl Http {
                 return Ok(());
             }
             if size > 0 && have > size {
-                let _ = std::fs::remove_file(part);
+                std::fs::remove_file(part).map_err(|e| format!("couldn't save the download ({e})"))?;
                 continue;
             }
             match self.attempt(url, part, have, size, stop, progress) {
@@ -359,15 +371,6 @@ pub enum Transfer {
     },
 }
 
-/// How a finished download was checked.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Verified {
-    /// Against the release's published SHA-256.
-    Checksum,
-    /// The release publishes no checksum: only its size could be checked.
-    SizeOnly,
-}
-
 /// Asks a running download to pause (keeping its partial file) or cancel (deleting it).
 #[derive(Debug, Default)]
 pub struct Stop(AtomicU8);
@@ -395,12 +398,9 @@ impl Stop {
     }
 }
 
-/// Whether a file on disk is the published one: its checksum when there is one, else its size.
-fn matches_published(path: &Path, size: u64, sha256: Option<&str>) -> bool {
-    match sha256 {
-        Some(sha) => sha256_file(path).is_ok_and(|h| h.eq_ignore_ascii_case(sha)),
-        None => size > 0 && std::fs::metadata(path).is_ok_and(|m| m.len() == size),
-    }
+/// Whether a file on disk is the published one: its SHA-256 matches.
+fn matches_published(path: &Path, sha256: &str) -> bool {
+    sha256_file(path).is_ok_and(|h| h.eq_ignore_ascii_case(sha256))
 }
 
 /// How much of a download is already on disk (a paused or interrupted one).
@@ -564,18 +564,18 @@ pub(crate) mod tests {
         let dir = tempfile::tempdir().unwrap();
         let dest = dir.path().join("file.bin");
         let http = Http::new().unwrap();
-        http.download(&url, &dest, len, Some(&sha), &Stop::default(), &mut |_| {}).unwrap();
+        http.download(&url, &dest, len, &sha, &Stop::default(), &mut |_| {}).unwrap();
         assert!(finished(&dest, len) && !finished(&dest, 0));
         // Old enough to be cleaned up, were it not about to be used.
         let old = std::time::SystemTime::now() - Duration::from_secs(40 * 86_400);
         std::fs::File::options().write(true).open(&dest).unwrap().set_modified(old).unwrap();
         let mut last = (0, 0);
-        let again = http.download(&url, &dest, len, Some(&sha), &Stop::default(), &mut |t| {
+        let again = http.download(&url, &dest, len, &sha, &Stop::default(), &mut |t| {
             if let Transfer::Bytes { done, total } = t {
                 last = (done, total);
             }
         });
-        assert_eq!(again, Ok(Verified::Checksum));
+        assert_eq!(again, Ok(()));
         assert_eq!(last, (len, len));
         assert_eq!(requests.lock().unwrap().len(), 1);
         // A cleanup while the installer runs leaves the reused file alone.
@@ -593,10 +593,10 @@ pub(crate) mod tests {
         let dir = tempfile::tempdir().unwrap();
         let dest = dir.path().join("file.bin");
         let http = Http::new().unwrap();
-        http.download(&url, &dest, len, Some(&sha), &Stop::default(), &mut |_| {}).unwrap();
+        http.download(&url, &dest, len, &sha, &Stop::default(), &mut |_| {}).unwrap();
         // The same size, so only the checksum can tell.
         std::fs::write(&dest, vec![b'x'; body.len()]).unwrap();
-        http.download(&url, &dest, len, Some(&sha), &Stop::default(), &mut |_| {}).unwrap();
+        http.download(&url, &dest, len, &sha, &Stop::default(), &mut |_| {}).unwrap();
         assert_eq!(std::fs::read(&dest).unwrap(), body);
         assert_eq!(requests.lock().unwrap().len(), 2);
     }
@@ -689,20 +689,36 @@ pub(crate) mod tests {
         let dest = dir.path().join("file.bin");
         let http = Http::new().unwrap();
         let mut last = (0, 0);
-        let result = http.download(&url, &dest, body.len() as u64, Some(&sha), &Stop::default(), &mut |t| {
+        let result = http.download(&url, &dest, body.len() as u64, &sha, &Stop::default(), &mut |t| {
             if let Transfer::Bytes { done, total } = t {
                 last = (done, total);
             }
         });
-        let result = result.map(|v| {
-            assert_eq!(v, Verified::Checksum);
-            std::fs::read(&dest).unwrap()
-        });
+        let result = result.map(|()| std::fs::read(&dest).unwrap());
         if result.is_ok() {
             assert_eq!(last, (body.len() as u64, body.len() as u64));
         }
         let seen = ranges.lock().unwrap().clone();
         (result, seen)
+    }
+
+    #[test]
+    fn small_binary_files_are_read_whole_and_a_404_is_none() {
+        let (body, _) = body();
+        let http = Http::new().unwrap();
+        let (url, _) = serve(body.clone(), vec![Reply::Full]);
+        assert_eq!(http.get_bytes(&url, body.len()).unwrap(), Some(body.clone()), "a body of exactly the cap is fine");
+        let (url, _) = serve(body, vec![Reply::Missing]);
+        assert_eq!(http.get_bytes(&url, 1 << 20).unwrap(), None);
+    }
+
+    #[test]
+    fn a_file_over_the_cap_is_refused() {
+        let (body, _) = body();
+        let http = Http::new().unwrap();
+        let (url, _) = serve(body.clone(), vec![Reply::Full]);
+        let err = http.get_bytes(&url, body.len() - 1).unwrap_err();
+        assert!(err.contains("more than"), "{err}");
     }
 
     #[test]
@@ -734,17 +750,6 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn without_a_checksum_the_size_is_still_checked() {
-        let (body, _) = body();
-        let (url, _) = serve(body.clone(), vec![Reply::Full]);
-        let dir = tempfile::tempdir().unwrap();
-        let dest = dir.path().join("file.bin");
-        let v = Http::new().unwrap().download(&url, &dest, body.len() as u64, None, &Stop::default(), &mut |_| {}).unwrap();
-        assert_eq!(v, Verified::SizeOnly);
-        assert_eq!(std::fs::read(&dest).unwrap(), body);
-    }
-
-    #[test]
     fn pausing_keeps_the_partial_file_and_resuming_continues_it() {
         let (body, sha) = body();
         let len = body.len() as u64;
@@ -755,7 +760,7 @@ pub(crate) mod tests {
         let stop = Stop::default();
         // Pause as soon as the first bytes arrive.
         let err = http
-            .download(&url, &dest, len, Some(&sha), &stop, &mut |t| {
+            .download(&url, &dest, len, &sha, &stop, &mut |t| {
                 if matches!(t, Transfer::Bytes { done, .. } if done > 0) {
                     stop.pause();
                 }
@@ -764,7 +769,7 @@ pub(crate) mod tests {
         assert_eq!(err, PAUSED);
         let kept = partial_bytes(&dest, len).unwrap();
         assert!(kept > 0 && kept < len, "{kept}");
-        http.download(&url, &dest, len, Some(&sha), &Stop::default(), &mut |_| {}).unwrap();
+        http.download(&url, &dest, len, &sha, &Stop::default(), &mut |_| {}).unwrap();
         assert_eq!(std::fs::read(&dest).unwrap(), body);
         assert_eq!(ranges.lock().unwrap()[1], Some(kept.to_string()));
     }
@@ -779,7 +784,7 @@ pub(crate) mod tests {
         let stop = Stop::default();
         let err = Http::new()
             .unwrap()
-            .download(&url, &dest, len, Some(&sha), &stop, &mut |t| {
+            .download(&url, &dest, len, &sha, &stop, &mut |t| {
                 if matches!(t, Transfer::Bytes { done, .. } if done > 0) {
                     stop.cancel();
                 }
@@ -804,10 +809,59 @@ pub(crate) mod tests {
         let dest = dir.path().join("file.bin");
         std::fs::write(part_path(&dest, body.len() as u64), &body[..500_000]).unwrap();
         assert_eq!(partial_bytes(&dest, body.len() as u64), Some(500_000));
-        Http::new().unwrap().download(&url, &dest, body.len() as u64, Some(&sha), &Stop::default(), &mut |_| {}).unwrap();
+        Http::new().unwrap().download(&url, &dest, body.len() as u64, &sha, &Stop::default(), &mut |_| {}).unwrap();
         assert_eq!(std::fs::read(&dest).unwrap(), body);
         assert_eq!(*ranges.lock().unwrap(), [Some("500000".to_string())]);
         assert!(!part_path(&dest, body.len() as u64).exists());
+    }
+
+    #[test]
+    fn an_oversized_partial_file_is_restarted_from_zero() {
+        let (body, sha) = body();
+        let (url, ranges) = serve(body.clone(), vec![Reply::Full]);
+        let dir = tempfile::tempdir().unwrap();
+        let dest = dir.path().join("file.bin");
+        let size = body.len() as u64;
+        std::fs::write(part_path(&dest, size), vec![b'x'; body.len() + 1]).unwrap();
+        Http::new().unwrap().download(&url, &dest, size, &sha, &Stop::default(), &mut |_| {}).unwrap();
+        assert_eq!(std::fs::read(dest).unwrap(), body);
+        assert_eq!(*ranges.lock().unwrap(), [None]);
+    }
+
+    #[test]
+    fn an_oversized_partial_file_that_cannot_be_removed_reports_an_error() {
+        let dir = tempfile::tempdir().unwrap();
+        let part = part_path(&dir.path().join("file.bin"), 1);
+        // A directory cannot be removed as a file on Unix. On Windows, hold a file open
+        // without delete sharing: metadata remains readable, but removing it is refused.
+        #[cfg(unix)]
+        std::fs::create_dir(&part).unwrap();
+        #[cfg(windows)]
+        let _locked_partial = {
+            use std::os::windows::fs::OpenOptionsExt;
+            std::fs::write(&part, b"too large").unwrap();
+            // FILE_SHARE_READ | FILE_SHARE_WRITE, without FILE_SHARE_DELETE.
+            std::fs::File::options().read(true).share_mode(0x00000003).open(&part).unwrap()
+        };
+        assert!(std::fs::metadata(&part).unwrap().len() > 1);
+        assert!(std::fs::remove_file(&part).is_err());
+        let http = Http::new().unwrap();
+        let stop = Stop::default();
+        // Bound the regression: the old retry loop spins until Cancel, without a request.
+        let (finished, done) = std::sync::mpsc::channel();
+        let error = std::thread::scope(|scope| {
+            let watchdog_stop = &stop;
+            scope.spawn(move || {
+                if done.recv_timeout(Duration::from_secs(10)).is_err() {
+                    watchdog_stop.cancel();
+                }
+            });
+            let result = http.fetch_resuming("http://127.0.0.1:9/file.bin", &part, 1, &stop, &mut |_| {});
+            let _ = finished.send(());
+            result.unwrap_err()
+        });
+        assert!(error.contains("couldn't save the download"), "{error}");
+        assert!(part.exists(), "a blocked partial file must be left alone");
     }
 
     /// Live: a real Craft App release asset (`cargo test -p artcraft-launcher-native -- --ignored`).
@@ -825,7 +879,7 @@ pub(crate) mod tests {
         let sha = asset.sha256.clone().or_else(|| sums.iter().find(|(_, n)| *n == asset.name).map(|(h, _)| h.clone())).unwrap();
         let dir = tempfile::tempdir().unwrap();
         let dest = dir.path().join(&asset.name);
-        http.download(&asset.url, &dest, asset.size, Some(&sha), &Stop::default(), &mut |_| {}).unwrap();
+        http.download(&asset.url, &dest, asset.size, &sha, &Stop::default(), &mut |_| {}).unwrap();
         assert_eq!(std::fs::metadata(&dest).unwrap().len(), asset.size);
     }
 

@@ -207,7 +207,7 @@ pub fn preview(app: &mut EffectcraftApp, ui: &mut egui::Ui, rect: Rect) {
     yy += 24.0;
     for c in changes {
         if let Err(e) = app.session.execute("playback.settings.set", c) {
-            app.ui.status = e.to_string();
+            app.ui.status = crate::diagnostics::message(&e.to_string());
         }
     }
 
@@ -420,7 +420,7 @@ pub fn history(app: &mut EffectcraftApp, ui: &mut egui::Ui, rect: Rect) {
     if let Some(i) = jump {
         let ctx = ui.ctx().clone();
         if let Err(e) = crate::menus::invoke(app, &ctx, "edit.history.goto", serde_json::json!({"index": i})) {
-            app.ui.status = e;
+            app.ui.status = crate::diagnostics::message(&e.to_string());
         }
     }
 }
