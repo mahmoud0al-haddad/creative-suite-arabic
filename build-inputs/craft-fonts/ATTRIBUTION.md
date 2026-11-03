@@ -17,3 +17,14 @@ upstream sources (checked by `craft-fonts-tests`, which verifies each SHA-256 in
 The OFL allows these fonts to be bundled, embedded and redistributed with software, provided the
 licence text travels with them and the fonts are not sold on their own. "Shippori Mincho",
 "BIZ UD" and "Noto" are the authors' names for their fonts; we use the files unmodified.
+
+## Community edition Korean UI fallback
+
+`fonts/community-nanum-gothic/NanumGothic-Regular.ttf`: Nanum Gothic Regular, copyright 2010 NHN Corporation, designed by Sandoll Communications Inc.; SIL OFL-1.1 (adjacent OFL.txt). Exact source: https://github.com/google/fonts/tree/133ccbee9a8b408eb71f31a36ccb9116f5c695ad/ofl/nanumgothic
+. SHA-256 and source metadata: adjacent provenance.json. Only the community-ui-manifest reads this addition.
+
+`fonts/community-zcool-xiaowei/`: ZCOOL XiaoWei Regular, copyright 2018 The ZCOOL XiaoWei Project Authors, designer Li Dawei, SIL OFL-1.1 (adjacent original OFL.txt). Source https://github.com/google/fonts/tree/d427686494a89f0b7ecb9833273b6aabb83a6350/ofl/zcoolxiaowei
+. Adjacent provenance.json records the exact SHA-256 and pinned upstream.
+
+`fonts/community-inter/`: Inter Variable by Rasmus Andersson, SIL OFL-1.1 (adjacent original OFL.txt); source https://github.com/google/fonts/tree/0b58fb370093f9a9f4ff785d94405710b79de67c/ofl/inter
+. Exact downloaded bytes and pinned commit in adjacent provenance.json. DeckCraft document and UI default; other applications do not read the optional community manifest.

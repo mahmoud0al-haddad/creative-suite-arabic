@@ -38,11 +38,17 @@ pub enum Draw {
         /// Byte range of `text` each glyph shows (one per glyph; a ligature's range covers all
         /// its characters). Empty when unknown: the PDF writer then guesses from the font.
         ranges: Vec<std::ops::Range<usize>>,
+        /// The text background (highlight or character shading) these glyphs are drawn on, if
+        /// any: a dark page dims it, so it picks the text colour against the dimmed colour.
+        text_bg: Option<Rgb>,
     },
     Fill {
         rect: Rect,
         color: Rgb,
         alpha: f32,
+        /// A text background (highlight or character shading), which a dark page dims instead
+        /// of inverting so the text on it stays readable. Other fills (paragraph, cell, page) don't.
+        text_bg: bool,
     },
     Line {
         x0: f32,
@@ -53,12 +59,17 @@ pub enum Draw {
         color: Rgb,
         stroke: Stroke,
         alpha: f32,
+        /// The text background this line (an underline or strikethrough) is drawn on, as for
+        /// [`Draw::Glyphs`]; `None` for every other line.
+        text_bg: Option<Rgb>,
     },
     Image {
         rect: Rect,
         media: String,
         crop: [f32; 4],
         alpha: f32,
+        /// The picture's alt text (empty for a floating or diagram picture, which tag themselves).
+        alt: String,
     },
     Shape {
         rect: Rect,
@@ -68,67 +79,35 @@ pub enum Draw {
         stroke_width: f32,
         /// Shadow, glow and soft edges (drawn with [`wordcraft_doc::effects::bands`]).
         effects: wordcraft_doc::effects::ShapeEffects,
+        /// A rounded rectangle's corner ([`wordcraft_doc::connector::ShapeExtra::corner`]).
+        corner: Option<u32>,
     },
     /// An ink stroke: a line through `pts` (page points) with round ends and joins, `width`
     /// wide, in `color` at opacity `alpha`.
-    Ink {
-        pts: Vec<(f32, f32)>,
-        color: Rgb,
-        width: f32,
-        alpha: f32,
-    },
+    Ink { pts: Vec<(f32, f32)>, color: Rgb, width: f32, alpha: f32 },
     /// A vector path (a chart's or diagram's polygons, slices, lines): filled, then stroked.
-    Path {
-        segs: Vec<PathSeg>,
-        fill: Option<Rgb>,
-        stroke: Option<Rgb>,
-        stroke_width: f32,
-    },
+    Path { segs: Vec<PathSeg>, fill: Option<Rgb>, stroke: Option<Rgb>, stroke_width: f32 },
     /// An inline chart or diagram's draws, as one figure with its alt text (for tagged PDF).
-    Figure {
-        alt: String,
-        kind: GraphicKind,
-        draws: Vec<Draw>,
-    },
+    Figure { alt: String, kind: GraphicKind, draws: Vec<Draw> },
     /// A formatting mark (¶ · → ↵) in the UI's mark colour, or in `color` (a tracked
     /// paragraph mark in its reviser's colour).
-    Mark {
-        x: f32,
-        baseline: f32,
-        size: f32,
-        ch: char,
-        color: Option<Rgb>,
-    },
+    Mark { x: f32, baseline: f32, size: f32, ch: char, color: Option<Rgb> },
     /// Turned text (a table cell's text direction): `items` are drawn in a frame turned `turn`
     /// whose origin is page point (`x`, `y`) (see [`crate::turn_point`]).
-    Turned {
-        x: f32,
-        y: f32,
-        turn: TextDirection,
-        items: Vec<Draw>,
-    },
+    Turned { x: f32, y: f32, turn: TextDirection, items: Vec<Draw> },
     /// A rotated or flipped picture, shape, chart, group or Drawing Canvas: `items` drawn
     /// turned by `spin` about page point (`cx`, `cy`) (see [`Spin::matrix`]).
-    Rotated {
-        cx: f32,
-        cy: f32,
-        spin: Spin,
-        items: Vec<Draw>,
-    },
+    Rotated { cx: f32, cy: f32, spin: Spin, items: Vec<Draw> },
     /// `items` clipped to `rect` (a Drawing Canvas's members to its frame). Inside a
     /// [`Draw::Rotated`], `rect` is in the turned frame's (unturned) coordinates.
-    Clip {
-        rect: Rect,
-        items: Vec<Draw>,
-    },
+    Clip { rect: Rect, items: Vec<Draw> },
+    /// Text drawn from its outlines with WordArt effects (and bent, in a warped text box):
+    /// `path` in page coordinates, painted as [`crate::wordart::art_layers`] says. `color` is the
+    /// run's own colour, the fill when the effects set none.
+    Art { path: BezPath, fx: Box<wordcraft_doc::wordart::TextEffects>, color: Rgb, alpha: f32 },
     /// A formatting-mark label (a section break's name) in the UI's mark colour, left edge at
     /// `x`, drawn with the same face as [`Draw::Mark`]. Screen only, like every mark.
-    MarkText {
-        x: f32,
-        baseline: f32,
-        size: f32,
-        text: String,
-    },
+    MarkText { x: f32, baseline: f32, size: f32, text: String },
 }
 
 impl Draw {
@@ -143,10 +122,40 @@ impl Draw {
     }
 }
 
+/// Formatting marks shown even while Show/Hide ¶ is off (File › Options › Display, "Always show
+/// these formatting marks"). Show/Hide ¶ on shows them all.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct FormattingMarks {
+    /// Tab characters (→).
+    pub tabs: bool,
+    /// Spaces (·).
+    pub spaces: bool,
+    /// Paragraph marks (¶), line breaks, page, column and section breaks.
+    pub paragraphs: bool,
+    /// Hidden text (shown with its dotted underline instead of left out).
+    pub hidden: bool,
+}
+
+impl FormattingMarks {
+    pub const ALL: FormattingMarks = FormattingMarks { tabs: true, spaces: true, paragraphs: true, hidden: true };
+
+    /// The marks on screen: all of them with Show/Hide ¶ on, else the chosen ones.
+    pub fn shown(self, show_all: bool) -> FormattingMarks {
+        if show_all { FormattingMarks::ALL } else { self }
+    }
+
+    pub fn any(self) -> bool {
+        self.tabs || self.spaces || self.paragraphs || self.hidden
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct DisplayOptions {
-    /// Show formatting marks (¶).
+    /// Show formatting marks (¶): Show/Hide ¶, every mark.
     pub marks: bool,
+    /// Marks shown while `marks` is off (File › Options › Display).
+    pub always: FormattingMarks,
     /// Dim headers/footers (editing the body) or the body (editing a header/footer).
     pub dim_header: bool,
     pub dim_body: bool,
@@ -164,6 +173,7 @@ impl Default for DisplayOptions {
     fn default() -> Self {
         DisplayOptions {
             marks: false,
+            always: FormattingMarks::default(),
             dim_header: true,
             dim_body: false,
             markup: true,
@@ -236,13 +246,27 @@ named! {
 named! {
     /// What the markup area beside the page shows.
     BalloonMode {
-        /// Deletions, formatting and comments in balloons (drawn like `CommentsAndFormatting`
-        /// for now: revisions stay inline).
+        /// Deletions, formatting and comments in balloons; insertions stay inline. Where the
+        /// editor shows balloons, deleted body text leaves the layout (`deletions_in_balloons`)
+        /// and the editor draws a "Deleted: …" balloon at its place; elsewhere (no markup area,
+        /// PDF, and headers, footers, notes and text boxes, which get no balloons) it is drawn
+        /// inline as in `CommentsAndFormatting`.
         Revisions = "revisions",
         /// Everything inline, no markup area.
         Inline = "inline",
         #[default]
         CommentsAndFormatting = "commentsAndFormatting",
+    }
+}
+
+named! {
+    /// How comments are shown beside the page.
+    CommentDisplay {
+        /// Every comment in the margin, as in Word.
+        #[default]
+        Margin = "margin",
+        /// Only the comment of the text under the caret (or the clicked one) floats beside the page.
+        Selected = "selected",
     }
 }
 
@@ -256,6 +280,7 @@ pub struct MarkupOptions {
     pub insertions_deletions: bool,
     pub formatting: bool,
     pub balloons: BalloonMode,
+    pub comment_display: CommentDisplay,
     pub insert_mark: InsertMark,
     /// `None` = by author.
     pub insert_color: Option<Rgb>,
@@ -277,6 +302,7 @@ impl Default for MarkupOptions {
             insertions_deletions: true,
             formatting: true,
             balloons: BalloonMode::default(),
+            comment_display: CommentDisplay::default(),
             insert_mark: InsertMark::default(),
             insert_color: None,
             delete_mark: DeleteMark::default(),
@@ -320,19 +346,141 @@ pub fn page_display(doc: &Document, page: &Page, opts: &DisplayOptions) -> Vec<D
     let mut out = Vec::new();
     let ha = if opts.dim_header { 0.45 } else { 1.0 };
     let ba = if opts.dim_body { 0.45 } else { 1.0 };
-    for it in &page.header {
-        item(doc, it, opts, ha, &mut out);
-    }
-    for it in &page.footer {
-        item(doc, it, opts, ha, &mut out);
-    }
-    for it in &page.items {
-        item(doc, it, opts, ba, &mut out);
+    for (items, a) in [(&page.header, ha), (&page.footer, ha), (&page.items, ba)] {
+        let warps = warped_boxes(doc, items);
+        let clips = clipped_cells(items);
+        let mut done: Vec<u32> = Vec::new();
+        for it in items.iter() {
+            if let Placed::Lines { story, path, .. } = it
+                && let Some(rect) = cell_clip(&clips, *story, &path.0)
+            {
+                let mut inner = Vec::new();
+                item(doc, it, opts, a, &mut inner);
+                out.push(Draw::Clip { rect, items: inner });
+                continue;
+            }
+            match it {
+                Placed::Lines { story: StoryRef::Part(id), .. } if warps.iter().any(|(w, ..)| w == id) => {
+                    // A warped text box's lines are drawn together, bent, where its first one is.
+                    if done.contains(id) {
+                        continue;
+                    }
+                    done.push(*id);
+                    if let Some((_, rect, warp)) = warps.iter().find(|(w, ..)| w == id) {
+                        let lines: Vec<&Placed> =
+                            items.iter().filter(|i| matches!(i, Placed::Lines { story: StoryRef::Part(s), .. } if s == id)).collect();
+                        warped_text(doc, &lines, *rect, warp, opts, a, &mut out);
+                    }
+                }
+                _ => item(doc, it, opts, a, &mut out),
+            }
+        }
     }
     if opts.markup && (opts.revisions.insertions_deletions || opts.revisions.formatting) && opts.revisions.changed_lines != ChangeBar::None {
         change_bars(doc, page, &opts.revisions, ba, &mut out);
     }
     out
+}
+
+/// One object drawn alone, as its page draws it: the picture, shape or group `o` in `rect` (its
+/// unturned frame) and the text of the text box story `text_box` on `page`. A dragged object's
+/// preview, which mustn't show what was behind it (#1010).
+pub fn object_display(doc: &Document, page: &Page, o: &InlineObject, rect: Rect, text_box: Option<u32>, opts: &DisplayOptions) -> Vec<Draw> {
+    let mut out = Vec::new();
+    object_draws(o, rect, Spin::default(), 1.0, opts, &mut out);
+    let Some(id) = text_box else { return out };
+    for items in [&page.items, &page.header, &page.footer] {
+        let lines: Vec<&Placed> = items.iter().filter(|i| matches!(i, Placed::Lines { story: StoryRef::Part(s), .. } if *s == id)).collect();
+        match warped_boxes(doc, items).into_iter().find(|(w, ..)| *w == id) {
+            Some((_, rect, warp)) if !lines.is_empty() => warped_text(doc, &lines, rect, &warp, opts, 1.0, &mut out),
+            _ => lines.into_iter().for_each(|it| item(doc, it, opts, 1.0, &mut out)),
+        }
+    }
+    out
+}
+
+/// The cells among `items` whose content is cut off at their edge (see [`Placed::Cell`]'s
+/// `clip`): their story, the path of their content (table, row, cell) and their area.
+fn clipped_cells(items: &[Placed]) -> Vec<(StoryRef, Vec<u32>, Rect)> {
+    items
+        .iter()
+        .filter_map(|it| match it {
+            Placed::Cell { rect, table, row, cell, story, clip: true, .. } => {
+                let mut prefix = table.0.clone();
+                prefix.extend([u32::try_from(*row).ok()?, u32::try_from(*cell).ok()?]);
+                Some((*story, prefix, *rect))
+            }
+            _ => None,
+        })
+        .collect()
+}
+
+/// The area to clip a line at `path` of `story` to: its cell's, when that cell is clipped.
+fn cell_clip(clips: &[(StoryRef, Vec<u32>, Rect)], story: StoryRef, path: &[u32]) -> Option<Rect> {
+    clips.iter().find(|(s, prefix, _)| *s == story && path.starts_with(prefix)).map(|(_, _, r)| *r)
+}
+
+/// The text boxes among `items` whose text is warped (Text Effects › Transform, drawn bent): their
+/// story, frame and warp. Empty, without a walk of the document, when none is.
+fn warped_boxes(doc: &Document, items: &[Placed]) -> Vec<(u32, Rect, wordcraft_doc::wordart::TextWarp)> {
+    items
+        .iter()
+        .filter_map(|it| {
+            let Placed::Object { rect, story, path, off, text_box: Some(id), .. } = it else { return None };
+            match doc.para(*story, path)?.object_at(*off)? {
+                InlineObject::Shape { extra, .. } => extra.warp.clone().filter(|w| !w.is_plain()).map(|w| (*id, *rect, w)),
+                _ => None,
+            }
+        })
+        .collect()
+}
+
+/// The text of a warped text box at `rect`: its lines' letters as outlines bent by `warp`, the
+/// box's text stretched over the frame inside its margins (as WordArt is). Underlines, marks and
+/// other decorations are left out; a warp that is drawn flat leaves the text as it is.
+fn warped_text(
+    doc: &Document,
+    lines: &[&Placed],
+    rect: Rect,
+    warp: &wordcraft_doc::wordart::TextWarp,
+    opts: &DisplayOptions,
+    alpha: f32,
+    out: &mut Vec<Draw>,
+) {
+    let mut raw = Vec::new();
+    for it in lines {
+        item(doc, it, opts, alpha, &mut raw);
+    }
+    // The letters: runs with effects as they are, plain runs from their glyphs.
+    let mut arts: Vec<(BezPath, Box<wordcraft_doc::wordart::TextEffects>, Rgb, f32)> = Vec::new();
+    let mut hidden = Vec::new();
+    for d in &raw {
+        match d {
+            Draw::Art { path, fx, color, alpha } => arts.push((path.clone(), fx.clone(), *color, *alpha)),
+            Draw::Glyphs { face, size, glyphs, color, alpha, synth_italic, .. } => {
+                if *alpha > 0.0 {
+                    arts.push((crate::wordart::glyph_path(face, *size, glyphs, *synth_italic), Box::default(), *color, *alpha));
+                }
+                let mut g = d.clone();
+                if let Draw::Glyphs { alpha, .. } = &mut g {
+                    *alpha = 0.0;
+                }
+                hidden.push(g);
+            }
+            _ => {}
+        }
+    }
+    let src = arts.iter().filter_map(|(p, ..)| crate::wordart::path_box(p)).reduce(|a, b| a.union(b));
+    let inset = Rect::new(rect.x + 7.2, rect.y + 3.6, (rect.w - 14.4).max(1.0), (rect.h - 7.2).max(1.0));
+    let fitted = src.and_then(|b| crate::wordart::Warp::new(warp, inset, (b.height() / b.width().max(1e-3)) as f32).map(|w| (b, w)));
+    let Some((src, w)) = fitted else {
+        out.extend(raw);
+        return;
+    };
+    for (path, fx, color, alpha) in arts {
+        out.push(Draw::Art { path: crate::wordart::warp_path(&path, src, &w), fx, color, alpha });
+    }
+    out.extend(hidden);
 }
 
 /// The automatic colour of the bars beside changed lines.
@@ -369,7 +517,17 @@ fn change_bars(doc: &Document, page: &Page, m: &MarkupOptions, alpha: f32, out: 
                 || (mark_rev && line.end == LineEnd::Para);
             if changed {
                 let top = y + (line.top - first.top);
-                out.push(Draw::Line { x0: bx, y0: top, x1: bx, y1: top + line.height, width: 0.75, color, stroke: Stroke::Solid, alpha });
+                out.push(Draw::Line {
+                    x0: bx,
+                    y0: top,
+                    x1: bx,
+                    y1: top + line.height,
+                    width: 0.75,
+                    color,
+                    stroke: Stroke::Solid,
+                    alpha,
+                    text_bg: None,
+                });
             }
         }
     }
@@ -396,6 +554,7 @@ fn rule(x0: f32, y0: f32, x1: f32, y1: f32, b: &Border, alpha: f32) -> Draw {
         color: b.color.unwrap_or(Rgb::BLACK),
         stroke: border_stroke(b.style),
         alpha,
+        text_bg: None,
     }
 }
 
@@ -417,14 +576,15 @@ fn item(doc: &Document, it: &Placed, opts: &DisplayOptions, alpha: f32, out: &mu
 /// effects follow all the turns it is drawn inside.
 fn item_in(doc: &Document, it: &Placed, opts: &DisplayOptions, alpha: f32, outer: Spin, out: &mut Vec<Draw>) {
     match it {
-        Placed::Fill { rect, color } => out.push(Draw::Fill { rect: *rect, color: *color, alpha }),
+        Placed::Fill { rect, color } => out.push(Draw::Fill { rect: *rect, color: *color, alpha, text_bg: false }),
         Placed::Rule { x0, y0, x1, y1, border } => out.push(rule(*x0, *y0, *x1, *y1, border, alpha)),
         Placed::Image { rect, media, crop, spin, .. } => {
-            spun(*spin, *rect, vec![Draw::Image { rect: *rect, media: media.clone(), crop: *crop, alpha }], out)
+            spun(*spin, *rect, vec![Draw::Image { rect: *rect, media: media.clone(), crop: *crop, alpha, alt: String::new() }], out)
         }
-        Placed::Shape { rect, kind, fill, stroke, stroke_width, effects, freeform, spin } => {
+        Placed::Shape { rect, kind, fill, stroke, stroke_width, effects, freeform, spin, extra } => {
             let mut items = Vec::new();
-            shape_draws(*rect, *kind, *fill, *stroke, *stroke_width, effects_in(*effects, spin.within(outer)), freeform.as_deref(), opts, &mut items);
+            let fx = effects_in(*effects, spin.within(outer));
+            shape_draws(*rect, *kind, *fill, *stroke, *stroke_width, fx, freeform.as_deref(), extra, opts, &mut items);
             spun(*spin, *rect, items, out)
         }
         Placed::Graphic { rect, graphic, spin, .. } => spun(*spin, *rect, graphic_draws(doc, graphic, *rect, alpha), out),
@@ -444,6 +604,9 @@ fn item_in(doc: &Document, it: &Placed, opts: &DisplayOptions, alpha: f32, outer
                 if let Draw::Glyphs { link, .. } = d {
                     *link = None;
                 }
+            }
+            if *turn == TextDirection::Down {
+                items = upright_east_asian(items);
             }
             out.push(Draw::Turned { x: *x, y: *y, turn: *turn, items });
         }
@@ -496,7 +659,12 @@ fn lines(
                 }
                 for (x0, x1) in pl.x_spans(li, a.max(line.start), b.min(line.stop)) {
                     if x1 > x0 {
-                        out.push(Draw::Fill { rect: Rect::new(x + x0, top, x1 - x0, line.height), color: Rgb(0xEF, 0xE3, 0xF7), alpha });
+                        out.push(Draw::Fill {
+                            rect: Rect::new(x + x0, top, x1 - x0, line.height),
+                            color: Rgb(0xEF, 0xE3, 0xF7),
+                            alpha,
+                            text_bg: false,
+                        });
                     }
                 }
             }
@@ -510,7 +678,7 @@ fn lines(
                 continue;
             }
             if let Some(h) = st.rc.highlight.or(st.rc.shading) {
-                out.push(Draw::Fill { rect: Rect::new(x + cx, top, (nx - cx).max(0.0), line.height), color: h, alpha });
+                out.push(Draw::Fill { rect: Rect::new(x + cx, top, (nx - cx).max(0.0), line.height), color: h, alpha, text_bg: true });
             }
             let b = st.rc.border;
             if let Some((ob, x0, x1)) = open.as_mut()
@@ -530,23 +698,27 @@ fn lines(
             char_box(&ob, x0, x1, top, bottom, alpha, out);
         }
         // Label.
-        if li == 0
+        if li == pl.label_line()
             && let Some(lab) = &pl.label
-            && let Some(st) = pl.styles.get(lab.style as usize)
         {
             let gx = x + lab.x;
-            out.push(Draw::Glyphs {
-                face: st.face,
-                size: st.size,
-                glyphs: lab.glyphs.iter().map(|g| (g.gid, gx + g.dx, base - st.shift - g.dy)).collect(),
-                color: text_color(&st.rc.color, None),
-                alpha,
-                synth_bold: st.synth_bold,
-                synth_italic: st.synth_italic,
-                text: lab.text.clone(),
-                link: None,
-                ranges: Vec::new(),
-            });
+            // One draw per font run: a glyph id only means something in its own face.
+            for run in &lab.runs {
+                let Some(st) = pl.styles.get(run.style as usize) else { continue };
+                out.push(Draw::Glyphs {
+                    face: st.face,
+                    size: st.size,
+                    glyphs: lab.glyphs.get(run.glyphs.clone()).into_iter().flatten().map(|g| (g.gid, gx + g.dx, base - st.shift - g.dy)).collect(),
+                    color: text_color(&st.rc.color, None),
+                    alpha,
+                    synth_bold: st.synth_bold,
+                    synth_italic: st.synth_italic,
+                    text: run.text.clone(),
+                    link: None,
+                    ranges: Vec::new(),
+                    text_bg: None,
+                });
+            }
         }
         // Hyphen at a hyphenated line end.
         if let Some((si, gid, adv)) = line.hyphen
@@ -564,6 +736,7 @@ fn lines(
                 text: "-".into(),
                 link: None,
                 ranges: Vec::new(),
+                text_bg: None,
             });
         }
         // Glyph runs grouped by style.
@@ -592,10 +765,28 @@ fn lines(
                     if let Ok(i) = pl.shown.binary_search_by_key(&k, |(i, _, _)| *i)
                         && let Some((_, s, r)) = pl.shown.get(i)
                     {
-                        text.push_str(s);
+                        // All Caps field results read as the capitals drawn (#1473). `r` holds
+                        // byte ranges into `s`, so a character whose capital has another UTF-8
+                        // length keeps its own form and every range still lands where it did.
+                        text.extend(s.chars().map(|ch| {
+                            let up = crate::para::caps_char(&st.rc, ch);
+                            if up.len_utf8() == ch.len_utf8() { up } else { ch }
+                        }));
                         shown = Some(r);
                     } else if let Some(p) = para {
-                        text.push_str(p.text.get(c.start..c.end).unwrap_or(""));
+                        let t = p.text.get(c.start..c.end).unwrap_or("");
+                        // Symbol-font characters (Wingdings…) read as the Unicode symbols drawn.
+                        if wordcraft_doc::symbol_fonts::is_symbol_font(&st.rc.font) {
+                            text.push_str(&wordcraft_doc::symbol_fonts::map_text(&st.rc.font, t));
+                        } else if st.rc.caps || st.rc.small_caps {
+                            // All Caps and Small Caps read as the capitals drawn (#1473), mapped
+                            // as drawn, so a glyph never stands for two cases and ß reads as SS (#1581).
+                            for ch in t.chars() {
+                                crate::para::push_caps(&st.rc, ch, &mut text);
+                            }
+                        } else {
+                            text.push_str(t);
+                        }
                     }
                     let b = text.len();
                     let cg = pl.glyphs.get(c.g0 as usize..c.g1 as usize).unwrap_or(&[]);
@@ -659,6 +850,8 @@ fn lines(
                 (None, Some(r)) => m.delete_color.unwrap_or_else(|| author(r)),
                 _ => text_color(&rc.color, rc.shading.or(rc.highlight)),
             };
+            // The highlight or shading drawn under this run (as filled in the backgrounds pass).
+            let text_bg = rc.highlight.or(rc.shading);
             let ins_mark = ins.map(|_| if moved_to { InsertMark::DoubleUnderline } else { m.insert_mark });
             let del_mark = del.map(|_| if moved_from { DeleteMark::DoubleStrikethrough } else { m.delete_mark });
             if del_mark == Some(DeleteMark::Caret) {
@@ -675,6 +868,7 @@ fn lines(
                         color,
                         stroke: Stroke::Solid,
                         alpha,
+                        text_bg,
                     });
                     out.push(Draw::Line {
                         x0: cx,
@@ -685,6 +879,7 @@ fn lines(
                         color,
                         stroke: Stroke::Solid,
                         alpha,
+                        text_bg,
                     });
                 }
                 continue;
@@ -696,18 +891,26 @@ fn lines(
                     g.0 = gid;
                 }
             }
+            // WordArt effects draw the letters from their outlines; the glyphs stay, invisible,
+            // for the PDF's text.
+            let art = rc.text_effects.as_ref().filter(|_| ins.is_none() && del.is_none() && !glyphs.is_empty());
+            if let Some(fx) = art {
+                let path = crate::wordart::glyph_path(&st.face, st.size, &glyphs, st.synth_italic);
+                out.push(Draw::Art { path, fx: fx.clone(), color, alpha });
+            }
             if !glyphs.is_empty() {
                 out.push(Draw::Glyphs {
                     face: st.face,
                     size: st.size,
                     glyphs,
                     color,
-                    alpha,
+                    alpha: if art.is_some() { 0.0 } else { alpha },
                     synth_bold: st.synth_bold || ins_mark == Some(InsertMark::Bold),
                     synth_italic: st.synth_italic || ins_mark == Some(InsertMark::Italic),
                     text,
                     link: rc.link.clone(),
                     ranges,
+                    text_bg,
                 });
             }
             // Decorations across the run (underline skips trailing spaces of the line). Right-to-left
@@ -743,17 +946,17 @@ fn lines(
                             if a < x0 - 0.01 || b > x1 + 0.01 {
                                 continue; // drawn with its own span
                             }
-                            out.push(Draw::Line { x0: a, y0: uy, x1: b, y1: uy, width: thick, color: ucolor, stroke: Stroke::Solid, alpha });
+                            out.push(Draw::Line { x0: a, y0: uy, x1: b, y1: uy, width: thick, color: ucolor, stroke: Stroke::Solid, alpha, text_bg });
                         }
                     } else {
                         let w = if underline == Underline::Thick { thick * 2.0 } else { thick };
-                        out.push(Draw::Line { x0, y0: uy, x1, y1: uy, width: w, color: ucolor, stroke: stroke_of(underline), alpha });
+                        out.push(Draw::Line { x0, y0: uy, x1, y1: uy, width: w, color: ucolor, stroke: stroke_of(underline), alpha, text_bg });
                     }
                 }
                 if struck {
                     let sy = base - st.shift - st.size * 0.28;
                     let stroke = if double { Stroke::Double } else { Stroke::Solid };
-                    out.push(Draw::Line { x0, y0: sy, x1, y1: sy, width: thick, color, stroke, alpha });
+                    out.push(Draw::Line { x0, y0: sy, x1, y1: sy, width: thick, color, stroke, alpha, text_bg });
                 }
             }
         }
@@ -777,6 +980,7 @@ fn lines(
                     color,
                     stroke: if *grammar { Stroke::Double } else { Stroke::Wave },
                     alpha,
+                    text_bg: None,
                 });
             }
         }
@@ -806,6 +1010,7 @@ fn lines(
                 text: String::new(),
                 link: None,
                 ranges: Vec::new(),
+                text_bg: None,
             });
         }
         // Inline objects.
@@ -851,6 +1056,7 @@ fn lines(
                 stroke: Some(text_color(&st.rc.color, None)),
                 stroke_width: e.stroke,
                 effects: Default::default(),
+                corner: None,
             });
         }
         // Ruby (Phonetic Guide) text over its base text, in runs of one style.
@@ -879,11 +1085,13 @@ fn lines(
                     text: r.text.clone(),
                     link: None,
                     ranges,
+                    text_bg: st.rc.highlight.or(st.rc.shading),
                 });
             }
         }
         // Formatting marks.
-        if opts.marks {
+        let marks = opts.always.shown(opts.marks);
+        if marks.any() {
             let msize = pl.styles.first().map(|s| s.size).unwrap_or(11.0);
             for k in line.c0..line.c1 {
                 let Some(c) = pl.clusters.get(k) else { continue };
@@ -892,14 +1100,14 @@ fn lines(
                 let size = pl.styles.get(c.style as usize).map(|s| s.size).unwrap_or(msize);
                 let arrow = if line.rtl { '←' } else { '→' };
                 match c.kind {
-                    ClKind::Space => {
+                    ClKind::Space if marks.spaces => {
                         out.push(Draw::Mark { x: (cx + nx) / 2.0 - size * 0.12, baseline: base - size * 0.08, size, ch: '·', color: None })
                     }
-                    ClKind::Tab => {
+                    ClKind::Tab if marks.tabs => {
                         out.push(Draw::Mark { x: cx + ((nx - cx) / 2.0 - size * 0.3).max(0.0), baseline: base, size, ch: arrow, color: None })
                     }
-                    ClKind::LineBreak => out.push(Draw::Mark { x: cx + 1.0, baseline: base, size, ch: '↵', color: None }),
-                    ClKind::PageBreak | ClKind::ColumnBreak => {
+                    ClKind::LineBreak if marks.paragraphs => out.push(Draw::Mark { x: cx + 1.0, baseline: base, size, ch: '↵', color: None }),
+                    ClKind::PageBreak | ClKind::ColumnBreak if marks.paragraphs => {
                         let label = if c.kind == ClKind::PageBreak { '⤓' } else { '⇥' };
                         out.push(Draw::Line {
                             x0: cx + 2.0,
@@ -910,13 +1118,14 @@ fn lines(
                             color: Rgb(0x60, 0x60, 0x60),
                             stroke: Stroke::Dotted,
                             alpha,
+                            text_bg: None,
                         });
                         out.push(Draw::Mark { x: cx + 1.0, baseline: base, size, ch: label, color: None });
                     }
                     _ => {}
                 }
             }
-            if line.end == LineEnd::Para {
+            if line.end == LineEnd::Para && marks.paragraphs {
                 // The mark follows the line's visual end, past every glyph, even where the
                 // logically last text runs against the paragraph's direction.
                 let ex = x + line.visual_end_x();
@@ -1000,7 +1209,7 @@ fn section_break_mark(start: SectionStart, x0: f32, x1: f32, base: f32, size: f3
     let tx = (x0 + x1 - w) / 2.0;
     for (a, b) in [(x0, tx - gap), (tx + w + gap, x1)] {
         for y in [mid - 1.2, mid + 1.2] {
-            out.push(Draw::Line { x0: a, y0: y, x1: b, y1: y, width: 0.5, color, stroke: Stroke::Dotted, alpha });
+            out.push(Draw::Line { x0: a, y0: y, x1: b, y1: y, width: 0.5, color, stroke: Stroke::Dotted, alpha, text_bg: None });
         }
     }
     out.push(Draw::MarkText { x: tx, baseline: mid + lsize * 0.33, size: lsize, text: text.into() });
@@ -1022,8 +1231,11 @@ fn equation(items: &[MItem], x: f32, base: f32, alpha: f32, screen: bool, out: &
                 link: None,
                 // Equation text maps back through the font (no per-glyph ranges from the math layout).
                 ranges: Vec::new(),
+                text_bg: None,
             }),
-            MItem::Rect { x: rx, y, w, h, color } => out.push(Draw::Fill { rect: Rect::new(x + rx, base - y - h, *w, *h), color: *color, alpha }),
+            MItem::Rect { x: rx, y, w, h, color } => {
+                out.push(Draw::Fill { rect: Rect::new(x + rx, base - y - h, *w, *h), color: *color, alpha, text_bg: false })
+            }
             MItem::Line { x0, y0, x1, y1, width, color, dotted } => out.push(Draw::Line {
                 x0: x + x0,
                 y0: base - y0,
@@ -1033,6 +1245,7 @@ fn equation(items: &[MItem], x: f32, base: f32, alpha: f32, screen: bool, out: &
                 color: *color,
                 stroke: if *dotted { Stroke::Dotted } else { Stroke::Solid },
                 alpha,
+                text_bg: None,
             }),
             MItem::ScreenOnly(inner) => {
                 if screen {
@@ -1060,13 +1273,16 @@ fn graphic_draws(doc: &Document, g: &Graphic, rect: Rect, alpha: f32) -> Vec<Dra
                 stroke: *stroke,
                 stroke_width: stroke_width * k,
                 effects: Default::default(),
+                corner: None,
             }),
             GraphicItem::Path { segs, fill, stroke, stroke_width } => {
                 let segs = page_segs(segs, |x, y| (rect.x + x * sx, rect.y + y * sy));
                 out.push(Draw::Path { segs, fill: *fill, stroke: *stroke, stroke_width: stroke_width * k })
             }
             GraphicItem::Text { rect: r, .. } => out.extend(text_glyphs(doc, inside(r), it, alpha, k)),
-            GraphicItem::Image { rect: r, media } => out.push(Draw::Image { rect: inside(r), media: media.clone(), crop: [0.0; 4], alpha }),
+            GraphicItem::Image { rect: r, media } => {
+                out.push(Draw::Image { rect: inside(r), media: media.clone(), crop: [0.0; 4], alpha, alt: String::new() })
+            }
         }
     }
     out
@@ -1128,11 +1344,16 @@ fn shape_draws(
     stroke_width: f32,
     effects: wordcraft_doc::effects::ShapeEffects,
     freeform: Option<&wordcraft_doc::freeform::Freeform>,
+    extra: &wordcraft_doc::connector::ShapeExtra,
     opts: &DisplayOptions,
     out: &mut Vec<Draw>,
 ) {
+    if kind.is_open() {
+        line_draws(rect, kind, stroke, stroke_width, effects, extra, out);
+        return;
+    }
     let Some(f) = freeform.filter(|_| kind == ShapeKind::Freeform) else {
-        out.push(Draw::Shape { rect, kind, fill, stroke, stroke_width, effects });
+        out.push(Draw::Shape { rect, kind, fill, stroke, stroke_width, effects, corner: extra.corner });
         return;
     };
     if f.is_ink() && opts.hide_ink {
@@ -1146,6 +1367,12 @@ fn shape_draws(
                 if closed && let Some(first) = pts.first().copied() {
                     pts.push(first);
                 }
+                if !closed
+                    && extra.arrow_end
+                    && let Some(arrow) = path_arrowhead(&pts, color, width)
+                {
+                    out.push(arrow);
+                }
                 out.push(Draw::Ink { pts, color, width: width.max(0.25), alpha: f.alpha });
             }
             continue;
@@ -1158,6 +1385,79 @@ fn shape_draws(
             segs.push(PathSeg::Close);
         }
         out.push(Draw::Path { segs, fill: if closed { fill } else { None }, stroke, stroke_width: width });
+        if !closed
+            && extra.arrow_end
+            && let Some(color) = stroke
+        {
+            let points: Vec<(f32, f32)> = pts.iter().map(|[x, y]| (*x, *y)).collect();
+            if let Some(arrow) = path_arrowhead(&points, color, width) {
+                out.push(arrow);
+            }
+        }
+    }
+}
+
+fn path_arrowhead(points: &[(f32, f32)], color: Rgb, stroke_width: f32) -> Option<Draw> {
+    let tip = *points.last()?;
+    let (prev_x, prev_y) = points.iter().rev().skip(1).copied().find(|p| *p != tip)?;
+    let dx = tip.0 - prev_x;
+    let dy = tip.1 - prev_y;
+    let length = dx.hypot(dy);
+    if !length.is_finite() || length <= f32::EPSILON {
+        return None;
+    }
+    let (dx, dy) = (dx / length, dy / length);
+    let width = if stroke_width.is_finite() { stroke_width.clamp(0.25, 200.0) } else { 0.75 };
+    let len = (width * 3.5).max(7.0);
+    let (bx, by) = (tip.0 - dx * len, tip.1 - dy * len);
+    let (nx, ny) = (-dy * len * 0.45, dx * len * 0.45);
+    let segs = vec![PathSeg::Move(tip.0, tip.1), PathSeg::Line(bx + nx, by + ny), PathSeg::Line(bx - nx, by - ny), PathSeg::Close];
+    Some(Draw::Path { segs, fill: Some(color), stroke: None, stroke_width: 0.0 })
+}
+
+/// A line or connector at `rect` (its unflipped frame: flips are the frame's turn), with its
+/// arrowheads.
+fn line_draws(
+    rect: Rect,
+    kind: ShapeKind,
+    stroke: Option<Rgb>,
+    stroke_width: f32,
+    effects: wordcraft_doc::effects::ShapeEffects,
+    extra: &wordcraft_doc::connector::ShapeExtra,
+    out: &mut Vec<Draw>,
+) {
+    use wordcraft_doc::connector::{connector_segs, end_direction};
+    match connector_segs(kind, rect.w, rect.h) {
+        Some(segs) => {
+            let segs = segs
+                .into_iter()
+                .map(|s| match s {
+                    PathSeg::Move(x, y) => PathSeg::Move(rect.x + x, rect.y + y),
+                    PathSeg::Line(x, y) => PathSeg::Line(rect.x + x, rect.y + y),
+                    PathSeg::Cubic(a, b, c, d, e, f) => PathSeg::Cubic(rect.x + a, rect.y + b, rect.x + c, rect.y + d, rect.x + e, rect.y + f),
+                    PathSeg::Close => PathSeg::Close,
+                })
+                .collect();
+            out.push(Draw::Path { segs, fill: None, stroke, stroke_width });
+        }
+        None => out.push(Draw::Shape { rect, kind, fill: None, stroke, stroke_width, effects, corner: None }),
+    }
+    let Some(color) = stroke else { return };
+    // Our line runs from the bottom-left corner to the top-right; connectors from the top-left
+    // to the bottom-right.
+    let (start, end) =
+        if kind == ShapeKind::Line { ((rect.x, rect.bottom()), (rect.right(), rect.y)) } else { ((rect.x, rect.y), (rect.right(), rect.bottom())) };
+    let width = if stroke_width.is_finite() { stroke_width.clamp(0.25, 200.0) } else { 0.75 };
+    let len = (width * 3.5).max(7.0);
+    for (on, tip, at_end) in [(extra.arrow_start, start, false), (extra.arrow_end, end, true)] {
+        if !on {
+            continue;
+        }
+        let (dx, dy) = end_direction(kind, rect.w, rect.h, at_end);
+        let (bx, by) = (tip.0 - dx * len, tip.1 - dy * len);
+        let (nx, ny) = (-dy * len * 0.45, dx * len * 0.45);
+        let segs = vec![PathSeg::Move(tip.0, tip.1), PathSeg::Line(bx + nx, by + ny), PathSeg::Line(bx - nx, by - ny), PathSeg::Close];
+        out.push(Draw::Path { segs, fill: Some(color), stroke: None, stroke_width: 0.0 });
     }
 }
 
@@ -1217,6 +1517,7 @@ fn text_glyphs(doc: &Document, r: Rect, it: &GraphicItem, alpha: f32, k: f32) ->
         text: text.clone(),
         link: None,
         ranges: Vec::new(),
+        text_bg: None,
     })
 }
 
@@ -1259,16 +1560,21 @@ fn spun(spin: Spin, rect: Rect, items: Vec<Draw>, out: &mut Vec<Draw>) {
 fn object_draws(o: &InlineObject, rect: Rect, outer: Spin, alpha: f32, opts: &DisplayOptions, out: &mut Vec<Draw>) {
     let own = o.frame().map(|(_, _, f)| f.spin()).unwrap_or_default();
     match o {
-        InlineObject::Image { media, crop, .. } => spun(own, rect, vec![Draw::Image { rect, media: media.clone(), crop: *crop, alpha }], out),
-        InlineObject::Shape { kind, fill, stroke, stroke_width, effects, freeform, .. } => {
+        InlineObject::Image { media, crop, alt, .. } => {
+            spun(own, rect, vec![Draw::Image { rect, media: media.clone(), crop: *crop, alpha, alt: alt.clone() }], out)
+        }
+        InlineObject::Shape { kind, fill, stroke, stroke_width, effects, freeform, extra, .. } => {
             let effects = effects_in(*effects, own.within(outer));
             let mut items = Vec::new();
-            shape_draws(rect, *kind, *fill, *stroke, *stroke_width, effects, freeform.as_deref(), opts, &mut items);
+            shape_draws(rect, *kind, *fill, *stroke, *stroke_width, effects, freeform.as_deref(), extra, opts, &mut items);
             spun(own, rect, items, out)
         }
         InlineObject::Group { .. } => {
             let mut members = Vec::new();
             for ([x, y, w, h], c) in o.group_rects(rect.x, rect.y, rect.w, rect.h) {
+                if c.frame().is_some_and(|(_, _, f)| f.hidden) {
+                    continue;
+                }
                 object_draws(c, Rect::new(x, y, w, h), own.within(outer), alpha, opts, &mut members);
             }
             match o.canvas_style() {
@@ -1303,7 +1609,7 @@ pub(crate) fn inline_rect(obj: Option<&InlineObject>, cx: f32, base: f32, adv: f
     let [l, t, r, b] = frame.map_or([0.0; 4], |(_, _, float)| float.effect_extent());
     let room = Rect::new(cx + l, base - obj_h + t, (adv - l - r).max(0.0), (obj_h - t - b).max(0.0));
     let Some((w, h, float)) = frame.filter(|(_, _, f)| f.rot != 0.0) else { return room };
-    // The room is the rotated bounds of the (possibly scaled-down) frame: undo the rotation.
+    // The room is the rotated bounds of the frame: undo the rotation.
     let (w, h) = (wordcraft_geom::finite(w).clamp(1.0, 4000.0), wordcraft_geom::finite(h).clamp(1.0, 4000.0));
     let (bw, _) = float.spin().extent(w, h);
     let k = if bw > 0.0 { room.w / bw } else { 1.0 };
@@ -1313,5 +1619,100 @@ pub(crate) fn inline_rect(obj: Option<&InlineObject>, cx: f32, base: f32, adv: f
 
 /// A Drawing Canvas's background and outline over its frame `rect`.
 fn canvas_background(rect: Rect, c: &wordcraft_doc::para::CanvasStyle) -> Draw {
-    Draw::Shape { rect, kind: ShapeKind::Rectangle, fill: c.fill, stroke: c.stroke, stroke_width: c.stroke_width, effects: Default::default() }
+    Draw::Shape {
+        rect,
+        kind: ShapeKind::Rectangle,
+        fill: c.fill,
+        stroke: c.stroke,
+        stroke_width: c.stroke_width,
+        effects: Default::default(),
+        corner: None,
+    }
+}
+
+/// Whether `c` stands upright in top-to-bottom East Asian text (`tbRl`) rather than turning with
+/// the line: ideographs, kana, Hangul, full-width letters and digits, and the ideographic comma
+/// and full stop (an approximation of Unicode's vertical orientation, UAX #50). Brackets, dashes
+/// and the prolonged sound mark turn with the line, as their vertical forms do.
+pub fn upright_in_vertical(c: char) -> bool {
+    matches!(c,
+        '\u{1100}'..='\u{11FF}'
+        | '\u{2E80}'..='\u{2FFF}'
+        | '\u{3001}'..='\u{3007}'
+        | '\u{3012}'..='\u{3013}'
+        | '\u{3020}'..='\u{302F}'
+        | '\u{3031}'..='\u{303F}'
+        | '\u{3040}'..='\u{30FB}'
+        | '\u{30FD}'..='\u{30FF}'
+        | '\u{3100}'..='\u{31EF}'
+        | '\u{31F0}'..='\u{4DBF}'
+        | '\u{4E00}'..='\u{9FFF}'
+        | '\u{A960}'..='\u{A97F}'
+        | '\u{AC00}'..='\u{D7FF}'
+        | '\u{F900}'..='\u{FAFF}'
+        | '\u{FE30}'..='\u{FE4F}'
+        | '\u{FF01}'..='\u{FF07}'
+        | '\u{FF0A}'..='\u{FF0C}'
+        | '\u{FF0E}'..='\u{FF3A}'
+        | '\u{FF3C}'
+        | '\u{FF3E}'..='\u{FF5A}'
+        | '\u{FFE0}'..='\u{FFE6}'
+        | '\u{20000}'..='\u{3FFFF}'
+    )
+}
+
+/// Top-to-bottom text drawn turned 90° clockwise, with its East Asian characters turned back
+/// upright, each about the centre of its em square (`tbRl`: ideographs stand, Latin lies).
+/// Glyph runs are split where uprightness changes, so the text keeps its order.
+fn upright_east_asian(items: Vec<Draw>) -> Vec<Draw> {
+    let mut out = Vec::with_capacity(items.len());
+    for d in items {
+        let Draw::Glyphs { face, size, glyphs, color, alpha, synth_bold, synth_italic, text, link, ranges, text_bg } = d else {
+            out.push(d);
+            continue;
+        };
+        let up = |k: usize| ranges.get(k).and_then(|r| text.get(r.clone())).and_then(|t| t.chars().next()).is_some_and(upright_in_vertical);
+        if ranges.len() != glyphs.len() || !(0..glyphs.len()).any(up) {
+            out.push(Draw::Glyphs { face, size, glyphs, color, alpha, synth_bold, synth_italic, text, link, ranges, text_bg });
+            continue;
+        }
+        let piece = |k0: usize, k1: usize| -> Draw {
+            let gs = glyphs.get(k0..k1).unwrap_or(&[]).to_vec();
+            let rs = ranges.get(k0..k1).unwrap_or(&[]);
+            let (b0, b1) = (rs.iter().map(|r| r.start).min().unwrap_or(0), rs.iter().map(|r| r.end).max().unwrap_or(0));
+            let t = text.get(b0..b1).unwrap_or("").to_string();
+            let rs = rs.iter().map(|r| r.start.saturating_sub(b0)..r.end.saturating_sub(b0)).collect();
+            Draw::Glyphs { face, size, glyphs: gs, color, alpha, synth_bold, synth_italic, text: t, link: link.clone(), ranges: rs, text_bg }
+        };
+        let mut k0 = 0;
+        while k0 < glyphs.len() {
+            let u = up(k0);
+            let k1 = (k0 + 1..glyphs.len()).find(|&k| up(k) != u).unwrap_or(glyphs.len());
+            if !u {
+                out.push(piece(k0, k1));
+            } else {
+                for k in k0..k1 {
+                    let Some(&(_, gx, base)) = glyphs.get(k) else { continue };
+                    // The em square: one em along the line (the advance to the next glyph when
+                    // known), from about 0.88 em above the baseline to 0.12 em below it.
+                    let adv = glyphs.get(k + 1).map(|g| g.1 - gx).filter(|a| *a > 0.0 && *a < size * 2.0).unwrap_or(size);
+                    let (cx, cy) = (gx + adv / 2.0, base - size * 0.38);
+                    let mut g = piece(k, k + 1);
+                    // The ideographic comma and full stop sit in the upper right of their square in
+                    // vertical text (lower left in horizontal): moved there before standing up.
+                    if let Draw::Glyphs { text, glyphs, .. } = &mut g
+                        && matches!(text.chars().next(), Some('\u{3001}' | '\u{3002}' | '\u{FF0C}' | '\u{FF0E}'))
+                    {
+                        for (_, x, y) in glyphs.iter_mut() {
+                            *x += size * 0.55;
+                            *y -= size * 0.55;
+                        }
+                    }
+                    out.push(Draw::Rotated { cx, cy, spin: Spin::new(-90.0, false, false), items: vec![g] });
+                }
+            }
+            k0 = k1;
+        }
+    }
+    out
 }

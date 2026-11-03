@@ -10,6 +10,7 @@ use wordcraft_engine::cmd::lists::{LEVELS, caret_list, level_json, levels_of};
 
 use crate::WordApp;
 use crate::dialogs::buttons;
+use crate::options::MeasureExt;
 use crate::theme::{Tokens, semibold};
 
 /// Number styles a level can have: OOXML name and a sample.
@@ -52,7 +53,7 @@ pub struct LevelForm {
 
 impl LevelForm {
     fn read(i: usize, v: &Value) -> LevelForm {
-        let k = wordcraft_geom::Unit::default().pt_per_unit();
+        let k = crate::options::unit().pt_per_unit();
         let s = |key: &str| v.get(key).and_then(Value::as_str).unwrap_or("").to_string();
         let f = |key: &str| v.get(key).and_then(Value::as_f64).map(|x| x as f32 / k).filter(|x| x.is_finite());
         let restart_after = v.get("restartAfter").and_then(Value::as_u64);
@@ -78,7 +79,7 @@ impl LevelForm {
 
     /// The level as `list.define` takes it.
     pub fn params(&self, i: usize) -> Value {
-        let k = wordcraft_geom::Unit::default().pt_per_unit();
+        let k = crate::options::unit().pt_per_unit();
         json!({
             "format": self.format,
             "text": self.text,
@@ -162,9 +163,9 @@ impl ListForm {
 
 /// Define New Multilevel List. Returns true to close.
 pub fn define_list(app: &mut WordApp, ui: &mut Ui, f: &mut ListForm) -> bool {
-    let unit = wordcraft_geom::Unit::default();
+    let unit = crate::options::unit();
     fn len(v: &mut f32, unit: wordcraft_geom::Unit) -> egui::DragValue<'_> {
-        egui::DragValue::new(v).speed(0.01).range(-10.0..=22.0).suffix(unit.suffix()).max_decimals(2)
+        egui::DragValue::new(v).speed(0.01).range(-10.0..=22.0).measure(unit).max_decimals(2)
     }
     let heading = |ui: &mut Ui, s: &str| {
         ui.add_space(4.0);
@@ -310,7 +311,7 @@ fn preview(ui: &mut Ui, f: &ListForm) {
     let p = ui.painter_at(rect);
     p.rect_filled(rect, 2.0, egui::Color32::WHITE);
     p.rect_stroke(rect, 2.0, egui::Stroke::new(1.0, t.border_strong), egui::StrokeKind::Inside);
-    let k = wordcraft_geom::Unit::default().pt_per_unit();
+    let k = crate::options::unit().pt_per_unit();
     // Positions in points, scaled so 4.5 inches fit.
     let scale = (rect.width() - 16.0) / 324.0;
     let x_of = |v: f32| rect.left() + 8.0 + (v * k * scale).clamp(0.0, rect.width() - 40.0);
@@ -350,6 +351,7 @@ pub struct TrackForm {
     pub insertions_deletions: bool,
     pub formatting: bool,
     pub balloons: String,
+    pub comment_display: String,
     pub insert_mark: String,
     /// Hex, empty = by author.
     pub insert_color: String,
@@ -373,6 +375,7 @@ impl TrackForm {
             insertions_deletions: b("insertionsDeletions"),
             formatting: b("formatting"),
             balloons: s("balloons"),
+            comment_display: s("commentDisplay"),
             insert_mark: s("insertMark"),
             insert_color: c("insertColor"),
             delete_mark: s("deleteMark"),
@@ -392,6 +395,7 @@ impl TrackForm {
             "insertionsDeletions": self.insertions_deletions,
             "formatting": self.formatting,
             "balloons": self.balloons,
+            "commentDisplay": self.comment_display,
             "insertMark": self.insert_mark,
             "insertColor": or(&self.insert_color, "byAuthor"),
             "deleteMark": self.delete_mark,
@@ -416,8 +420,10 @@ fn choice(ui: &mut Ui, id: &str, value: &mut String, options: &[(&str, &str)]) {
 /// A colour: `none_label` (by author, or `auto` when given) or a colour from the grid. `value` is
 /// hex.
 fn color(ui: &mut Ui, theme: &[wordcraft_doc::Rgb], value: &mut String, none_label: &str, auto: Option<wordcraft_doc::Rgb>) {
-    let c = wordcraft_doc::Rgb::parse(value);
     ui.horizontal(|ui| {
+        let id = ui.id().with("colorField");
+        crate::colors::take_field(ui.ctx(), id, value);
+        let c = wordcraft_doc::Rgb::parse(value);
         let (r, _) = ui.allocate_exact_size(vec2(16.0, 16.0), Sense::hover());
         let t = Tokens::get(ui.ctx());
         match c.or(auto) {
@@ -440,10 +446,7 @@ fn color(ui: &mut Ui, theme: &[wordcraft_doc::Rgb], value: &mut String, none_lab
                 value.clear();
                 ui.close();
             }
-            if let Some(hex) = crate::widgets::color_grid(ui, theme) {
-                *value = hex;
-                ui.close();
-            }
+            crate::colors::field_menu(ui, theme, id, value);
         });
     });
 }
@@ -471,6 +474,10 @@ pub fn track_options(app: &mut WordApp, ui: &mut Ui, f: &mut TrackForm) -> bool 
         ("commentsAndFormatting", "Show only comments and formatting in balloons"),
     ] {
         ui.radio_value(&mut f.balloons, v.to_string(), tl!(l));
+    }
+    heading(ui, "Comments");
+    for (v, l) in [("margin", "In the margin"), ("selected", "Only for the selected text")] {
+        ui.radio_value(&mut f.comment_display, v.to_string(), tl!(l));
     }
     heading(ui, "Advanced");
     egui::Grid::new("tco_advanced").num_columns(3).spacing(vec2(10.0, 6.0)).show(ui, |ui| {
@@ -574,6 +581,8 @@ mod tests {
         assert_eq!(a.run("review.trackingOptions", json!({})).unwrap(), json!({"pending": "trackChangesOptions"}));
         let Some(Dialog::TrackOptions { form }) = &mut a.dialog else { panic!("dialog") };
         assert_eq!((form.insert_mark.as_str(), form.balloons.as_str(), form.insert_color.as_str()), ("underline", "commentsAndFormatting", ""));
+        assert_eq!(form.comment_display, "margin", "comments stay in the margin, as in Word, unless chosen otherwise (#1055)");
+        form.comment_display = "selected".into();
         form.insert_mark = "doubleUnderline".into();
         form.changed_lines = "right".into();
         form.changed_lines_color = "FF0000".into();
@@ -582,6 +591,7 @@ mod tests {
         a.run("review.trackingOptions", params).unwrap();
         let m = &a.session.prefs.markup;
         assert_eq!(m.insert_mark, wordcraft_layout::display::InsertMark::DoubleUnderline);
+        assert_eq!(m.comment_display, wordcraft_layout::display::CommentDisplay::Selected);
         assert_eq!(m.changed_lines_color, Some(wordcraft_doc::Rgb(0xFF, 0, 0)));
         // Saved and restored with the preferences.
         let saved = a.prefs();

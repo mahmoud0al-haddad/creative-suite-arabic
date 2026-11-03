@@ -47,6 +47,17 @@ impl Dialog {
         &self.name
     }
 
+    /// Sets a form value. In Zoom, a Magnification choice is also the percentage `view.zoom` stores.
+    pub(crate) fn set_value(&mut self, key: &str, value: Json) {
+        if self.name == "zoom"
+            && key == "preset"
+            && let Some(p) = value.as_str().and_then(|s| s.parse::<f64>().ok())
+        {
+            self.values.insert("percent".into(), json!(p));
+        }
+        self.values.insert(key.into(), value);
+    }
+
     fn form(name: &str, title: &str, command: &'static str, fields: Vec<Field>, defaults: Json) -> Dialog {
         Dialog {
             name: name.into(),
@@ -222,6 +233,43 @@ impl Dialog {
                     json!({"action": "add", "range": sel}),
                 )
             }
+            "protectWorkbook" => Dialog::form(
+                "protectWorkbook",
+                "Protect Structure and Windows",
+                "review.protectWorkbook",
+                vec![
+                    Password { key: "password", label: "Password (optional):" },
+                    Note("Protect workbook for: Structure (sheets can't be added, moved, renamed, hidden or deleted).".into()),
+                ],
+                json!({"on": true}),
+            ),
+            "unprotectWorkbook" => Dialog::form(
+                "unprotectWorkbook",
+                "Unprotect Workbook",
+                "review.protectWorkbook",
+                vec![Password { key: "password", label: "Password:" }],
+                json!({"on": false}),
+            ),
+            "openPassword" => {
+                // The file rides along in the values (`path` on the desktop, `name` and `base64`
+                // on the web) and goes back to `file.open` with the password.
+                let source = p("path").as_str().or(p("name").as_str()).map(str::to_string).unwrap_or_default();
+                let file = std::path::Path::new(&source).file_name().and_then(|n| n.to_str()).unwrap_or("This workbook").to_string();
+                // An empty password from the start, so OK on the untouched field says "incorrect"
+                // rather than asking for the password again.
+                let mut values = params.clone();
+                values["password"] = json!("");
+                Dialog::form(
+                    "openPassword",
+                    "Password",
+                    "file.open",
+                    vec![
+                        Note(crate::i18n::format("'{file}' is protected.", &[("file", file.to_string())])),
+                        Password { key: "password", label: "Password:" },
+                    ],
+                    values,
+                )
+            }
             "unprotectSheet" => Dialog::form(
                 "unprotectSheet",
                 "Unprotect Sheet",
@@ -310,6 +358,21 @@ impl Dialog {
                     json!({"text": existing}),
                 )
             }
+            // Asks before a web or e-mail link leaves the workbook; OK runs `link.open`, which
+            // refuses anything but http, https and mailto.
+            "openLink" => {
+                let url = params.get("url").and_then(Json::as_str).unwrap_or_default().to_string();
+                Dialog::form(
+                    "openLink",
+                    "Open Hyperlink",
+                    "link.open",
+                    vec![Note(crate::i18n::format(
+                        "This workbook asks to open the address below. Links can lead to harmful sites or start other programs: open it only if you trust the workbook.\n\n{url}",
+                        &[("url", url.to_string())],
+                    ))],
+                    json!({"url": url}),
+                )
+            }
             "insertLink" => Dialog::form(
                 "insertLink",
                 "Insert Hyperlink",
@@ -342,20 +405,26 @@ impl Dialog {
                 ],
                 json!({"header": "", "footer": "&CPage &P of &N"}),
             ),
-            "pageSetup" => Dialog::form(
-                "pageSetup",
-                "Page Setup",
-                "pageLayout.margins",
-                vec![
-                    Number { key: "left", label: "Left margin (in):" },
-                    Number { key: "right", label: "Right margin (in):" },
-                    Number { key: "top", label: "Top margin (in):" },
-                    Number { key: "bottom", label: "Bottom margin (in):" },
-                    Number { key: "header", label: "Header (in):" },
-                    Number { key: "footer", label: "Footer (in):" },
-                ],
-                json!({"left": 0.7, "right": 0.7, "top": 0.75, "bottom": 0.75, "header": 0.3, "footer": 0.3}),
-            ),
+            "pageSetup" => {
+                // Opens on the active sheet's saved margins, so OK without edits rewrites them unchanged.
+                let m = app.session.active().and_then(|d| d.wb.active()).map(|s| s.print.margins).unwrap_or([0.7, 0.7, 0.75, 0.75, 0.3, 0.3]);
+                // Round off f32 noise so the form shows 0.1, not 0.10000000149.
+                let [left, right, top, bottom, header, footer] = m.map(|v| (f64::from(v) * 1e4).round() / 1e4);
+                Dialog::form(
+                    "pageSetup",
+                    "Page Setup",
+                    "pageLayout.margins",
+                    vec![
+                        Number { key: "left", label: "Left margin (in):" },
+                        Number { key: "right", label: "Right margin (in):" },
+                        Number { key: "top", label: "Top margin (in):" },
+                        Number { key: "bottom", label: "Bottom margin (in):" },
+                        Number { key: "header", label: "Header (in):" },
+                        Number { key: "footer", label: "Footer (in):" },
+                    ],
+                    json!({"left": left, "right": right, "top": top, "bottom": bottom, "header": header, "footer": footer}),
+                )
+            }
             "textToColumns" => Dialog::form(
                 "textToColumns",
                 "Convert Text to Columns",
@@ -387,6 +456,7 @@ impl Dialog {
                     Text { key: "timeline", label: "Timeline range (blank: first column of the selection):" },
                     Text { key: "values", label: "Values range (blank: second column of the selection):" },
                     Text { key: "end", label: "Forecast end (date or number; blank: a third of the history):" },
+                    Text { key: "forecastStart", label: "Forecast start (a date or number in the history; blank: after the last point):" },
                     Check { key: "confidenceInterval", label: "Confidence interval" },
                     Text { key: "confidence", label: "Confidence level (%):" },
                     Text { key: "seasonality", label: "Seasonality (auto, 0 for none, or a season length):" },
@@ -506,48 +576,8 @@ impl Dialog {
                 "dataValidation",
                 "Data Validation",
                 "data.validation",
-                vec![
-                    Choice {
-                        key: "type",
-                        label: "Allow",
-                        options: vec![
-                            ("any", "Any value"),
-                            ("whole", "Whole number"),
-                            ("decimal", "Decimal"),
-                            ("list", "List"),
-                            ("date", "Date"),
-                            ("time", "Time"),
-                            ("textLength", "Text length"),
-                            ("custom", "Custom"),
-                        ],
-                    },
-                    Choice {
-                        key: "operator",
-                        label: "Data",
-                        options: vec![
-                            ("between", "between"),
-                            ("notBetween", "not between"),
-                            ("equal", "equal to"),
-                            ("notEqual", "not equal to"),
-                            ("greater", "greater than"),
-                            ("less", "less than"),
-                            ("greaterOrEqual", "greater than or equal to"),
-                            ("lessOrEqual", "less than or equal to"),
-                        ],
-                    },
-                    Text { key: "formula1", label: "Minimum / Source / Formula:" },
-                    Text { key: "formula2", label: "Maximum:" },
-                    Check { key: "ignoreBlank", label: "Ignore blank" },
-                    Check { key: "dropdown", label: "In-cell dropdown" },
-                    Text { key: "inputMessage", label: "Input message:" },
-                    Choice {
-                        key: "errorStyle",
-                        label: "Error style",
-                        options: vec![("stop", "Stop"), ("warning", "Warning"), ("information", "Information")],
-                    },
-                    Text { key: "errorMessage", label: "Error message:" },
-                ],
-                json!({"type": "list", "operator": "between", "ignoreBlank": true, "dropdown": true, "errorStyle": "stop"}),
+                data_validation_fields("any", "between"),
+                validation_defaults(app),
             ),
             "cfQuick" => {
                 let ty = p("type").as_str().unwrap_or("cellIs").to_string();
@@ -779,15 +809,167 @@ impl Dialog {
     }
 }
 
+/// Initial values of the Data Validation form: the rule stored on the active cell, so OK without
+/// edits keeps it; a plain list rule when the cell has none.
+fn validation_defaults(app: &SheetApp) -> Json {
+    let mut v = json!({"type": "list", "operator": "between", "ignoreBlank": true, "dropdown": true, "errorStyle": "stop"});
+    let Some(doc) = app.session.active() else { return v };
+    let Some(dv) = doc.wb.active().and_then(|s| s.validations.iter().find(|d| d.ranges.iter().any(|r| r.contains(doc.selection.active)))) else {
+        return v;
+    };
+    // The enums serialize as their variant names; the command takes them in camelCase.
+    let camel = |x: Json| {
+        let name = x.as_str().unwrap_or_default();
+        let mut chars = name.chars();
+        chars.next().map(|c| c.to_lowercase().chain(chars).collect::<String>()).unwrap_or_default()
+    };
+    v["type"] = json!(camel(json!(dv.kind)));
+    v["operator"] = json!(camel(json!(dv.op)));
+    v["errorStyle"] = json!(camel(json!(dv.error_style)));
+    v["formula1"] = json!(dv.f1);
+    if let Some(f2) = &dv.f2 {
+        v["formula2"] = json!(f2);
+    }
+    v["ignoreBlank"] = json!(dv.allow_blank);
+    v["dropdown"] = json!(dv.in_cell_dropdown);
+    v["inputTitle"] = json!(dv.input_title);
+    v["inputMessage"] = json!(dv.input_message);
+    v["errorTitle"] = json!(dv.error_title);
+    v["errorMessage"] = json!(dv.error_message);
+    v
+}
+
 fn abs(r: &gridcraft_engine::core::RangeRef) -> String {
     let a = |c: gridcraft_engine::core::CellRef| format!("${}${}", gridcraft_engine::core::col_to_letters(c.col), c.row + 1);
     if r.is_single() { a(r.start) } else { format!("{}:{}", a(r.start), a(r.end)) }
+}
+
+/// The criterion controls in Excel's Settings tab depend on both Allow and Data.
+/// `formula1` is the sole source for a list or custom rule; `formula2` is a
+/// second bound only for Between and Not between.
+fn data_validation_fields(kind: &str, operator: &str) -> Vec<Field> {
+    use Field::*;
+    let mut fields = vec![Choice {
+        key: "type",
+        label: "Allow",
+        options: vec![
+            ("any", "Any value"),
+            ("whole", "Whole number"),
+            ("decimal", "Decimal"),
+            ("list", "List"),
+            ("date", "Date"),
+            ("time", "Time"),
+            ("textLength", "Text length"),
+            ("custom", "Custom"),
+        ],
+    }];
+    let two_bounds = matches!(operator, "between" | "notBetween");
+    match kind {
+        "list" => {
+            fields.push(Text { key: "formula1", label: "Source:" });
+            fields.push(Check { key: "ignoreBlank", label: "Ignore blank" });
+            fields.push(Check { key: "dropdown", label: "In-cell dropdown" });
+        }
+        "custom" => {
+            fields.push(Text { key: "formula1", label: "Formula:" });
+            fields.push(Check { key: "ignoreBlank", label: "Ignore blank" });
+        }
+        "whole" | "decimal" | "date" | "time" | "textLength" => {
+            fields.push(Choice {
+                key: "operator",
+                label: "Data",
+                options: vec![
+                    ("between", "between"),
+                    ("notBetween", "not between"),
+                    ("equal", "equal to"),
+                    ("notEqual", "not equal to"),
+                    ("greater", "greater than"),
+                    ("less", "less than"),
+                    ("greaterOrEqual", "greater than or equal to"),
+                    ("lessOrEqual", "less than or equal to"),
+                ],
+            });
+            let lower = matches!(operator, "greater" | "greaterOrEqual");
+            let (first, second) = match kind {
+                "date" => (
+                    if two_bounds || lower {
+                        "Start date:"
+                    } else if matches!(operator, "less" | "lessOrEqual") {
+                        "End date:"
+                    } else {
+                        "Date:"
+                    },
+                    "End date:",
+                ),
+                "time" => (
+                    if two_bounds || lower {
+                        "Start time:"
+                    } else if matches!(operator, "less" | "lessOrEqual") {
+                        "End time:"
+                    } else {
+                        "Time:"
+                    },
+                    "End time:",
+                ),
+                _ => (
+                    if two_bounds || lower {
+                        "Minimum:"
+                    } else if matches!(operator, "less" | "lessOrEqual") {
+                        "Maximum:"
+                    } else {
+                        "Value:"
+                    },
+                    "Maximum:",
+                ),
+            };
+            fields.push(Text { key: "formula1", label: first });
+            if two_bounds {
+                fields.push(Text { key: "formula2", label: second });
+            }
+            fields.push(Check { key: "ignoreBlank", label: "Ignore blank" });
+        }
+        _ => {}
+    }
+    fields.push(Text { key: "inputMessage", label: "Input message:" });
+    fields.push(Choice {
+        key: "errorStyle",
+        label: "Error style",
+        options: vec![("stop", "Stop"), ("warning", "Warning"), ("information", "Information")],
+    });
+    fields.push(Text { key: "errorMessage", label: "Error message:" });
+    fields
+}
+
+fn data_validation_form(ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open: &mut bool) {
+    let kind = d.values.get("type").and_then(Json::as_str).unwrap_or("any");
+    let operator = d.values.get("operator").and_then(Json::as_str).unwrap_or("between");
+    d.fields = data_validation_fields(kind, operator);
+    form_fields(ui, d);
+    ok_cancel(ui, confirm, open);
 }
 
 /// Builds the command params from form values for dialogs that need translation.
 fn build_params(d: &Dialog) -> Json {
     let mut v = Json::Object(d.values.clone());
     match d.name.as_str() {
+        "dataValidation" => {
+            let kind = d.values.get("type").and_then(Json::as_str).unwrap_or("any");
+            let operator = d.values.get("operator").and_then(Json::as_str).unwrap_or("between");
+            if let Some(m) = v.as_object_mut() {
+                if !matches!(operator, "between" | "notBetween") || matches!(kind, "any" | "list" | "custom") {
+                    m.remove("formula2");
+                }
+                if matches!(kind, "any" | "list" | "custom") {
+                    m.remove("operator");
+                }
+                if kind == "any" {
+                    m.remove("formula1");
+                }
+                if kind != "list" {
+                    m.remove("dropdown");
+                }
+            }
+        }
         "textToColumns" => {
             let mut delims = Vec::new();
             for (k, c) in [("tab", "\t"), ("semicolon", ";"), ("comma", ","), ("space", " ")] {
@@ -863,7 +1045,7 @@ pub fn show(app: &mut SheetApp, ctx: &egui::Context) {
         "solver" => 460.0,
         _ => 380.0,
     };
-    let window = egui::Window::new(crate::i18n::t(&d.title))
+    let window = egui::Window::new(app.ui.language.tr(&d.title))
         .id(egui::Id::new("dialog").with(&d.name))
         .collapsible(false)
         .resizable(false)
@@ -875,6 +1057,7 @@ pub fn show(app: &mut SheetApp, ctx: &egui::Context) {
             ui.set_min_width(width - 20.0);
             match d.name.as_str() {
                 "formatCells" => format_cells(app, ui, &mut d, &mut confirm),
+                "dataValidation" => data_validation_form(ui, &mut d, &mut confirm, &mut open),
                 "insertFunction" => insert_function(app, ui, &mut d, &mut confirm),
                 "find" => find(app, ui, &mut d),
                 "goTo" => go_to(app, ui, &mut d, &mut confirm),
@@ -1090,11 +1273,19 @@ pub fn show(app: &mut SheetApp, ctx: &egui::Context) {
                 open = false;
                 if d.name == "solver" {
                     app.open_dialog("solverResults", r);
+                } else if d.name == "openPassword" {
+                    let path = d.values.get("path").and_then(Json::as_str).map(str::to_string);
+                    app.after_open(path.as_deref(), &r);
                 }
             }
             // Data Analysis asks before replacing data in its output range.
             Err(e) if d.name == "analysisToolPak" && e.contains(gridcraft_engine::cmd::analysis::OVERWRITE_ERROR) => {
                 d.values.insert("askOverwrite".into(), json!(true));
+            }
+            // A wrong password: say so, clear the field and stay open for another try.
+            Err(e) if d.name == "openPassword" => {
+                d.values.insert("password".into(), json!(""));
+                app.message = Some((d.title.clone(), crate::clean_error(&e)));
             }
             Err(e) => app.message = Some((d.title.clone(), crate::clean_error(&e))),
         }
@@ -1187,13 +1378,15 @@ fn paste_special_shortcuts(d: &mut Dialog, ctx: &egui::Context) {
 fn ok_cancel(ui: &mut egui::Ui, confirm: &mut bool, open: &mut bool) {
     ui.add_space(8.0);
     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+        let lang = crate::i18n::current(ui.ctx());
         let ok = ui.add(
-            egui::Button::new(egui::RichText::new(crate::i18n::t("   OK   ")).color(Color32::WHITE)).fill(crate::theme::Tokens::get(ui.ctx()).accent),
+            egui::Button::new(egui::RichText::new(format!("   {}   ", lang.tr("OK"))).color(Color32::WHITE))
+                .fill(crate::theme::Tokens::get(ui.ctx()).accent),
         );
         if ok.clicked() || ui.input(|i| i.key_pressed(Key::Enter)) {
             *confirm = true;
         }
-        if ui.button(crate::i18n::t(" Cancel ")).clicked() {
+        if ui.button(format!(" {} ", lang.tr("Cancel"))).clicked() {
             *open = false;
         }
     });
@@ -1252,9 +1445,23 @@ fn form_fields(ui: &mut egui::Ui, d: &mut Dialog) {
                     ui.vertical(|ui| {
                         ui.label(egui::RichText::new(crate::i18n::t(label)).strong());
                         let cur = d.values.get(key).and_then(Json::as_str).unwrap_or("").to_string();
-                        for (val, text) in options {
-                            if ui.radio(cur == val, crate::i18n::t(text)).clicked() {
-                                d.values.insert(key.into(), json!(val));
+                        if d.name == "dataValidation" {
+                            let selected = options.iter().find(|(val, _)| *val == cur).map(|(_, text)| *text).unwrap_or("");
+                            egui::ComboBox::from_id_salt(("dataValidation", key)).selected_text(crate::i18n::t(selected)).width(300.0).show_ui(
+                                ui,
+                                |ui| {
+                                    for (val, text) in options {
+                                        if ui.selectable_label(cur == val, crate::i18n::t(text)).clicked() {
+                                            d.set_value(key, json!(val));
+                                        }
+                                    }
+                                },
+                            );
+                        } else {
+                            for (val, text) in options {
+                                if ui.radio(cur == val, crate::i18n::t(text)).clicked() {
+                                    d.set_value(key, json!(val));
+                                }
                             }
                         }
                     });
@@ -1279,7 +1486,7 @@ fn form_fields(ui: &mut egui::Ui, d: &mut Dialog) {
 fn about(ui: &mut egui::Ui, d: &mut Dialog) {
     ui.horizontal(|ui| {
         for tab in ["About", "Contributors", "Models"] {
-            if ui.selectable_label(d.tab == tab, tab).clicked() {
+            if ui.selectable_label(d.tab == tab, crate::i18n::t(tab)).clicked() {
                 d.tab = tab.to_string();
             }
         }
@@ -1331,9 +1538,20 @@ fn macros(ui: &mut egui::Ui, d: &mut Dialog) {
 }
 
 fn format_cells(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool) {
+    // `d.tab` stays the English name (it is what `open_dialog` and tests pass); only the drawn
+    // labels are translated. The Fill tab is keyed by context: the Alignment tab's "Fill" is a
+    // different word in some languages.
+    let lang = app.ui.language;
     ui.horizontal(|ui| {
-        for tab in ["Number", "Alignment", "Font", "Border", "Fill", "Protection"] {
-            if ui.selectable_label(d.tab == tab, tab).clicked() {
+        for (tab, key) in [
+            ("Number", "Number"),
+            ("Alignment", "Alignment"),
+            ("Font", "Font"),
+            ("Border", "Border"),
+            ("Fill", "Format Cells|Fill"),
+            ("Protection", "Protection"),
+        ] {
+            if ui.selectable_label(d.tab == tab, lang.tr(key)).clicked() {
                 d.tab = tab.to_string();
             }
         }
@@ -1345,20 +1563,20 @@ fn format_cells(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: 
         "Number" => {
             let mut code = st.num_fmt.as_str().to_string();
             ui.columns(2, |cols| {
-                cols[0].label(egui::RichText::new(crate::i18n::t("Category:")).strong());
+                cols[0].label(egui::RichText::new(lang.tr("Category:")).strong());
                 for name in
                     ["General", "Number", "Currency", "Accounting", "Short Date", "Long Date", "Time", "Percentage", "Fraction", "Scientific", "Text"]
                 {
                     let c = gridcraft_engine::cmd::format::format_code_for(name).to_string();
-                    if cols[0].selectable_label(code == c, name).clicked() {
+                    if cols[0].selectable_label(code == c, lang.tr(name)).clicked() {
                         code = c;
                     }
                 }
-                cols[1].label(egui::RichText::new(crate::i18n::t("Sample")).strong());
+                cols[1].label(egui::RichText::new(lang.tr("Sample")).strong());
                 let preview = app.session.active().map(|doc| gridcraft_engine::display::format(&sample, &code, &doc.wb).text).unwrap_or_default();
                 cols[1].label(egui::RichText::new(preview).font(theme::ui_font(15.0)));
                 cols[1].add_space(8.0);
-                cols[1].label(crate::i18n::t("Type (custom format code):"));
+                cols[1].label(lang.tr("Type (custom format code):"));
                 cols[1].text_edit_singleline(&mut code);
                 for c in [
                     "0",
@@ -1387,7 +1605,7 @@ fn format_cells(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: 
         }
         "Alignment" => {
             use gridcraft_engine::model::{HAlign, VAlign};
-            ui.label(egui::RichText::new(crate::i18n::t("Horizontal")).strong());
+            ui.label(egui::RichText::new(lang.tr("Horizontal")).strong());
             ui.horizontal_wrapped(|ui| {
                 for (h, n) in [
                     (HAlign::General, "General"),
@@ -1399,10 +1617,10 @@ fn format_cells(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: 
                     (HAlign::CenterAcross, "Center Across Selection"),
                     (HAlign::Distributed, "Distributed"),
                 ] {
-                    ui.radio_value(&mut st.align.h, h, n);
+                    ui.radio_value(&mut st.align.h, h, lang.tr(n));
                 }
             });
-            ui.label(egui::RichText::new(crate::i18n::t("Vertical")).strong());
+            ui.label(egui::RichText::new(lang.tr("Vertical")).strong());
             ui.horizontal_wrapped(|ui| {
                 for (v, n) in [
                     (VAlign::Top, "Top"),
@@ -1411,29 +1629,29 @@ fn format_cells(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: 
                     (VAlign::Justify, "Justify"),
                     (VAlign::Distributed, "Distributed"),
                 ] {
-                    ui.radio_value(&mut st.align.v, v, n);
+                    ui.radio_value(&mut st.align.v, v, lang.tr(n));
                 }
             });
             let mut indent = st.align.indent as f32;
-            ui.add(egui::Slider::new(&mut indent, 0.0..=15.0).text(crate::i18n::t("Indent")));
+            ui.add(egui::Slider::new(&mut indent, 0.0..=15.0).text(lang.tr("Indent")));
             st.align.indent = indent as u8;
             let mut rot = if st.align.rotation == 255 { 0.0 } else { st.align.rotation as f32 };
-            ui.add(egui::Slider::new(&mut rot, -90.0..=90.0).text(crate::i18n::t("Orientation (degrees)")));
+            ui.add(egui::Slider::new(&mut rot, -90.0..=90.0).text(lang.tr("Orientation (degrees)")));
             st.align.rotation = rot as i16;
-            ui.checkbox(&mut st.align.wrap, crate::i18n::t("Wrap text"));
-            ui.checkbox(&mut st.align.shrink, crate::i18n::t("Shrink to fit"));
+            ui.checkbox(&mut st.align.wrap, lang.tr("Wrap text"));
+            ui.checkbox(&mut st.align.shrink, lang.tr("Shrink to fit"));
         }
         "Font" => {
-            egui::ComboBox::from_label(crate::i18n::t("Font")).selected_text(st.font.name.clone()).show_ui(ui, |ui| {
-                for f in crate::ribbon::FONTS {
-                    ui.selectable_value(&mut st.font.name, f.to_string(), *f);
+            egui::ComboBox::from_label(lang.tr("Font")).selected_text(st.font.name.clone()).show_ui(ui, |ui| {
+                for f in crate::fonts::families() {
+                    ui.selectable_value(&mut st.font.name, f.clone(), f.clone());
                 }
             });
-            ui.add(egui::Slider::new(&mut st.font.size, 6.0..=72.0).text(crate::i18n::t("Size")));
+            ui.add(egui::Slider::new(&mut st.font.size, 6.0..=72.0).text(lang.tr("Size")));
             ui.horizontal(|ui| {
-                ui.checkbox(&mut st.font.bold, crate::i18n::t("Bold"));
-                ui.checkbox(&mut st.font.italic, crate::i18n::t("Italic"));
-                ui.checkbox(&mut st.font.strike, crate::i18n::t("Strikethrough"));
+                ui.checkbox(&mut st.font.bold, lang.tr("Bold"));
+                ui.checkbox(&mut st.font.italic, lang.tr("Italic"));
+                ui.checkbox(&mut st.font.strike, lang.tr("Strikethrough"));
             });
             use gridcraft_engine::model::{Underline, VertAlign};
             ui.horizontal(|ui| {
@@ -1444,17 +1662,17 @@ fn format_cells(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: 
                     (Underline::SingleAccounting, "Single Accounting"),
                     (Underline::DoubleAccounting, "Double Accounting"),
                 ] {
-                    ui.radio_value(&mut st.font.underline, u, n);
+                    ui.radio_value(&mut st.font.underline, u, lang.tr(n));
                 }
             });
             ui.horizontal(|ui| {
-                ui.radio_value(&mut st.font.vert, VertAlign::Baseline, crate::i18n::t("Normal"));
-                ui.radio_value(&mut st.font.vert, VertAlign::Superscript, crate::i18n::t("Superscript"));
-                ui.radio_value(&mut st.font.vert, VertAlign::Subscript, crate::i18n::t("Subscript"));
+                ui.radio_value(&mut st.font.vert, VertAlign::Baseline, lang.tr("Normal"));
+                ui.radio_value(&mut st.font.vert, VertAlign::Superscript, lang.tr("Superscript"));
+                ui.radio_value(&mut st.font.vert, VertAlign::Subscript, lang.tr("Subscript"));
             });
-            ui.label(crate::i18n::t("Color:"));
+            ui.label(lang.tr("Color:"));
             let colors = app.session.active().map(|doc| doc.wb.theme.colors).unwrap_or_default();
-            if let Some(c) = crate::widgets::color_palette(ui, &colors, "Automatic") {
+            if let Some(c) = crate::widgets::color_palette(ui, &colors, lang.tr("Automatic")) {
                 st.font.color =
                     if c == "none" { gridcraft_engine::model::Color::Auto } else { gridcraft_engine::model::Color::from_hex(&c).unwrap_or_default() };
             }
@@ -1463,10 +1681,10 @@ fn format_cells(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: 
             use gridcraft_engine::model::{BorderLine, BorderStyle};
             let line = BorderLine { style: BorderStyle::Thin, color: gridcraft_engine::model::Color::Auto };
             ui.horizontal(|ui| {
-                if ui.button(crate::i18n::t("None")).clicked() {
+                if ui.button(lang.tr("None")).clicked() {
                     st.borders = Default::default();
                 }
-                if ui.button(crate::i18n::t("Outline")).clicked() {
+                if ui.button(lang.tr("Outline")).clicked() {
                     st.borders.top = line;
                     st.borders.bottom = line;
                     st.borders.left = line;
@@ -1481,6 +1699,7 @@ fn format_cells(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: 
                 ("Diagonal ↘", &mut st.borders.diag_down),
                 ("Diagonal ↗", &mut st.borders.diag_up),
             ] {
+                let n = lang.tr(n);
                 ui.horizontal(|ui| {
                     ui.label(format!("{n}:"));
                     for (s, label) in [
@@ -1492,7 +1711,8 @@ fn format_cells(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: 
                         (BorderStyle::Dotted, "dotted"),
                         (BorderStyle::Double, "double"),
                     ] {
-                        let response = ui.selectable_label(slot.style == s, crate::i18n::t(label));
+                        let label = lang.tr(label);
+                        let response = ui.selectable_label(slot.style == s, label);
                         response
                             .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::SelectableLabel, ui.is_enabled(), format!("{n} {label}")));
                         if response.clicked() {
@@ -1506,8 +1726,8 @@ fn format_cells(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: 
         }
         "Fill" => {
             let colors = app.session.active().map(|doc| doc.wb.theme.colors).unwrap_or_default();
-            ui.label(crate::i18n::t("Background Color:"));
-            if let Some(c) = crate::widgets::color_palette(ui, &colors, "No Color") {
+            ui.label(lang.tr("Background Color:"));
+            if let Some(c) = crate::widgets::color_palette(ui, &colors, lang.tr("No Color")) {
                 st.fill = if c == "none" {
                     Default::default()
                 } else {
@@ -1516,12 +1736,12 @@ fn format_cells(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: 
             }
         }
         "Protection" => {
-            ui.checkbox(&mut st.protection.locked, crate::i18n::t("Locked"));
-            ui.checkbox(&mut st.protection.hidden, crate::i18n::t("Hidden"));
+            ui.checkbox(&mut st.protection.locked, lang.tr("Locked"));
+            ui.checkbox(&mut st.protection.hidden, lang.tr("Hidden"));
             ui.label(
-                egui::RichText::new(crate::i18n::t(
-                    "Locking cells or hiding formulas has no effect until you protect the worksheet (Review › Protect Sheet).",
-                ))
+                egui::RichText::new(
+                    lang.tr("Locking cells or hiding formulas has no effect until you protect the worksheet (Review › Protect Sheet)."),
+                )
                 .small(),
             );
         }
@@ -1599,7 +1819,7 @@ fn insert_function(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confir
 fn find(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog) {
     ui.horizontal(|ui| {
         for tab in ["Find", "Replace"] {
-            if ui.selectable_label(d.tab == tab, tab).clicked() {
+            if ui.selectable_label(d.tab == tab, crate::i18n::t(tab)).clicked() {
                 d.tab = tab.into();
             }
         }
@@ -1885,7 +2105,7 @@ fn chart_icon(t: &str) -> Icon {
 fn recommended_charts(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open: &mut bool) {
     ui.horizontal(|ui| {
         for tab in ["Recommended Charts", "All Charts"] {
-            if ui.selectable_label(d.tab == tab, tab).clicked() && d.tab != tab {
+            if ui.selectable_label(d.tab == tab, crate::i18n::t(tab)).clicked() && d.tab != tab {
                 d.tab = tab.to_string();
                 select_chart(d, 0);
             }
@@ -2343,20 +2563,24 @@ fn solver(ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open: &mut bool
     let method = text(d, "method");
     ui.horizontal(|ui| {
         ui.label(crate::i18n::t("Select a Solving Method:"));
-        let label = |m: &str| crate::i18n::t(if m == "simplex" { "Simplex LP" } else { "GRG Nonlinear" });
-        egui::ComboBox::from_id_salt("solverMethod").selected_text(crate::i18n::t(label(&method))).show_ui(ui, |ui| {
-            for m in ["grg", "simplex"] {
-                if ui.selectable_label(method == m, label(m)).clicked() {
+        let label = |m: &str| match m {
+            "simplex" => crate::i18n::t("Simplex LP"),
+            "evolutionary" => crate::i18n::t("Evolutionary"),
+            _ => crate::i18n::t("GRG Nonlinear"),
+        };
+        egui::ComboBox::from_id_salt("solverMethod").selected_text(label(&method)).show_ui(ui, |ui| {
+            for m in ["grg", "simplex", "evolutionary"] {
+                if ui.selectable_label(method == m, crate::i18n::t(label(m))).clicked() {
                     d.values.insert("method".into(), json!(m));
                 }
             }
         });
     });
     ui.label(
-        egui::RichText::new(if method == "simplex" {
-            crate::i18n::t("Simplex LP: for linear models; integer and binary constraints by branch and bound.")
-        } else {
-            crate::i18n::t("GRG Nonlinear: a local optimum of a smooth model, from the current values.")
+        egui::RichText::new(match method.as_str() {
+            "simplex" => crate::i18n::t("Simplex LP: for linear models; integer and binary constraints by branch and bound."),
+            "evolutionary" => crate::i18n::t("Evolutionary: a genetic search for models that aren't smooth; every variable cell needs bounds."),
+            _ => crate::i18n::t("GRG Nonlinear: a local optimum of a smooth model, from the current values."),
         })
         .small(),
     );
@@ -2383,11 +2607,23 @@ fn solver_results(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, open: &
     let restore = d.values.get("restore").and_then(Json::as_bool).unwrap_or(false);
     if changed {
         ui.add_space(4.0);
-        if ui.radio(!restore, "Keep Solver Solution").clicked() {
+        if ui.radio(!restore, crate::i18n::t("Keep Solver Solution")).clicked() {
             d.values.insert("restore".into(), json!(false));
         }
-        if ui.radio(restore, "Restore Original Values").clicked() {
+        if ui.radio(restore, crate::i18n::t("Restore Original Values")).clicked() {
             d.values.insert("restore".into(), json!(true));
+        }
+    }
+    // Reports describe the solution whether it is kept or not.
+    let solved = d.values.get("values").and_then(Json::as_object).is_some_and(|v| !v.is_empty());
+    if solved {
+        ui.add_space(4.0);
+        ui.label(crate::i18n::t("Reports:"));
+        for (key, label) in [("answerReport", "Answer"), ("limitsReport", "Limits")] {
+            let mut on = d.values.get(key).and_then(Json::as_bool).unwrap_or(false);
+            if ui.checkbox(&mut on, label).changed() {
+                d.values.insert(key.into(), json!(on));
+            }
         }
     }
     let mut confirm = false;
@@ -2396,6 +2632,16 @@ fn solver_results(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, open: &
         // The solution (and the saved model) is one undo step.
         if changed && restore {
             app.run_or_alert("edit.undo", json!({}));
+        }
+        let reports: Vec<&str> = [("answerReport", "answer"), ("limitsReport", "limits")]
+            .into_iter()
+            .filter(|(key, _)| d.values.get(*key).and_then(Json::as_bool) == Some(true))
+            .map(|(_, kind)| kind)
+            .collect();
+        if solved && !reports.is_empty() {
+            let field = |k: &str| d.values.get(k).cloned().unwrap_or(Json::Null);
+            let params = json!({"reports": reports, "model": field("model"), "values": field("values"), "original": field("original"), "message": field("message")});
+            app.run_or_alert("data.solverReport", params);
         }
         *open = false;
     }
@@ -2452,4 +2698,82 @@ fn spelling(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, open: &mut bo
             }
         }
     });
+}
+
+#[cfg(test)]
+mod data_validation_tests {
+    use super::*;
+
+    #[test]
+    fn list_uses_one_source_and_does_not_submit_a_second_list() {
+        let fields = data_validation_fields("list", "between");
+        assert!(fields.iter().any(|f| matches!(f, Field::Text { key: "formula1", label: "Source:" })));
+        assert!(!fields.iter().any(|f| matches!(f, Field::Text { key: "formula2", .. } | Field::Choice { key: "operator", .. })));
+
+        let dialog = Dialog::form(
+            "dataValidation",
+            "Data Validation",
+            "data.validation",
+            fields,
+            json!({"type": "list", "operator": "between", "formula1": "ABC,DEF", "formula2": "GHI,JKL", "dropdown": true}),
+        );
+        let params = build_params(&dialog);
+        assert_eq!(params["formula1"], "ABC,DEF");
+        assert!(params.get("formula2").is_none());
+        assert!(params.get("operator").is_none());
+    }
+
+    #[test]
+    fn only_between_operators_show_and_submit_two_bounds() {
+        let two = data_validation_fields("whole", "between");
+        assert!(two.iter().any(|f| matches!(f, Field::Text { key: "formula2", label: "Maximum:" })));
+        let one = data_validation_fields("date", "lessOrEqual");
+        assert!(one.iter().any(|f| matches!(f, Field::Text { key: "formula1", label: "End date:" })));
+        assert!(!one.iter().any(|f| matches!(f, Field::Text { key: "formula2", .. })));
+
+        let dialog = Dialog::form(
+            "dataValidation",
+            "Data Validation",
+            "data.validation",
+            one,
+            json!({"type": "date", "operator": "lessOrEqual", "formula1": "2026-10-12", "formula2": "2030-01-01"}),
+        );
+        let params = build_params(&dialog);
+        assert_eq!(params["operator"], "lessOrEqual");
+        assert_eq!(params["formula1"], "2026-10-12");
+        assert!(params.get("formula2").is_none());
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn data_validation_opens_on_the_rule_of_the_active_cell() {
+        let mut session = gridcraft_engine::Session::default();
+        session.new_workbook();
+        let mut app = SheetApp::new(session, Default::default());
+        app.run("data.validation", json!({"range": "A1", "type": "whole", "operator": "greater", "formula1": "5"})).unwrap();
+        let d = Dialog::open(&mut app, "dataValidation", json!({})).unwrap();
+        assert_eq!(d.values["type"], "whole");
+        assert_eq!(d.values["operator"], "greater");
+        assert_eq!(d.values["formula1"], "5");
+        // OK without edits keeps the rule: 6 is accepted, 4 is rejected.
+        app.run(d.command.unwrap(), build_params(&d)).unwrap();
+        let doc = app.session.active().unwrap();
+        let at = gridcraft_engine::core::CellRef::new(0, 0);
+        assert!(gridcraft_engine::cmd::data::check_validation(&doc.wb, 0, at, "6").is_none());
+        assert!(gridcraft_engine::cmd::data::check_validation(&doc.wb, 0, at, "4").is_some());
+    }
+
+    #[test]
+    fn data_validation_without_a_rule_opens_on_a_blank_list() {
+        let mut session = gridcraft_engine::Session::default();
+        session.new_workbook();
+        let mut app = SheetApp::new(session, Default::default());
+        let d = Dialog::open(&mut app, "dataValidation", json!({})).unwrap();
+        assert_eq!(d.values["type"], "list");
+        assert!(d.values.get("formula1").is_none());
+    }
 }

@@ -17,6 +17,11 @@ pub struct ParseError {
 
 pub(crate) const MAX_DEPTH: usize = 256;
 
+/// Longest formula accepted, in characters: Excel's limit for formula contents. It also bounds
+/// the depth of the trees long operator chains build (`1+1+…`), which dropping and evaluating
+/// walk recursively; without it a formula of a few hundred kilobytes in a file overflows the stack.
+pub const MAX_FORMULA_LEN: usize = 8_192;
+
 /// Parses formula text. A leading `=` (or `+`/`-` as Lotus users type) is accepted and skipped
 /// for `=`.
 pub fn parse(src: &str) -> Result<Expr, ParseError> {
@@ -25,6 +30,9 @@ pub fn parse(src: &str) -> Result<Expr, ParseError> {
 
 pub(crate) fn parse_syntax(src: &str, locale: crate::FormulaLocale) -> Result<Expr, ParseError> {
     let body = src.strip_prefix('=').unwrap_or(src);
+    if body.len() > MAX_FORMULA_LEN && body.chars().count() > MAX_FORMULA_LEN {
+        return Err(ParseError { msg: format!("formula is longer than {MAX_FORMULA_LEN} characters"), pos: 0 });
+    }
     let toks = tokenize_locale(body, locale).map_err(|e| ParseError { msg: e.msg, pos: e.pos })?;
     let toks = significant_spaces(toks);
     let mut p = Parser { toks, i: 0, depth: 0, input: locale == crate::FormulaLocale::Es };
@@ -50,8 +58,9 @@ fn significant_spaces(toks: Vec<Token>) -> Vec<Token> {
     let mut out: Vec<Token> = Vec::with_capacity(toks.len());
     for (i, t) in toks.iter().enumerate() {
         if t.tok == Tok::Space {
-            let prev_end = out.last().is_some_and(|p| matches!(p.tok, Tok::Word(_) | Tok::RParen | Tok::Struct(_)));
-            let next_start = toks.get(i + 1).is_some_and(|n| matches!(n.tok, Tok::Word(_) | Tok::Sheet(..) | Tok::LParen | Tok::Func(_)));
+            let prev_end = out.last().is_some_and(|p| matches!(p.tok, Tok::Word(_) | Tok::RParen | Tok::Struct(_) | Tok::Error(_)));
+            let next_start =
+                toks.get(i + 1).is_some_and(|n| matches!(n.tok, Tok::Word(_) | Tok::Sheet(..) | Tok::LParen | Tok::Func(_) | Tok::Error(_)));
             if prev_end && next_start {
                 out.push(t.clone());
             }
@@ -88,15 +97,19 @@ fn word_is_cell(w: &str) -> Option<Anchor> {
     Some(Anchor { row, col, row_abs, col_abs })
 }
 
-/// `_xlfn.XLOOKUP` → `XLOOKUP`.
+/// `_xlfn.XLOOKUP` → `XLOOKUP`. `_xludf.` is kept (`_xludf.SUM`): it marks a user-defined
+/// function, never the built-in of the same name, and files need it back.
 pub fn normalize_function_name(name: &str) -> String {
     let u = name.to_ascii_uppercase();
-    for p in ["_XLFN._XLWS.", "_XLFN.", "_XLWS.", "_XLUDF."] {
+    for p in ["_XLFN._XLWS.", "_XLFN.", "_XLWS."] {
         if let Some(r) = u.strip_prefix(p) {
             return r.to_string();
         }
     }
-    u
+    match u.strip_prefix("_XLUDF.") {
+        Some(r) => format!("_xludf.{r}"),
+        None => u,
+    }
 }
 
 impl Parser {
@@ -155,10 +168,17 @@ impl Parser {
             return Err(self.err("formula is nested too deeply"));
         }
         let mut lhs = self.prefix(allow_union)?;
+        // Postfix operators (`%`, invoking a result) wrap `lhs` without recursing: they count
+        // towards the nesting limit, so `1%%%…` can't build a tree deeper than it.
+        let mut postfix = 0;
         loop {
             if *self.peek() == Tok::Op("%") {
                 if 70 < min_bp {
                     break;
+                }
+                postfix += 1;
+                if self.depth + postfix > MAX_DEPTH {
+                    return Err(self.err("formula is nested too deeply"));
                 }
                 self.next();
                 lhs = Expr::Unary(UnOp::Percent, Box::new(lhs));
@@ -169,9 +189,24 @@ impl Parser {
                 if let Expr::Name(_) = lhs {
                     // A name followed by '(' was lexed as Func; this is `(name)(…)` only.
                 }
+                postfix += 1;
+                if self.depth + postfix > MAX_DEPTH {
+                    return Err(self.err("formula is nested too deeply"));
+                }
                 self.next();
                 let args = self.args()?;
                 lhs = Expr::Invoke(Box::new(lhs), args);
+                continue;
+            }
+            if let Tok::Trim(mode) = *self.peek() {
+                // A trim reference is the range operator with a modifier: same binding power.
+                let bp = BinOp::Range.precedence();
+                if bp < min_bp {
+                    break;
+                }
+                self.next();
+                let rhs = self.expr(bp + 1, allow_union)?;
+                lhs = Expr::Unary(UnOp::Trim(mode), Box::new(combine(BinOp::Range, lhs, rhs)));
                 continue;
             }
             let Some(op) = self.binop(allow_union) else { break };
@@ -243,6 +278,19 @@ impl Parser {
                 {
                     return Ok(Expr::Unary(UnOp::At, Box::new(x)));
                 }
+                // Files may spell a trim reference as a function call (`_xlfn._TRO_ALL(A1:E10)`).
+                let trim = match name.as_str() {
+                    "_TRO_LEADING" => Some(TrimMode::Leading),
+                    "_TRO_TRAILING" => Some(TrimMode::Trailing),
+                    "_TRO_ALL" => Some(TrimMode::All),
+                    _ => None,
+                };
+                if let Some(mode) = trim
+                    && args.len() == 1
+                    && let Some(x) = args.pop()
+                {
+                    return Ok(Expr::Unary(UnOp::Trim(mode), Box::new(x)));
+                }
                 Ok(Expr::Call(name, args))
             }
             Tok::Sheet(a, b) => {
@@ -260,27 +308,42 @@ impl Parser {
                 if let Tok::Struct(_) = self.peek()
                     && word_is_cell(&w).is_none()
                 {
+                    let pos = self.pos();
                     let Tok::Struct(body) = self.next() else { return Err(self.err("internal")) };
-                    return Ok(Expr::Struct(parse_struct(&w, &body)));
+                    return parse_struct(&w, &body).map(Expr::Struct).map_err(|msg| ParseError { msg, pos });
                 }
                 self.reference_from_word(SheetSel::Current, &w)
             }
-            Tok::Struct(body) => Ok(Expr::Struct(parse_struct("", &body))),
+            Tok::Struct(body) => parse_struct("", &body).map(Expr::Struct).map_err(|msg| self.err(msg)),
             t => Err(self.err(format!("unexpected {}", describe(&t)))),
         }
     }
 
-    /// A word after an optional sheet: a cell, a column/row range (`A:C`, `3:5`) or a name.
+    /// A word after an optional sheet: a cell, a column/row range (`A:C`, `3:5`) or a name. A
+    /// trim operator (`A1:.E10`, `A:.A`) in place of the colon wraps the range in
+    /// [`UnOp::Trim`].
     fn reference_from_word(&mut self, sheet: SheetSel, w: &str) -> Result<Expr, ParseError> {
+        let trim = match self.peek() {
+            Tok::Colon => Some(None),
+            Tok::Trim(mode) => Some(Some(*mode)),
+            _ => None,
+        };
+        let wrap = |kind: RefKind, sheet: SheetSel| {
+            let r = Expr::Ref(Reference { sheet, kind });
+            match trim {
+                Some(Some(mode)) => Expr::Unary(UnOp::Trim(mode), Box::new(r)),
+                _ => r,
+            }
+        };
         if let Some(a) = word_is_cell(w) {
             // Cell, possibly `A1:B2` (merged here so the sheet applies to both ends).
-            if *self.peek() == Tok::Colon
+            if trim.is_some()
                 && let Tok::Word(w2) = self.peek_at(1)
                 && let Some(b) = word_is_cell(w2)
             {
                 self.next();
                 self.next();
-                return Ok(Expr::Ref(Reference { sheet, kind: RefKind::Range(a, b) }));
+                return Ok(wrap(RefKind::Range(a, b), sheet));
             }
             let cell = Expr::Ref(Reference { sheet, kind: RefKind::Cell(a) });
             if *self.peek() == Tok::Op("#") {
@@ -294,18 +357,18 @@ impl Parser {
             Tok::Number(n) if n.fract() == 0.0 && *n >= 1.0 => Some(format!("{n}")),
             _ => None,
         };
-        if *self.peek() == Tok::Colon
+        if trim.is_some()
             && let Some(w2) = second
         {
             if let (Some((c0, a0)), Some((c1, a1))) = (word_is_cols(w), word_is_cols(&w2)) {
                 self.next();
                 self.next();
-                return Ok(Expr::Ref(Reference { sheet, kind: RefKind::Cols(c0, a0, c1, a1) }));
+                return Ok(wrap(RefKind::Cols(c0, a0, c1, a1), sheet));
             }
             if let (Some((r0, a0)), Some((r1, a1))) = (word_is_row(w), word_is_row(&w2)) {
                 self.next();
                 self.next();
-                return Ok(Expr::Ref(Reference { sheet, kind: RefKind::Rows(r0, a0, r1, a1) }));
+                return Ok(wrap(RefKind::Rows(r0, a0, r1, a1), sheet));
             }
         }
         if sheet != SheetSel::Current {
@@ -317,6 +380,10 @@ impl Parser {
         }
         if w.chars().next().is_some_and(|c| c.is_ascii_digit()) {
             return Err(self.err(format!("unexpected `{w}`")));
+        }
+        // A function passed by name is saved as `_xleta.SUM`.
+        if let Some(f) = w.get(..7).filter(|p| p.eq_ignore_ascii_case("_xleta.")).and_then(|_| w.get(7..)) {
+            return Ok(Expr::Name(f.to_ascii_uppercase()));
         }
         Ok(Expr::Name(w.to_string()))
     }
@@ -372,10 +439,15 @@ fn combine(op: BinOp, lhs: Expr, rhs: Expr) -> Expr {
     Expr::Binary(op, Box::new(lhs), Box::new(rhs))
 }
 
-/// Parses the inside of `Table[...]`.
-pub fn parse_struct(table: &str, body: &str) -> StructRef {
+/// Parses the inside of `Table[...]`. Text between the bracketed items may only be the `,` and
+/// `:` separators, except one unbracketed column after `[#This Row],` (`[[#This Row],Units]`,
+/// how some writers spell `[@Units]`); anything else is an error rather than dropped.
+pub fn parse_struct(table: &str, body: &str) -> Result<StructRef, String> {
     let mut specifiers = Vec::new();
     let mut cols: Vec<String> = Vec::new();
+    // Spaces at the edges of a column name are part of it (`Table1[Qty ]` names `Qty `), so the
+    // untrimmed body is what a lone column is read from.
+    let raw = body;
     let body = body.trim();
     let unescape = |s: &str| {
         let mut out = String::new();
@@ -401,24 +473,41 @@ pub fn parse_struct(table: &str, body: &str) -> StructRef {
             _ => None,
         }
     };
+    let unexpected = |gap: &str| format!("unexpected `{gap}` in structured reference");
+    // A column name may hold `[` and `]` only when escaped with `'`.
+    let column = |s: &str| -> Result<String, String> {
+        let mut esc = false;
+        for c in s.chars() {
+            match c {
+                _ if esc => esc = false,
+                '\'' => esc = true,
+                '[' | ']' => return Err(unexpected(s)),
+                _ => {}
+            }
+        }
+        Ok(unescape(s))
+    };
     if !body.starts_with('[') {
         // Simple: [Col], [@Col], [#Headers], [@]
         if let Some(rest) = body.strip_prefix('@') {
             specifiers.push(StructItem::ThisRow);
-            let rest = rest.trim().trim_start_matches('[').trim_end_matches(']');
+            let rest = rest.trim();
+            let rest = rest.strip_prefix('[').and_then(|r| r.strip_suffix(']')).unwrap_or(rest);
             if !rest.is_empty() {
-                cols.push(unescape(rest));
+                cols.push(column(rest)?);
             }
         } else if let Some(i) = item(body) {
             specifiers.push(i);
         } else if !body.is_empty() {
-            cols.push(unescape(body));
+            cols.push(column(raw)?);
         }
     } else {
-        // [[#Headers],[Col1]:[Col3]] or [@[Col 1]]
+        // [[#Headers],[Col1]:[Col3]], [[#This Row],[Col 1]] or [[#This Row],Col1]
         let mut parts = Vec::new();
         let mut depth = 0;
         let mut cur = String::new();
+        // Text between bracketed items.
+        let mut gap = String::new();
         let mut esc = false;
         for c in body.chars() {
             if esc {
@@ -427,17 +516,26 @@ pub fn parse_struct(table: &str, body: &str) -> StructRef {
                 continue;
             }
             match c {
-                '\'' => {
+                '\'' if depth > 0 => {
                     cur.push(c);
                     esc = true;
                 }
                 '[' => {
+                    if depth == 0 {
+                        if !matches!(gap.trim(), "" | "," | ":") {
+                            return Err(unexpected(gap.trim()));
+                        }
+                        gap.clear();
+                    }
                     depth += 1;
                     if depth > 1 {
                         cur.push(c);
                     }
                 }
                 ']' => {
+                    if depth == 0 {
+                        return Err(unexpected("]"));
+                    }
                     depth -= 1;
                     if depth > 0 {
                         cur.push(c);
@@ -445,33 +543,35 @@ pub fn parse_struct(table: &str, body: &str) -> StructRef {
                         parts.push(std::mem::take(&mut cur));
                     }
                 }
-                ',' if depth == 0 => {}
-                ':' if depth == 0 => parts.push(":".into()),
                 _ if depth > 0 => cur.push(c),
-                _ => {}
+                _ => gap.push(c),
             }
         }
-        let mut range_next = false;
+        if depth > 0 {
+            return Err("unclosed `[` in structured reference".to_string());
+        }
         for p in parts {
-            if p == ":" {
-                range_next = true;
-                continue;
-            }
             if let Some(i) = item(&p) {
                 specifiers.push(i);
-            } else if range_next {
-                cols.push(unescape(&p));
-                range_next = false;
             } else {
-                cols.push(unescape(&p));
+                cols.push(column(&p)?);
             }
         }
-        if body.starts_with("@") {
-            specifiers.push(StructItem::ThisRow);
+        let tail = gap.trim();
+        if !tail.is_empty() {
+            let bare = tail.strip_prefix(',').map(str::trim).unwrap_or("");
+            let simple = !bare.is_empty() && !bare.chars().any(|c| matches!(c, '[' | ']' | '#' | '\'' | ',' | ':'));
+            if !(simple && specifiers == [StructItem::ThisRow] && cols.is_empty()) {
+                return Err(unexpected(tail));
+            }
+            cols.push(bare.to_string());
         }
+    }
+    if cols.len() > 2 {
+        return Err("a structured reference names at most two columns".to_string());
     }
     let mut it = cols.into_iter();
     let col_start = it.next();
     let col_end = it.next();
-    StructRef { table: table.to_string(), specifiers, col_start, col_end }
+    Ok(StructRef { table: table.to_string(), specifiers, col_start, col_end })
 }

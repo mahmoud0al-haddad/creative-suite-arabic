@@ -18,6 +18,7 @@ use photocraft_raster::Surface;
 use serde_json::{Value, json};
 
 use crate::PhotocraftApp;
+use crate::edit_history::{EditHistory, Step};
 use crate::theme::Tokens;
 use crate::widgets;
 
@@ -41,6 +42,7 @@ pub struct WideAngleDialog {
     drag: Option<([f64; 2], [f64; 2])>,
     pub residual: f64,
     pub render_ms: f64,
+    history: EditHistory<WideAngle>,
 }
 
 fn tex_image(s: &Surface, w: usize, h: usize) -> egui::ColorImage {
@@ -85,6 +87,13 @@ impl WideAngleDialog {
         self.dirty = false;
     }
 
+    pub(crate) fn step(&mut self, step: Step) {
+        if self.history.step(&mut self.params, step) {
+            self.drag = None;
+            self.dirty = true;
+        }
+    }
+
     fn command_params(&self) -> Value {
         let mut v = serde_json::to_value(&self.params).unwrap_or(json!({}));
         v["layer"] = json!(self.layer.0);
@@ -122,6 +131,7 @@ pub fn open(app: &mut PhotocraftApp, ctx: &egui::Context) -> Result<(), String> 
     let mut d = WideAngleDialog {
         layer,
         layer_name: name,
+        history: EditHistory::new(&params),
         params,
         frame,
         scale: 1.0 / k as f64,
@@ -188,6 +198,7 @@ pub fn menu(app: &mut PhotocraftApp, ctx: &egui::Context, id: &str, params: &Val
         d.params.constraints.remove(i as usize);
         d.dirty = true;
     }
+    d.history.settle(&d.params, false);
     if d.dirty {
         d.render(ctx);
     }
@@ -216,6 +227,7 @@ pub fn show(app: &mut PhotocraftApp, ctx: &egui::Context) {
     let shift = ctx.input(|i| i.modifiers.shift);
     egui::Area::new(egui::Id::new("awa-dialog")).order(egui::Order::Foreground).fixed_pos(screen.min).show(ctx, |ui| {
         let Some(d) = app.wide_angle.as_mut() else { return };
+        d.history.settle(&d.params, ctx.input(|i| i.pointer.any_down()));
         if d.dirty {
             d.render(ctx);
         }
@@ -224,7 +236,13 @@ pub fn show(app: &mut PhotocraftApp, ctx: &egui::Context) {
         painter.rect_filled(full, 0.0, t.chrome);
         let title = ERect::from_min_size(full.min, vec2(full.width(), 30.0));
         painter.rect_filled(title, 0.0, t.dock);
-        painter.text(title.center(), Align2::CENTER_CENTER, format!("Adaptive Wide Angle ({})", d.layer_name), FontId::proportional(13.0), t.text);
+        painter.text(
+            title.center(),
+            Align2::CENTER_CENTER,
+            crate::i18n::fmt(crate::i18n::t("Adaptive Wide Angle ({layer})"), &[("layer", &d.layer_name)]),
+            FontId::proportional(13.0),
+            t.text,
+        );
         let footer_h = 48.0;
         let body = ERect::from_min_max(pos2(full.left(), title.bottom()), pos2(full.right(), full.bottom() - footer_h));
         let view = ERect::from_min_max(body.min, pos2(body.right() - PANEL_W, body.bottom())).shrink(16.0);
@@ -398,7 +416,13 @@ pub fn show(app: &mut PhotocraftApp, ctx: &egui::Context) {
         ) {
             action = Some(if role == widgets::ButtonRole::Default { "ok" } else { "cancel" });
         }
-        fu.label(egui::RichText::new(format!("{:.0} ms · straightness {:.1} px", d.render_ms, d.residual)).color(t.text_faint));
+        fu.label(
+            egui::RichText::new(crate::i18n::fmt(
+                crate::i18n::t("{time} ms · straightness {residual} px"),
+                &[("time", &format!("{:.0}", d.render_ms)), ("residual", &format!("{:.1}", d.residual))],
+            ))
+            .color(t.text_faint),
+        );
     });
     if ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
         action = Some("cancel");
@@ -444,5 +468,24 @@ mod tests {
         assert!(menu(&mut app, &ctx, "filter.adaptiveWideAngle", &json!({"ui": {"add": {"a": [1, 1]}}})).unwrap().is_err());
         menu(&mut app, &ctx, "filter.adaptiveWideAngle", &json!({"ui": {"cancel": true}})).unwrap().unwrap();
         assert!(app.wide_angle.is_none());
+    }
+
+    #[test]
+    fn command_z_steps_the_dialog_not_the_document() {
+        let mut app = PhotocraftApp::new(photocraft_engine::Session::new(), Default::default());
+        let ctx = egui::Context::default();
+        app.run("file.new", json!({"width": 160, "height": 100})).unwrap();
+        app.run("layer.new.layer", json!({})).unwrap();
+        app.run("edit.fill", json!({"color": "#808080"})).unwrap();
+        let steps = app.session.active().unwrap().history.past_len();
+        menu(&mut app, &ctx, "filter.adaptiveWideAngle", &json!({})).unwrap().unwrap();
+        for y in [20, 60] {
+            menu(&mut app, &ctx, "filter.adaptiveWideAngle", &json!({"ui": {"add": {"a": [20, y], "b": [140, y]}}})).unwrap().unwrap();
+        }
+        crate::edit_history::tests::press_z(&mut app, &ctx, egui::Modifiers::COMMAND);
+        assert_eq!(app.wide_angle.as_ref().unwrap().params.constraints.len(), 1, "⌘Z removes the last constraint");
+        assert_eq!(app.session.active().unwrap().history.past_len(), steps, "the document beneath is untouched");
+        crate::edit_history::tests::press_z(&mut app, &ctx, egui::Modifiers::COMMAND | egui::Modifiers::SHIFT);
+        assert_eq!(app.wide_angle.as_ref().unwrap().params.constraints.len(), 2, "⇧⌘Z puts it back");
     }
 }

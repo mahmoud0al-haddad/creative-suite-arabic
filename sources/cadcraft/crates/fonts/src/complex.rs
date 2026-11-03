@@ -291,6 +291,22 @@ mod tests {
     }
 
     #[test]
+    fn ordinary_arabic_from_optional_craft_fonts_shapes_and_joins() {
+        let Some(font) = crate::CRAFT_FONTS.iter().find(|font| font.family == "Noto Sans Arabic" && font.scripts.contains(&"Arab")) else {
+            eprintln!("skipping: optional ordinary Arabic craft-font not supplied");
+            return;
+        };
+        let face = Face::new(std::sync::Arc::new(font.bytes.to_vec()), 0).expect("provided Arabic face");
+        let chars: Vec<char> = "سلام بالعربية".chars().collect();
+        let glyphs = shape_run(&face, &chars, 0..chars.len(), true);
+        assert!(!glyphs.is_empty());
+        assert!(glyphs.iter().all(|glyph| glyph.gid != 0), "no missing Arabic glyphs without an installed face");
+        assert!(glyphs.windows(2).all(|pair| pair[0].cluster >= pair[1].cluster), "visual Arabic order");
+        let initial = glyphs.iter().find(|glyph| glyph.cluster == 0).map(|glyph| glyph.gid);
+        assert!(initial.is_some() && initial != nominal(&face, 'س'), "initial Arabic joining form");
+    }
+
+    #[test]
     fn hostile_rtl_lines_never_panic() {
         for s in ["\u{202E}%%u\u{05D0}%%", "\u{2067}\u{0644}\u{0627}\u{2069}%%o", "\u{064E}\u{064E}\u{05D0}", "\u{05D0}\u{E000}\u{10FFFF}"] {
             let _ = crate::shape_stroke(s, f64::NAN, -1.0, f64::INFINITY);

@@ -108,7 +108,7 @@ pub fn layout(fonts: &mut FontsImpl, pixels_per_point: f32, job: Arc<LayoutJob>)
         };
     }
 
-    if job.text.chars().any(|c| matches!(c, '\u{0600}'..='\u{06ff}' | '\u{0750}'..='\u{077f}' | '\u{08a0}'..='\u{08ff}')) {
+    if job.text.chars().any(|c| matches!(c, '\u{0590}'..='\u{05ff}' | '\u{0600}'..='\u{06ff}' | '\u{0750}'..='\u{077f}' | '\u{08a0}'..='\u{08ff}')) {
         return layout_bidi(fonts, pixels_per_point, job);
     }
 

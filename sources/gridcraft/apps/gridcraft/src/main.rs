@@ -16,6 +16,7 @@ mod graphics;
 mod logging;
 #[cfg(target_os = "macos")]
 mod native_menu;
+mod print;
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -39,6 +40,10 @@ impl eframe::App for App {
             apple_events::poll(&self.2, &mut self.0, ctx);
         }
         self.0.logic(ctx);
+        self.0.poll_printing(ctx);
+        if ctx.input(|input| input.viewport().close_requested()) && self.0.printing.busy() {
+            ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
+        }
     }
     fn raw_input_hook(&mut self, _ctx: &egui::Context, raw: &mut egui::RawInput) {
         self.0.raw_input_hook(raw);
@@ -53,6 +58,7 @@ impl eframe::App for App {
         self.0.ui(ui);
     }
     fn on_exit(&mut self) {
+        print::finish_pending_jobs();
         save_prefs(&self.0);
         // macOS (#117): end the process here, before eframe tears the window down. AccessKit's
         // macOS adapter subclasses the window's content view and restores its class on teardown;
@@ -129,10 +135,22 @@ fn save_prefs(app: &SheetApp) {
     }
 }
 
+/// Read the system clipboard through the shared handle, creating it on first use.
+fn read_clipboard<T>(
+    handle: &RefCell<Option<arboard::Clipboard>>,
+    read: impl FnOnce(&mut arboard::Clipboard) -> Result<T, arboard::Error>,
+) -> Option<T> {
+    let mut clipboard = handle.try_borrow_mut().ok()?;
+    if clipboard.is_none() {
+        *clipboard = arboard::Clipboard::new().ok();
+    }
+    read(clipboard.as_mut()?).ok()
+}
+
 fn services() -> Services {
     // Keep the owner alive: X11/Wayland serve clipboard data from this handle.
     let clipboard: Rc<RefCell<Option<arboard::Clipboard>>> = Rc::default();
-    let paste_clipboard = clipboard.clone();
+    let (html_clipboard, text_clipboard) = (clipboard.clone(), clipboard.clone());
     Services {
         copy_html: Some(Box::new(move |html, text| {
             let mut clipboard = clipboard.borrow_mut();
@@ -141,13 +159,8 @@ fn services() -> Services {
             }
             clipboard.as_mut().ok_or("clipboard unavailable")?.set_html(html, Some(text)).map_err(|e| e.to_string())
         })),
-        paste_html: Some(Box::new(move || {
-            let mut clipboard = paste_clipboard.try_borrow_mut().ok()?;
-            if clipboard.is_none() {
-                *clipboard = arboard::Clipboard::new().ok();
-            }
-            clipboard.as_mut()?.get().html().ok()
-        })),
+        paste_html: Some(Box::new(move || read_clipboard(&html_clipboard, |clipboard| clipboard.get().html()))),
+        paste_text: Some(Box::new(move || read_clipboard(&text_clipboard, |clipboard| clipboard.get_text()))),
         pick_open: Some(Box::new(|| {
             rfd::FileDialog::new()
                 .add_filter(gridcraft_ui_egui::i18n::t("Spreadsheets"), &["xlsx", "xlsm", "xls", "xlsb", "ods", "csv", "tsv", "txt", "json"])
@@ -166,26 +179,44 @@ fn services() -> Services {
                 .and_then(|p| p.to_str().map(str::to_string))
         })),
         pick_save: Some(Box::new(|suggested: &str| {
-            let stem = std::path::Path::new(suggested).file_stem().and_then(|s| s.to_str()).unwrap_or("Book1").to_string();
-            rfd::FileDialog::new()
-                .set_file_name(format!("{stem}.xlsx"))
-                .add_filter(gridcraft_ui_egui::i18n::t("Excel Workbook (.xlsx)"), &["xlsx"])
-                .add_filter(gridcraft_ui_egui::i18n::t("CSV UTF-8 (.csv)"), &["csv"])
-                .add_filter(gridcraft_ui_egui::i18n::t("Web Page (.html)"), &["html"])
-                .save_file()
-                .and_then(|p| p.to_str().map(str::to_string))
+            let path = std::path::Path::new(suggested);
+            let stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or("Book1").to_string();
+            // The suggested name's type (an export asks for .pdf, .csv or .html) comes first.
+            const TYPES: [(&str, &str); 4] =
+                [("Excel Workbook (.xlsx)", "xlsx"), ("CSV UTF-8 (.csv)", "csv"), ("Web Page (.html)", "html"), ("PDF (.pdf)", "pdf")];
+            let ext = path.extension().and_then(|e| e.to_str()).map(str::to_ascii_lowercase).filter(|e| TYPES.iter().any(|(_, x)| x == e));
+            let ext = ext.unwrap_or_else(|| "xlsx".to_string());
+            let mut dialog = rfd::FileDialog::new().set_file_name(format!("{stem}.{ext}"));
+            for (label, x) in TYPES.iter().filter(|(_, x)| *x == ext).chain(TYPES.iter().filter(|(_, x)| *x != ext)) {
+                dialog = dialog.add_filter(gridcraft_ui_egui::i18n::t(label), &[*x]);
+            }
+            dialog.save_file().and_then(|p| p.to_str().map(str::to_string))
         })),
-        open_url: Some(Box::new(|url: &str| {
-            let cmd = if cfg!(target_os = "macos") {
-                "open"
-            } else if cfg!(windows) {
-                "explorer"
-            } else {
-                "xdg-open"
-            };
-            let _ = std::process::Command::new(cmd).arg(url).spawn();
-        })),
+        open_url: Some(Box::new(|url: &str| open_with_system(url))),
+        printers: Some(print::discover()),
+        print_native: Some(print::submit()),
         ..Default::default()
+    }
+}
+
+/// Opens a URL or file with the system's default application.
+fn open_with_system(target: &str) {
+    // Last line of defence behind `link.open` and the click prompt: the system only ever gets
+    // http, https and mailto addresses.
+    let gridcraft_engine::links::LinkKind::External(target) = gridcraft_engine::links::classify(target) else {
+        log::warn!("refused to open {target:?}: only http, https and mailto links are opened");
+        return;
+    };
+    let target = target.as_str();
+    let cmd = if cfg!(target_os = "macos") {
+        "open"
+    } else if cfg!(windows) {
+        "explorer"
+    } else {
+        "xdg-open"
+    };
+    if let Err(e) = std::process::Command::new(cmd).arg(target).spawn() {
+        log::warn!("{cmd} {target}: {e}");
     }
 }
 
@@ -263,17 +294,12 @@ fn main() -> eframe::Result<()> {
     {
         log::warn!("sample {s}: {e}");
     }
-    for f in &files {
-        if let Err(e) = session.execute("file.open", json!({"path": f})) {
-            log::warn!("{f}: {e}");
-        }
-    }
     if session.documents().is_empty() {
         session.new_workbook();
     }
     let mut app = SheetApp::new(session, services());
     app.watch_desktop_theme();
-    app.after_engine(); // Show warnings from files opened on the command line.
+    app.after_engine(); // Show warnings from the sample.
     let control_port = control_port;
     load_prefs(&mut app);
     if let Ok(code) = std::env::var("CRAFT_SUITE_LANGUAGE")
@@ -282,6 +308,12 @@ fn main() -> eframe::Result<()> {
         app.ui.language = language;
     }
 
+    // Files named on the command line (a double-click on Windows and Linux) open as File › Open
+    // opens them: a password-protected one asks for its password, and errors are shown, not
+    // only logged. Each replaces the untouched blank Book1, as a file opened from Finder does.
+    for f in &files {
+        app.open_path(f);
+    }
     let mut viewport = egui::ViewportBuilder::default()
         .with_title("GridCraft")
         .with_inner_size([1440.0, 900.0])
@@ -356,4 +388,33 @@ fn main() -> eframe::Result<()> {
         return run(options);
     }
     result
+}
+
+#[cfg(test)]
+mod packaging_tests {
+    use gridcraft_engine::io::FileKind;
+
+    /// The text between `start` and `end` that follows each `marker` in `text`, sorted (e.g. the
+    /// `xlsb` in `Classes\.xlsb\OpenWithProgids`).
+    fn extensions(text: &str, marker: &str, start: &str, end: char) -> Vec<String> {
+        let mut v: Vec<String> = text.split(marker).skip(1).filter_map(|s| s.split_once(start)?.1.split(end).next()).map(str::to_string).collect();
+        v.sort();
+        v
+    }
+
+    /// macOS Open With (`CFBundleDocumentTypes`) offers GridCraft for the same files as Windows
+    /// Open with, and GridCraft opens each of them. #321 added `.xlsb` and `.ods` on Windows and
+    /// Linux only.
+    #[test]
+    fn macos_and_windows_offer_the_same_file_types() {
+        let plist = include_str!("../../../packaging/macos/Info.plist.in");
+        let wxs = include_str!("../../../packaging/windows/gridcraft.wxs");
+        let mac = extensions(plist, "<key>CFBundleTypeExtensions</key>", "<string>", '<');
+        let win = extensions(wxs, "Key=\"Software\\Classes\\.", "", '\\');
+        assert!(mac.iter().any(|e| e == "xlsx"), "Info.plist.in extensions not found: {mac:?}");
+        assert_eq!(mac, win);
+        for ext in &mac {
+            assert!(FileKind::from_path(&format!("book.{ext}")).is_some(), "GridCraft doesn't open .{ext}");
+        }
+    }
 }

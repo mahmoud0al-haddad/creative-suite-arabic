@@ -2,7 +2,8 @@
 //! `docs/integration.md`). With `CRAFT_FONTS_DIR=<checkout>` the fonts in its
 //! `fonts/latin-manifest.txt` (presentation fonts) and `fonts/manifest.txt` are embedded as
 //! `CRAFT_FONTS`, Latin first; unset, `CRAFT_FONTS` is empty. Web (wasm32) builds embed only Inter
-//! Regular/Bold and BIZ UDPGothic Regular, to stay within the web size budget. It only reads the
+//! Regular/Bold, BIZ UDPGothic and the community edition's open Arabic/Korean/Chinese UI fallbacks.
+//! It only reads the
 //! local checkout: no network.
 use std::fmt::Write as _;
 use std::path::PathBuf;
@@ -40,6 +41,13 @@ fn craft_fonts(dir: &std::path::Path) -> Result<String, String> {
         out.push_str(&manifest(dir, &latin)?);
     }
     out.push_str(&manifest(dir, &dir.join("fonts/manifest.txt"))?);
+    // Independently attributed Inter, Korean and Chinese community fallbacks.
+    // Separate input: other applications retain their pinned manifests unchanged.
+    let community = dir.join("fonts/community-ui-manifest.txt");
+    println!("cargo::rerun-if-changed={}", community.display());
+    if community.exists() {
+        out.push_str(&manifest(dir, &community)?);
+    }
     Ok(out)
 }
 
@@ -57,7 +65,12 @@ fn manifest(dir: &std::path::Path, manifest: &std::path::Path) -> Result<String,
         if EXCLUDED_FAMILIES.contains(family) {
             continue;
         }
-        if wasm && !matches!((*family, *style), ("BIZ UDPGothic", "Regular") | ("Inter", "Regular" | "Bold" | "Variable")) {
+        if wasm
+            && !matches!(
+                (*family, *style),
+                ("BIZ UDPGothic" | "Noto Sans Arabic" | "Nanum Gothic" | "ZCOOL XiaoWei", "Regular") | ("Inter", "Regular" | "Bold" | "Variable")
+            )
+        {
             continue;
         }
         let path = dir.join(file).canonicalize().map_err(|e| format!("{file}: {e}"))?;

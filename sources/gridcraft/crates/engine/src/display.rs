@@ -10,11 +10,13 @@ use gridcraft_numfmt::{Formatted, NumberFormat, format_value};
 /// Parsed number formats are cached by code.
 fn parsed(code: &str) -> NumberFormat {
     static CACHE: std::sync::LazyLock<Mutex<HashMap<String, NumberFormat>>> = std::sync::LazyLock::new(|| Mutex::new(HashMap::new()));
-    let mut m = CACHE.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
-    if let Some(f) = m.get(code) {
+    let lock = || CACHE.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+    if let Some(f) = lock().get(code) {
         return f.clone();
     }
+    // Parse outside the lock, so a slow code never blocks the other threads' lookups.
     let f = NumberFormat::parse(code);
+    let mut m = lock();
     if m.len() > 4096 {
         m.clear();
     }
@@ -80,15 +82,20 @@ pub fn formula_hidden(wb: &Workbook, sheet: &Sheet, c: CellRef) -> bool {
 
 /// The text a cell shows (full precision General; the grid narrows General to fit the column).
 pub fn cell_text(wb: &Workbook, sheet: &Sheet, c: CellRef) -> String {
-    let v = sheet.value(c);
     if sheet.show_formulas
         && let Some(f) = sheet.cell(c).and_then(|x| x.formula.as_ref())
         && !formula_hidden(wb, sheet, c)
     {
         return format!("={}", f.text);
     }
+    value_text(wb, sheet, c)
+}
+
+/// A cell's value with its number format applied, independent of column width: no `#####`
+/// and no General narrowing (Save As CSV/Text writes this). Formulas give their result.
+pub fn value_text(wb: &Workbook, sheet: &Sheet, c: CellRef) -> String {
     let style = wb.styles.get(sheet.style_id(c));
-    let f = format(&v, style.num_fmt.as_str(), wb);
+    let f = format(&sheet.value(c), style.num_fmt.as_str(), wb);
     match f.fill {
         Some((_, pos)) => {
             let mut t = f.text;

@@ -57,7 +57,7 @@ pub fn home_tab(app: &mut EffectcraftApp, ui: &mut egui::Ui, area: Rect) {
             if running.as_deref() != Some(tut.id.as_str())
                 && let Err(e) = app.session.execute("learn.start", json!({"id": tut.id}))
             {
-                app.ui.status = e.to_string();
+                app.ui.status = crate::diagnostics::message(&e.to_string());
             }
             app.ui.start_screen = false;
         }
@@ -199,7 +199,7 @@ pub fn coach(app: &mut EffectcraftApp, ctx: &egui::Context) {
         }
         Some(a) => {
             if let Err(e) = app.session.execute("learn.step", json!({"action": a})) {
-                app.ui.status = e.to_string();
+                app.ui.status = crate::diagnostics::message(&e.to_string());
             }
         }
         None => {}

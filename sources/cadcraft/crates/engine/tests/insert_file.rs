@@ -1,11 +1,11 @@
 //! INSERT of exploded blocks (`*NAME`) and of drawing files (`-INSERT path`, `NAME=path`, JSON
 //! `file`), read through the io hooks (#340).
 
-use cadcraft_engine::Session;
 use cadcraft_engine::cmd::file::{IoHooks, set_io};
 use cadcraft_engine::doc::color::Color;
 use cadcraft_engine::doc::geom::Vec3;
 use cadcraft_engine::doc::{Block, Circle, Drawing, Entity, EntityKind, HVal, Handle, Insert, Layer, Line};
+use cadcraft_engine::{Input, Session};
 use serde_json::json;
 
 /// A drawing file in a test format: its bytes are "x,y", the $INSBASE. Model space: a line from
@@ -110,7 +110,11 @@ fn a_drawing_file_becomes_a_block_with_its_insbase_and_tables() {
     // This drawing's own layer PARTS keeps its colour.
     s.execute("layer.new", &json!({ "name": "PARTS", "color": 3 })).unwrap();
 
-    s.script(&format!("-INSERT {bolt} 100,100 1 1 0\n")).unwrap();
+    // A temporary directory may contain spaces or Unicode. Pass the complete file
+    // name at the prompt: this fixture tests file INSERT, not script token splitting.
+    s.cmdline("-INSERT").unwrap();
+    s.input(Input::Text(bolt.clone())).unwrap();
+    s.script("100,100 1 1 0\n").unwrap();
     assert!(s.running.is_none(), "INSERT finished: {}", s.prompt_text());
     let d = s.doc().unwrap();
     let b = d.block("bolt").expect("block named after the file");
@@ -121,7 +125,8 @@ fn a_drawing_file_becomes_a_block_with_its_insbase_and_tables() {
     assert_eq!(inserts(&s), vec![("bolt".into(), 100.0, 100.0)]);
 
     // The file again: its block exists, so INSERT asks; No (the default) keeps the definition.
-    s.cmdline(&format!("-INSERT {bolt}")).unwrap();
+    s.cmdline("-INSERT").unwrap();
+    s.input(Input::Text(bolt.clone())).unwrap();
     assert!(s.prompt_text().contains("Redefine"), "{}", s.prompt_text());
     s.script("N 0,0 1 1 0\n").unwrap();
     assert!(s.running.is_none(), "INSERT finished: {}", s.prompt_text());
@@ -129,7 +134,12 @@ fn a_drawing_file_becomes_a_block_with_its_insbase_and_tables() {
 
     // NAME=path defines the block under that name without asking; *path inserts the file's objects.
     let pin = file("pin.dxf", "10,10");
-    s.script(&format!("-INSERT M8={bolt} 0,0 1 1 0\n-INSERT *{pin} 50,0 1 0\n")).unwrap();
+    s.cmdline("-INSERT").unwrap();
+    s.input(Input::Text(format!("M8={bolt}"))).unwrap();
+    s.script("0,0 1 1 0\n").unwrap();
+    s.cmdline("-INSERT").unwrap();
+    s.input(Input::Text(format!("*{pin}"))).unwrap();
+    s.script("50,0 1 0\n").unwrap();
     assert!(s.running.is_none(), "INSERT finished: {}", s.prompt_text());
     assert!(s.doc().unwrap().block("M8").is_some());
     assert_eq!(inserts(&s).iter().filter(|i| i.0 == "M8").count(), 1);

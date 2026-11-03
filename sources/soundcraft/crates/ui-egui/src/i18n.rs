@@ -183,6 +183,10 @@ pub fn error_text(message: &str) -> String {
     if CURRENT.get() != Language::Ar {
         return message.to_string();
     }
+    let dynamic = crate::diagnostic_display::display_message(message);
+    if dynamic != message {
+        return dynamic;
+    }
     let translated = t(message);
     if translated != message {
         return translated.to_string();
@@ -193,7 +197,7 @@ pub fn error_text(message: &str) -> String {
         ("unsupported: ", "Unsupported: {message}"),
     ] {
         if let Some(detail) = message.strip_prefix(prefix) {
-            return error_format(template, &[("message", t(detail).to_string())]);
+            return error_format(template, &[("message", crate::diagnostic_display::display_message(detail))]);
         }
     }
     if let Some(command) = message.strip_prefix("unknown command `").and_then(|value| value.strip_suffix('`')) {
@@ -203,7 +207,7 @@ pub fn error_text(message: &str) -> String {
         if let Some((command, detail)) = message.strip_prefix(prefix).and_then(|value| value.split_once("`: ")) {
             return error_format(
                 "Invalid parameters for `{command}`: {message}",
-                &[("command", command.to_string()), ("message", t(detail).to_string())],
+                &[("command", command.to_string()), ("message", crate::diagnostic_display::display_message(detail))],
             );
         }
     }
@@ -213,7 +217,7 @@ pub fn error_text(message: &str) -> String {
                 if let Some((command, detail)) = value.split_once(marker) {
                     return error_format(
                         "Command `{command}` is not available: {message}",
-                        &[("command", command.to_string()), ("message", t(detail).to_string())],
+                        &[("command", command.to_string()), ("message", crate::diagnostic_display::display_message(detail))],
                     );
                 }
             }
@@ -266,5 +270,24 @@ mod mixed_format_tests {
     fn named_and_positional_values_keep_their_own_indices_and_literal_braces() {
         super::set_current(super::Language::En);
         assert_eq!(super::format("{name}: {} / {}", &[("name", "اسم {x}".into()), ("", "abc".into()), ("", "123".into())]), "اسم {x}: abc / 123");
+    }
+}
+
+/// Arabic elapsed time, with singular/dual/plural forms; numbers stay logical ASCII values.
+pub(crate) fn arabic_ago(n: u64, unit: &str) -> String {
+    let (single, dual, plural, accusative) = match unit {
+        "minute" => ("دقيقة واحدة", "دقيقتين", "دقائق", "دقيقة"),
+        "hour" => ("ساعة واحدة", "ساعتين", "ساعات", "ساعة"),
+        "day" => ("يوم واحد", "يومين", "أيام", "يومًا"),
+        "week" => ("أسبوع واحد", "أسبوعين", "أسابيع", "أسبوعًا"),
+        "month" => ("شهر واحد", "شهرين", "أشهر", "شهرًا"),
+        "year" => ("سنة واحدة", "سنتين", "سنوات", "سنة"),
+        _ => return std::format!("قبل {n} {unit}"),
+    };
+    match n {
+        1 => std::format!("قبل {single}"),
+        2 => std::format!("قبل {dual}"),
+        _ if (3..=10).contains(&(n % 100)) => std::format!("قبل {n} {plural}"),
+        _ => std::format!("قبل {n} {accusative}"),
     }
 }

@@ -1,5 +1,6 @@
 # Arabic (ar), Modern Standard Arabic. Complete launcher interface.
 # Logical Unicode text; shaping and bidi are performed by the text renderer.
+# Arabic cardinal forms: zero|one|two|few|many|other.
 @msg	secure connections aren't available	الاتصالات الآمنة غير متاحة
 @msg	secure connections aren't available on this system	الاتصالات الآمنة غير متاحة على هذا النظام
 @msg	Creative Suite Launcher is restarting to finish its update. Try again once it's back.	يُعاد تشغيل مشغّل التطبيقات الإبداعية لإكمال تحديثه. أعد المحاولة بعد تشغيله.
@@ -292,7 +293,6 @@ column	Installed	المثبّت
 column	Latest	الأحدث
 column	Released	تاريخ النشر
 filter	Installed	المثبّتة
-# Arabic cardinal forms: zero|one|two|few|many|other.
 @plural	{n} app|{n} apps	لا توجد تطبيقات|تطبيق واحد|تطبيقان|{n} تطبيقات|{n} تطبيقًا|{n} تطبيق
 @plural	{n} min ago|{n} min ago	الآن|قبل دقيقة|قبل دقيقتين|قبل {n} دقائق|قبل {n} دقيقة|قبل {n} دقيقة
 @plural	{n} h ago|{n} h ago	الآن|قبل ساعة|قبل ساعتين|قبل {n} ساعات|قبل {n} ساعة|قبل {n} ساعة
@@ -353,6 +353,53 @@ filter	Installed	المثبّتة
 	ArtCraft on GitHub	ArtCraft على جيت هب
 	Join the ArtCraft Discord	الانضمام إلى ديسكورد ArtCraft
 @plural	Creative Suite Launcher · {n} update available|Creative Suite Launcher · {n} updates available	مشغّل التطبيقات الإبداعية · لا توجد تحديثات|مشغّل التطبيقات الإبداعية · يتوفر تحديث واحد|مشغّل التطبيقات الإبداعية · يتوفر تحديثان|مشغّل التطبيقات الإبداعية · تتوفر {n} تحديثات|مشغّل التطبيقات الإبداعية · يتوفر {n} تحديثًا|مشغّل التطبيقات الإبداعية · يتوفر {n} تحديث
-
 	Adobe, Photoshop, Illustrator, Premiere Pro, Lightroom, Acrobat, After Effects and InDesign are either registered trademarks or trademarks of Adobe in the United States and/or other countries. Microsoft, Word, PowerPoint and Excel are trademarks of the Microsoft group of companies. Autodesk and AutoCAD are registered trademarks or trademarks of Autodesk, Inc. Avid and Pro Tools are trademarks or registered trademarks of Avid Technology, Inc. All other trademarks are the property of their respective owners. These names are used only to describe what each Craft App is for; the Craft App Suite is independent and is not affiliated with, sponsored by or endorsed by any of these companies.	Adobe وPhotoshop وIllustrator وPremiere Pro وLightroom وAcrobat وAfter Effects وInDesign علامات تجارية أو علامات تجارية مسجّلة لشركة Adobe في الولايات المتحدة وبلدان أخرى. Microsoft وWord وPowerPoint وExcel علامات تجارية لمجموعة شركات Microsoft. Autodesk وAutoCAD علامات تجارية أو علامات تجارية مسجّلة لشركة Autodesk. Avid وPro Tools علامات تجارية أو علامات تجارية مسجّلة لشركة Avid Technology. جميع العلامات التجارية الأخرى ملك لأصحابها. تُستخدم هذه الأسماء لوصف وظيفة كل تطبيق من تطبيقات Craft فقط؛ حزمة تطبيقات Craft مستقلة، ولا تتبع أيًا من هذه الشركات ولا ترعاها أو تعتمدها أيٌ منها.
 @msg	Install this edition's complete setup to restore or update its translated applications.	ثبّت حزمة الإعداد الكاملة لهذه النسخة لاستعادة التطبيقات المعرّبة أو تحديثها.
+	Arabic suite update	تحديث الحزمة العربية
+	Save your work and close the suite applications before continuing. The verified setup updates the launcher and all translated applications together, preserves your settings, and opens the launcher again.	احفظ عملك وأغلق تطبيقات الحزمة قبل المتابعة. يحدّث برنامج التثبيت الذي جرى التحقق منه المشغّل وجميع التطبيقات المعربة معًا، ويحافظ على إعداداتك، ثم يفتح المشغّل مجددًا.
+	Download and open setup	تنزيل برنامج التثبيت وتشغيله
+	Arabic edition updates from GitHub	تحديثات النسخة العربية من GitHub
+	Update Arabic suite	تحديث الحزمة العربية
+	Arabic edition is up to date	النسخة العربية محدّثة
+	No Arabic release has been published yet	لم يُنشر إصدار عربي بعد
+	Could not check Arabic updates. Try again when connected.	تعذّر التحقق من تحديثات النسخة العربية. أعد المحاولة عند الاتصال.
+	Check for updates to the complete Arabic edition	التحقق من تحديثات الحزمة العربية الكاملة
+	Automatic checks run once a day. Setup opens only when you choose to update.	يُجرى التحقق التلقائي مرة يوميًا. لا يفتح برنامج التثبيت إلا عندما تختار التحديث.
+@msg	Arabic suite update could not be completed. Try again or use the release page.	تعذّر إكمال تحديث الحزمة العربية. أعد المحاولة أو افتح صفحة الإصدارات.
+@msg	Use Windows installed apps to remove the complete Arabic edition.	استخدم قائمة التطبيقات المثبّتة في Windows لإزالة النسخة العربية الكاملة.
+	Version	الإصدار
+	{name} details	تفاصيل {name}
+	Close (Esc)	إغلاق (Esc)
+	Enlarge picture	تكبير الصورة
+	Interface design and prototyping	تصميم الواجهات والنماذج الأولية
+	App details	تفاصيل التطبيق
+	Apps you hid	التطبيقات التي أخفيتها
+	Click to enlarge	انقر للتكبير
+	Features	الميزات
+	Hidden Apps	التطبيقات المخفية
+	Hide App	إخفاء التطبيق
+	Installed · latest {latest}	مثبّت · آخر إصدار: {latest}
+	Latest release	آخر إصدار
+	Loading pictures…	جارٍ تحميل الصور…
+	Next picture (→)	الصورة التالية (→)
+	Pictures couldn't be loaded. Reopen this page to try again.	تعذّر تحميل الصور. أعد فتح هذه الصفحة للمحاولة مجددًا.
+	Platforms	المنصات
+	Previous picture (←)	الصورة السابقة (←)
+	Releases	الإصدارات
+	Unhide App	إظهار التطبيق
+	Arabic edition {tag} is available. Open the launcher to update the complete suite.	يتوفر الإصدار العربي {tag}. افتح المشغّل لتحديث الحزمة الكاملة.
+@msg	Arabic suite update installed successfully.	ثُبّت تحديث الحزمة العربية بنجاح.
+@msg	Arabic suite update was cancelled or failed. Your previous edition remains available.	أُلغي تحديث الحزمة العربية أو تعذّر تثبيته. تبقى نسختك السابقة متاحة.
+	Apps are placed inside this folder.	توضع التطبيقات داخل هذا المجلد.
+	Browse…	استعراض…
+	Custom folders use AppImage on Linux.	تستخدم المجلدات المخصّصة صيغة AppImage في Linux.
+	Default install folder	مجلد التثبيت الافتراضي
+	Install folder	مجلد التثبيت
+	Installing on Windows	التثبيت على Windows
+	New installs use this folder. Updates stay in their current location.	تستخدم التثبيتات الجديدة هذا المجلد. تبقى التحديثات في موقعها الحالي.
+	Replace	استبدال
+	Replace what's there?	هل تريد استبدال المحتوى الموجود؟
+	System default	الافتراضي للنظام
+	The system manages install locations here.	يدير النظام مواقع التثبيت هنا.
+	Use default	استخدام الافتراضي
+	{path} already exists. Installing {name} will overwrite it.	المسار {path} موجود بالفعل. سيؤدي تثبيت {name} إلى استبدال محتواه.

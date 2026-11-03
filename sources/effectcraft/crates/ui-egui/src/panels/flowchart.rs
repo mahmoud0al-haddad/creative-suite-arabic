@@ -368,7 +368,7 @@ pub fn show(app: &mut EffectcraftApp, ui: &mut egui::Ui, rect: Rect) {
     }
     for (id, params) in cmds {
         if let Err(e) = crate::menus::invoke(app, &ctx, &id, params) {
-            app.ui.status = e;
+            app.ui.status = crate::diagnostics::message(&e.to_string());
         }
     }
 }

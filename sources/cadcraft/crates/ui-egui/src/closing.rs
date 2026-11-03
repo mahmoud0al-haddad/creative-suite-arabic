@@ -111,7 +111,10 @@ impl CadApp {
                 if self.session.active != i {
                     let _ = self.run("document.switch", json!({ "index": i }));
                 }
-                let r = self.run("qsave", Value::Null);
+                // The Block Editor's unsaved changes go into the block first (BSAVE), then the
+                // drawing is saved with them.
+                let r = if self.session.state().is_ok_and(|st| st.block_unsaved()) { self.run("bsave", json!({})) } else { Ok(Value::Null) };
+                let r = r.and_then(|_| self.run("qsave", Value::Null));
                 let saved = r.is_ok() && self.doc_index(uid).and_then(|i| self.session.docs.get(i)).is_some_and(|d| !d.is_dirty());
                 match (saved, self.doc_index(uid)) {
                     (true, Some(i)) => {
@@ -205,19 +208,19 @@ pub fn prompt(app: &mut CadApp, ctx: &egui::Context) {
         ui.set_width(360.0);
         ui.label(RichText::new("CADCraft").strong());
         ui.add_space(4.0);
-        ui.label(format!("Save changes to {title}?"));
-        ui.label(RichText::new("Your changes will be lost if you don't save them.").color(t.text_dim));
+        ui.label(crate::i18n::format("Save changes to {title}?", &[("title", title.to_string())]));
+        ui.label(RichText::new(crate::i18n::t("Your changes will be lost if you don't save them.")).color(t.text_dim));
         ui.add_space(10.0);
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
             let size = vec2(84.0, 22.0);
-            let save = ui.add(egui::Button::new(RichText::new("Save").color(t.text)).fill(t.accent).min_size(size));
+            let save = ui.add(egui::Button::new(RichText::new(crate::i18n::t("Save")).color(t.text)).fill(t.accent).min_size(size));
             if save.clicked() {
                 choice = Some(Choice::Save);
             }
-            if ui.add(egui::Button::new("Cancel").min_size(size)).clicked() {
+            if ui.add(egui::Button::new(crate::i18n::t("Cancel")).min_size(size)).clicked() {
                 choice = Some(Choice::Cancel);
             }
-            if ui.add(egui::Button::new("Don't Save").min_size(size)).clicked() {
+            if ui.add(egui::Button::new(crate::i18n::t("Don't Save")).min_size(size)).clicked() {
                 choice = Some(Choice::Discard);
             }
         });
@@ -303,6 +306,23 @@ mod tests {
         assert!(app.closing.is_none());
         assert_eq!(titles(&app), ["A"]);
         assert!(app.session.docs[0].is_dirty());
+    }
+
+    #[test]
+    fn save_on_close_puts_the_block_editor_changes_into_the_block_first() {
+        let mut app = app_with(&["A"]);
+        let l = app.session.execute("line", &json!({ "points": [[0, 0], [1, 0]] })).unwrap()["handles"][0].clone();
+        app.session.execute("block", &json!({ "name": "B", "base": [0, 0], "handles": [l] })).unwrap();
+        app.session.execute("bedit", &json!({ "name": "B" })).unwrap();
+        app.session.execute("line", &json!({ "points": [[0, 0], [0, 1]] })).unwrap();
+        assert!(app.session.docs[0].block_unsaved());
+        app.request_close(None);
+        assert_eq!(app.close_prompt(), Some("A"));
+        app.answer_close(Choice::Save);
+        // The untitled drawing can't be saved here, so it stays open, but the block has the change.
+        let st = &app.session.docs[0];
+        assert!(!st.block_unsaved());
+        assert_eq!(st.drawing().block("B").unwrap().entities.len(), 2);
     }
 
     #[test]

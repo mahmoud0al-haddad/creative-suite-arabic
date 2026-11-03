@@ -14,7 +14,7 @@
 //! - `ui.edit.begin {text?}`, `ui.edit.commit {move?}`, `ui.edit.cancel`
 //! - `ui.screenshot {path?}` — PNG of the window (base64 when no path); animations are settled
 //! - `ui.resize {width, height}`, `ui.set {dark?, formulaBar?, ribbonCollapsed?, animations?}`
-//! - `app.open {path}`, `app.save {path?}`, `app.quit`
+//! - `app.open {path, password?}`, `app.save {path?}`, `app.quit`
 
 use std::sync::mpsc::Sender;
 
@@ -181,9 +181,20 @@ pub fn handle(app: &mut SheetApp, ctx: &egui::Context, method: &str, p: &Json) -
                 ("view.darkMode", "Dark Mode", ""),
                 ("view.theme", "Display Theme", ""),
                 ("view.animations", "Animations", "{on?: bool} (toggles without it) → {on}"),
+                ("options.autoComplete", "Enable AutoComplete for cell values", "{on?: bool} (toggles without it) → {on}"),
                 ("view.interfaceScale", "Interface Size", "{percent: 75–200 | \"auto\"} (100 = auto; clamped)"),
                 ("ui.dialog", "Open Dialog", ""),
                 ("ui.backstage", "File (Backstage view)", "{page?: home|new|open|info|saveAs|print|export|options|close}"),
+                (
+                    "ui.printSettings",
+                    "Print Settings",
+                    "{printer?: discovered name, copies?: 1..999, duplex?: printerDefault|off|longEdge|shortEdge|null, grayscale?: bool, refresh?: bool} → {printer,copies,duplex,grayscale,printers,ready,busy,discovering,status,detail}; {} inspects without submitting",
+                ),
+                (
+                    "ui.printSubmit",
+                    "Submit Print Job",
+                    "existing file.print sheet/pagination params → {printing,bytes,pending}; submits without opening a dialog",
+                ),
                 ("app.language.set", "Interface Language", "{language: \"en\"|\"zh\"|\"ja\"|\"ko\"|\"ru\"|\"pt\"|\"de\"|\"cs\"} (alias: code)"),
                 ("app.language.english", "Interface Language: English", ""),
                 ("app.language.japanese", "Interface Language: Japanese", ""),
@@ -232,7 +243,7 @@ pub fn handle(app: &mut SheetApp, ctx: &egui::Context, method: &str, p: &Json) -
                 } else if field == "search" {
                     d.search = s("value").unwrap_or("").to_string();
                 } else {
-                    d.values.insert(field.to_string(), p.get("value").cloned().unwrap_or(Json::Null));
+                    d.set_value(field, p.get("value").cloned().unwrap_or(Json::Null));
                 }
                 ok(json!(d.values))
             }
@@ -351,10 +362,17 @@ pub fn handle(app: &mut SheetApp, ctx: &egui::Context, method: &str, p: &Json) -
         "ui.screenshot" => return Outcome::Screenshot { path: s("path").map(str::to_string) },
         "app.open" => {
             let Some(path) = s("path") else { return err("missing `path`") };
-            app.open_path(path);
-            match app.message.take() {
-                Some((_, m)) => err(m),
-                None => ok(json!({"title": app.session.active().map(|d| d.display_title())})),
+            // Not `open_path`: that asks for a missing password in a dialog, and programmatic
+            // calls never open one. A password-protected workbook takes `password` instead.
+            let r = app.run("file.open", json!({"path": path, "password": s("password")}));
+            if let Ok(r) = &r {
+                app.after_open(Some(path), r);
+            }
+            app.after_engine();
+            match (r, app.message.take()) {
+                (Err(e), _) => err(crate::clean_error(&e)),
+                (Ok(_), Some((_, m))) => err(m),
+                (Ok(_), None) => ok(json!({"title": app.session.active().map(|d| d.display_title())})),
             }
         }
         "app.save" => wrap(app.run("file.save", json!({"path": s("path")}))),
@@ -486,5 +504,30 @@ mod tests {
         assert_eq!(ids(&filter_commands(sample(), Some("font"))), ["home.borders", "home.bold"]);
         assert!(filter_commands(sample(), Some("catalog_no_match_7391")).is_empty());
         assert_eq!(filter_commands(sample(), None).len(), 3);
+    }
+
+    #[test]
+    fn print_command_discovery_documents_settings_and_submission() {
+        let mut session = gridcraft_engine::Session::new();
+        session.new_workbook();
+        let mut app = SheetApp::new(session, crate::Services::default());
+        let Outcome::Done(reply) = handle(&mut app, &egui::Context::default(), "engine.commands", &json!({"search":"print"})) else {
+            panic!("command discovery must return immediately");
+        };
+        assert_eq!(reply["ok"], true);
+        let commands = reply["result"].as_array().unwrap();
+        for (id, expected_docs) in [
+            ("ui.printSettings", &["copies", "duplex", "refresh", "discovering", "status", "detail"][..]),
+            ("ui.printSubmit", &["file.print", "pagination", "pending", "without opening a dialog"][..]),
+        ] {
+            let command = commands.iter().find(|command| command["id"] == id).unwrap();
+            assert_eq!(command["ui"], true);
+            let docs = command["params"].as_str().unwrap();
+            for expected in expected_docs {
+                assert!(docs.contains(expected), "{id}: missing {expected}");
+            }
+        }
+        assert!(!app.printing.busy(), "discovery must not submit a job");
+        assert!(app.backstage.is_none(), "discovery must not open settings");
     }
 }

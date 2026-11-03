@@ -1,4 +1,4 @@
-//! "Start ArtCraft Launcher when I log in".
+//! "Start Creative Suite Launcher when I log in".
 //!
 //! - macOS: a LaunchAgent in `~/Library/LaunchAgents`.
 //! - Windows: a value under `HKCU\…\CurrentVersion\Run`.
@@ -15,7 +15,7 @@ pub const HIDDEN_FLAG: &str = "--hidden";
 
 #[cfg(windows)]
 fn windows_run_name() -> &'static str {
-    if crate::paths::is_personal_suite() { "Creative Suite Launcher" } else { "ArtCraft Launcher" }
+    "Creative Suite Launcher"
 }
 
 /// The program to start at login: the AppImage when running from one, else this executable.
@@ -92,7 +92,7 @@ pub fn set_enabled(on: bool) -> Result<(), String> {
         }
         let exe = program()?.display().to_string().replace('"', "\\\"");
         let entry = format!(
-            "[Desktop Entry]\nType=Application\nName=ArtCraft Launcher\nComment=Install and update the Craft App Suite\nExec=\"{exe}\" {HIDDEN_FLAG}\nIcon={ID}\nTerminal=false\nX-GNOME-Autostart-enabled=true\n"
+            "[Desktop Entry]\nType=Application\nName=Creative Suite Launcher\nComment=Install and update the Craft App Suite\nExec=\"{exe}\" {HIDDEN_FLAG}\nIcon={ID}\nTerminal=false\nX-GNOME-Autostart-enabled=true\n"
         );
         crate::paths::write_atomic(&path, entry.as_bytes())
     }

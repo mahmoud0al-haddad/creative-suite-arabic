@@ -13,7 +13,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         },
         app,
     );
-    cadcraft_ui_egui::theme::install_fonts(&h.ctx);
+    cadcraft_ui_egui::theme::install_fonts(&h.ctx, "ar");
     // Let the app finish its one-time styling before overriding runtime system fonts.
     // Published screenshots may use an explicitly supplied openly licensed face only.
     h.run_steps(1);

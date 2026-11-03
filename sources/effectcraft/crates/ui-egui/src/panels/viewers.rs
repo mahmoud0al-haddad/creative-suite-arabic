@@ -216,7 +216,7 @@ pub fn activate(app: &mut EffectcraftApp, ctx: &egui::Context, id: u32) {
     match target {
         Some(c) if Some(c) != active => {
             if let Err(e) = crate::menus::invoke(app, ctx, "comp.open", json!({"comp": c.0})) {
-                app.ui.status = e;
+                app.ui.status = crate::diagnostics::message(&e.to_string());
             }
         }
         _ => {

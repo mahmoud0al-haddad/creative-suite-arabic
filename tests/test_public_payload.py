@@ -8,7 +8,7 @@ import zipfile
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parent.parent / 'scripts/prepare-public-payload.py'
-APPS = ['cadcraft', 'deckcraft', 'designcraft', 'effectcraft', 'filmcraft', 'gridcraft',
+APPS = ['cadcraft', 'deckcraft', 'designcraft', 'effectcraft', 'figcraft', 'filmcraft', 'gridcraft',
         'lightcraft', 'pdfcraft', 'photocraft', 'soundcraft', 'vectorcraft', 'wordcraft']
 
 class PublicPayloadTests(unittest.TestCase):
@@ -20,26 +20,30 @@ class PublicPayloadTests(unittest.TestCase):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(data)
             return hashlib.sha256(data).hexdigest()
-        status = {'launcher_sha256': put('artcraft-launcher.exe'), 'applications': {}}
+        status = {'launcher_sha256': put('artcraft-launcher.exe'), 'launcher_version':'0.1.0',
+                  'launcher_upstream_commit':'1'*40,'launcher_arabic_reviewed':True,'applications': {}}
+        installed={'apps':{}}
         put('portable.txt')
         put('vcruntime140.dll')
         put('launcher-native-ui-probe.exe')
         for name in APPS:
             relative = f'apps/{name}/{name}.exe'
-            status['applications'][name] = {'version':'0.1.0','arabic_reviewed':True,'modified_gui_sha256':put(relative),'executables':[relative]}
+            status['applications'][name] = {'version':'0.1.0','upstream_commit':'1'*40,'arabic_reviewed':True,'modified_gui_sha256':put(relative),'executables':[relative]}
+            installed['apps'][name]={'version':'0.1.0','path':'../../'+relative}
             put(f'apps/{name}/vcruntime140.dll')
             put(f'apps/{name}/support-open.dll')
         put('licenses/open/NOTICE.txt')
         put('licenses/microsoft-runtime/NOTICE.txt')
         for name in ['app.ron','app-en.ron','personal-suite.txt','data/installed.json','control.key']:
             put('ArtCraftLauncherData/'+name)
+        (stage/'ArtCraftLauncherData/data/installed.json').write_text(json.dumps(installed),encoding='utf8')
         (stage/'package-status.json').write_text(json.dumps(status), encoding='utf8')
         with zipfile.ZipFile(archive,'w') as z:
-            z.writestr('source-manifest.json',json.dumps({'repositories':[{'name':name} for name in APPS+['craft-launcher']]}))
+            z.writestr('source-manifest.json',json.dumps({'repositories':[{'name':name,'upstreamCommit':'1'*40,'releasedTag':'v0.1.0'} for name in APPS+['craft-launcher']]}))
         return stage,dest,archive
 
     def run_assembler(self, stage, dest, archive):
-        return subprocess.run([sys.executable,str(SCRIPT),'--reviewed-stage',str(stage),'--destination',str(dest),'--public-source-zip',str(archive)],capture_output=True,text=True)
+        return subprocess.run([sys.executable,str(SCRIPT),'--reviewed-stage',str(stage),'--destination',str(dest),'--public-source-zip',str(archive),'--tag','v2026.10-ar.1','--revision','1'],capture_output=True,text=True)
 
     def test_filters_crt_private_control_and_probe_but_preserves_support(self):
         with tempfile.TemporaryDirectory() as temp:

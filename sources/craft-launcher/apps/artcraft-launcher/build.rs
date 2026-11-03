@@ -16,7 +16,7 @@ fn main() {
         .set("ProductName", "Creative Suite Launcher")
         .set("FileDescription", "Creative Suite Launcher")
         .set("CompanyName", "Personal modified edition")
-        .set("LegalCopyright", "Copyright (c) the ArtCraft Launcher authors. MIT OR Apache-2.0.")
+        .set("LegalCopyright", "Copyright (c) the Creative Suite Launcher authors. MIT OR Apache-2.0.")
         .set("OriginalFilename", "artcraft-launcher.exe")
         .set("InternalName", "artcraft-launcher");
     if let Err(e) = res.compile() {

@@ -117,6 +117,12 @@ pub struct Sheet {
 pub const DEFAULT_COL_WIDTH: f32 = 64.0;
 pub const DEFAULT_ROW_HEIGHT: f32 = 20.0;
 
+/// Column width (points) → characters of the default font's digit width (7 px), without the
+/// cell padding: the value the Column Width dialog shows.
+pub fn points_to_chars(px: f64) -> f64 {
+    if px <= 12.0 { (px / 12.0 * 100.0).round() / 100.0 } else { ((px - 5.0) / 7.0 * 100.0 + 0.5).trunc() / 100.0 }
+}
+
 impl Sheet {
     pub fn new(name: impl Into<String>) -> Sheet {
         Sheet {
@@ -221,6 +227,20 @@ impl Sheet {
 
     // ---- geometry
 
+    /// Whether this cell has a table or ordinary AutoFilter dropdown.
+    pub fn has_filter_button(&self, c: CellRef) -> bool {
+        self.autofilter.as_ref().is_some_and(|af| af.range.start.row == c.row && af.range.contains(c))
+            || self.tables.iter().any(|t| t.filter_button && t.header_row && t.range.start.row == c.row && t.range.contains(c))
+    }
+
+    /// Horizontal header space in unzoomed grid units (96 units per inch).
+    /// Observed in Windows Excel 16.0 build 20326: AutoFit reserves 12.5 pt at
+    /// 100-200% zoom, 25 pt at 50%, regardless of header row height. Below 100%
+    /// the dropdown keeps its screen width. This is geometry, not font padding.
+    pub fn filter_button_space(&self, c: CellRef) -> f32 {
+        if self.has_filter_button(c) { (12.5 * 96.0 / 72.0) / (self.zoom as f32 / 100.0).clamp(0.1, 1.0) } else { 0.0 }
+    }
+
     pub fn col_width(&self, col: u32) -> f32 {
         match self.cols.get(&col) {
             Some(i) if i.hidden => 0.0,
@@ -237,6 +257,17 @@ impl Sheet {
     }
     pub fn is_row_hidden(&self, row: u32) -> bool {
         self.rows.get(&row).is_some_and(|r| r.hidden)
+    }
+    /// Whether `row` is hidden by an applied filter: a hidden row below the header of the
+    /// sheet AutoFilter while it has criteria, or a hidden data row of a filtered table.
+    /// Other hidden rows were hidden by hand.
+    pub fn is_row_filtered(&self, row: u32) -> bool {
+        if !self.is_row_hidden(row) {
+            return false;
+        }
+        let in_sheet_filter =
+            self.autofilter.as_ref().is_some_and(|af| !af.criteria.is_empty() && row > af.range.start.row && row <= af.range.end.row);
+        in_sheet_filter || self.tables.iter().any(|t| !t.filter.is_empty() && t.data_range().is_some_and(|r| row >= r.start.row && row <= r.end.row))
     }
     pub fn is_col_hidden(&self, col: u32) -> bool {
         self.cols.get(&col).is_some_and(|r| r.hidden)

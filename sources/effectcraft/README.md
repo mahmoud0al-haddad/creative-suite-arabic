@@ -209,6 +209,13 @@ cargo run --release -p effectcraft-cli -- render --out intro.mp4    # render the
 cargo xtask web --serve 8765                # the browser build on http://127.0.0.1:8765/ (docs/web.md)
 ```
 
+The Arabic community build also sets `CRAFT_FONTS_DIR` to its separately pinned craft-fonts
+checkout. Arabic-script entries in `fonts/manifest.txt` are compiled into the text engine and
+the ordinary Arabic UI fallback, including on the web. With that input omitted, the app still
+builds and uses installed fonts where available. Set `CRAFT_FONTS_REQUIRED=1` to reject a missing
+or unusable input in a release build. Keep the fonts' original OFL notices with the distribution;
+no Windows font files are redistributed.
+
 New to it? [docs/footage.md](docs/footage.md) covers importing footage and image sequences and
 Interpret Footage.
 

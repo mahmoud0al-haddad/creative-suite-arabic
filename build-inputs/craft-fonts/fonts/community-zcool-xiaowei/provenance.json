@@ -1,0 +1,19 @@
+{
+  "repository": "https://github.com/google/fonts",
+  "commit": "d427686494a89f0b7ecb9833273b6aabb83a6350",
+  "path": "ofl/zcoolxiaowei",
+  "files": {
+    "ZCOOLXiaoWei-Regular.ttf": {
+      "sha256": "a42b620140f493db42f741351dfbf343c0936d58588ee8004b8b2a218d997ff1",
+      "bytes": 6313808
+    },
+    "OFL.txt": {
+      "sha256": "a094514ca57cf8f9c5e8d8d1adab5d8cd3a377297ff016f9df2c05b3ecd77f0a",
+      "bytes": 4400
+    },
+    "METADATA.pb": {
+      "sha256": "aa1ced447d625faa508f81efc73d5f158e5fcecd59dbecb66a27bcb89947bdeb",
+      "bytes": 615
+    }
+  }
+}

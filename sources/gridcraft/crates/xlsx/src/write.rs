@@ -5,11 +5,11 @@ use std::fmt::Write as _;
 
 use gridcraft_core::RangeRef;
 use gridcraft_formula::quote_sheet;
-use gridcraft_model::{CalcMode, Style, Visibility, Workbook};
+use gridcraft_model::{CalcMode, CalcSettings, Style, Visibility, Workbook};
 
-use crate::IoError;
 use crate::package::ZipOut;
 use crate::xml::{esc, esc_attr};
+use crate::{IoError, XlsxKind};
 
 pub const NS_MAIN: &str = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
 pub const NS_REL: &str = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
@@ -20,10 +20,6 @@ pub const CT_DRAWING: &str = "application/vnd.openxmlformats-officedocument.draw
 pub const CT_CHART: &str = "application/vnd.openxmlformats-officedocument.drawingml.chart+xml";
 pub const CT_TABLE: &str = "application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml";
 pub const CT_COMMENTS: &str = "application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml";
-/// Main workbook part: macro-free and macro-enabled variants (Excel refuses a `.xlsm` whose main
-/// part uses the macro-free content type, and vice versa).
-pub const CT_WORKBOOK_MAIN: &str = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml";
-pub const CT_WORKBOOK_MAIN_MACRO: &str = "application/vnd.ms-excel.sheet.macroEnabled.main+xml";
 pub const CT_VBA: &str = "application/vnd.ms-office.vbaProject";
 pub const CT_THREADED_COMMENTS: &str = "application/vnd.ms-excel.threadedcomments+xml";
 pub const CT_PERSONS: &str = "application/vnd.ms-excel.person+xml";
@@ -165,13 +161,38 @@ pub fn abs_range(r: &RangeRef) -> String {
     format!("${}${}:${}${}", c(r.start.col), r.start.row + 1, c(r.end.col), r.end.row + 1)
 }
 
-pub fn write_xlsx(wb: &Workbook) -> Result<Vec<u8>, IoError> {
+/// Refuses sheet names XLSX cannot hold. The reader repairs such names (cuts, strips, renames
+/// duplicates) but formulas keep the old spelling, so the saved file would turn into `#REF!`.
+fn check_sheet_names(wb: &Workbook) -> Result<(), IoError> {
+    let mut seen = std::collections::HashSet::new();
+    for sheet in &wb.sheets {
+        let name = &sheet.name;
+        let bad = if name.is_empty() {
+            Some("is blank")
+        } else if name.chars().count() > 31 {
+            Some("is longer than 31 characters")
+        } else if name.chars().any(|c| matches!(c, ':' | '\\' | '/' | '?' | '*' | '[' | ']')) {
+            Some("contains one of : \\ / ? * [ ]")
+        } else if !seen.insert(name.to_ascii_lowercase()) {
+            Some("is used by another sheet")
+        } else {
+            None
+        };
+        if let Some(why) = bad {
+            return Err(IoError::Format(format!("sheet name \"{name}\" {why}; rename the sheet before saving as XLSX")));
+        }
+    }
+    Ok(())
+}
+
+pub fn write_xlsx(wb: &Workbook, kind: XlsxKind) -> Result<Vec<u8>, IoError> {
     if wb.sheets.is_empty() {
         return Err(IoError::Format("a workbook needs at least one sheet".into()));
     }
     if wb.sheets.iter().any(|sheet| sheet.cell_pictures.keys().any(|c| sheet.cell(*c).is_some_and(|cell| cell.formula.is_some()))) {
         return Err(IoError::Format("a static cell picture cannot also contain a formula".into()));
     }
+    check_sheet_names(wb)?;
     let mut out = Out {
         parts: vec![],
         overrides: vec![],
@@ -203,9 +224,15 @@ pub fn write_xlsx(wb: &Workbook) -> Result<Vec<u8>, IoError> {
     };
 
     let mut wb_rels = Rels::default();
+    // Kept content first: the chart sheets among the worksheets need their relationship ids.
+    let kept = crate::passthrough::write_workbook(wb, &mut wb_rels, &mut out);
     let mut pivots = crate::pivot::PivotWriter::default();
     let mut sheets_xml = String::new();
+    let mut sheet_id = 1usize;
     for (i, sheet) in wb.sheets.iter().enumerate() {
+        let (before, next) = kept.sheet_entries(i, false, sheet_id);
+        sheets_xml.push_str(&before);
+        sheet_id = next;
         let (xml, mut rels) = crate::sheet_write::write_sheet(wb, i, i == active, &mut out);
         pivots.add_sheet(wb, i, &mut out, &mut rels);
         let name = format!("xl/worksheets/sheet{}.xml", i + 1);
@@ -221,8 +248,10 @@ pub fn write_xlsx(wb: &Workbook) -> Result<Vec<u8>, IoError> {
             Visibility::VeryHidden => " state=\"veryHidden\"",
         };
         let name: String = sheet.name.chars().take(31).collect();
-        let _ = write!(sheets_xml, "<sheet name=\"{}\" sheetId=\"{}\"{state} r:id=\"{rid}\"/>", esc_attr(&name), i + 1);
+        let _ = write!(sheets_xml, "<sheet name=\"{}\" sheetId=\"{sheet_id}\"{state} r:id=\"{rid}\"/>", esc_attr(&name));
+        sheet_id += 1;
     }
+    sheets_xml.push_str(&kept.sheet_entries(wb.sheets.len(), true, sheet_id).0);
 
     // Defined names, then print areas and titles.
     let mut names = String::new();
@@ -238,7 +267,7 @@ pub fn write_xlsx(wb: &Workbook) -> Result<Vec<u8>, IoError> {
         }
         let _ = write!(names, "<definedName name=\"{}\"", esc_attr(&n.name));
         if let Some(sc) = n.scope {
-            let _ = write!(names, " localSheetId=\"{sc}\"");
+            let _ = write!(names, " localSheetId=\"{}\"", kept.file_index(sc));
         }
         if n.hidden {
             names.push_str(" hidden=\"1\"");
@@ -259,7 +288,13 @@ pub fn write_xlsx(wb: &Workbook) -> Result<Vec<u8>, IoError> {
     for (i, sheet) in wb.sheets.iter().enumerate() {
         let q = quote_sheet(&sheet.name);
         if let Some(pa) = &sheet.print.print_area {
-            let _ = write!(names, "<definedName name=\"_xlnm.Print_Area\" localSheetId=\"{i}\">{}!{}</definedName>", esc(&q), abs_range(pa));
+            let _ = write!(
+                names,
+                "<definedName name=\"_xlnm.Print_Area\" localSheetId=\"{}\">{}!{}</definedName>",
+                kept.file_index(i),
+                esc(&q),
+                abs_range(pa)
+            );
         }
         let mut titles = vec![];
         if let Some((c0, c1)) = sheet.print.title_cols {
@@ -269,17 +304,24 @@ pub fn write_xlsx(wb: &Workbook) -> Result<Vec<u8>, IoError> {
             titles.push(format!("{q}!{}", abs_range(&RangeRef::rows(r0.min(r1), r0.max(r1)))));
         }
         if !titles.is_empty() {
-            let _ = write!(names, "<definedName name=\"_xlnm.Print_Titles\" localSheetId=\"{i}\">{}</definedName>", esc(&titles.join(",")));
+            let _ = write!(
+                names,
+                "<definedName name=\"_xlnm.Print_Titles\" localSheetId=\"{}\">{}</definedName>",
+                kept.file_index(i),
+                esc(&titles.join(","))
+            );
         }
     }
 
     let mut w = format!("{XML_DECL}<workbook xmlns=\"{NS_MAIN}\" xmlns:r=\"{NS_REL}\">");
+    w.push_str(&crate::passthrough::workbook_elements(wb, "fileVersion"));
     w.push_str(if wb.date_system == gridcraft_core::DateSystem::D1904 { "<workbookPr date1904=\"1\"/>" } else { "<workbookPr/>" });
     if wb.protected_structure {
-        w.push_str("<workbookProtection lockStructure=\"1\"/>");
+        let pw = wb.structure_password.as_ref().map(|h| crate::sheet_write::password_attrs(h, "workbook")).unwrap_or_default();
+        let _ = write!(w, "<workbookProtection{pw} lockStructure=\"1\"/>");
     }
-    let _ = write!(w, "<bookViews><workbookView activeTab=\"{active}\"/></bookViews><sheets>{sheets_xml}</sheets>");
-    w.push_str(&crate::passthrough::write_workbook(wb, &mut wb_rels, &mut out));
+    let _ = write!(w, "<bookViews><workbookView activeTab=\"{}\"/></bookViews><sheets>{sheets_xml}</sheets>", kept.file_index(active));
+    w.push_str(&kept.elements);
     if !names.is_empty() {
         let _ = write!(w, "<definedNames>{names}</definedNames>");
     }
@@ -289,8 +331,17 @@ pub fn write_xlsx(wb: &Workbook) -> Result<Vec<u8>, IoError> {
         CalcMode::Manual => w.push_str(" calcMode=\"manual\""),
         CalcMode::AutomaticExceptTables => w.push_str(" calcMode=\"autoNoTable\""),
     }
-    if wb.calc.iterative {
-        let _ = write!(w, " iterate=\"1\" iterateCount=\"{}\" iterateDelta=\"{}\"", wb.calc.max_iterations, crate::xml::num(wb.calc.max_change));
+    // CT_CalcPr defaults: iterate off, 100 iterations, 0.001 maximum change. The limits are kept
+    // while iteration is off, as Options keeps them.
+    let calc = &wb.calc;
+    if calc.iterative {
+        w.push_str(" iterate=\"1\"");
+    }
+    if calc.iterative || calc.max_iterations != CalcSettings::DEFAULT_ITERATIONS {
+        let _ = write!(w, " iterateCount=\"{}\"", calc.max_iterations);
+    }
+    if calc.iterative || calc.max_change != CalcSettings::DEFAULT_CHANGE {
+        let _ = write!(w, " iterateDelta=\"{}\"", crate::xml::num(calc.max_change));
     }
     if wb.calc.precision_as_displayed {
         w.push_str(" fullPrecision=\"0\"");
@@ -300,6 +351,10 @@ pub fn write_xlsx(wb: &Workbook) -> Result<Vec<u8>, IoError> {
     }
     w.push_str("/>");
     w.push_str(&pivots.workbook_xml(&mut wb_rels));
+    let exts = crate::passthrough::workbook_elements(wb, "ext");
+    if !exts.is_empty() {
+        let _ = write!(w, "<extLst>{exts}</extLst>");
+    }
     w.push_str("</workbook>");
 
     // Workbook-level parts.
@@ -345,8 +400,9 @@ pub fn write_xlsx(wb: &Workbook) -> Result<Vec<u8>, IoError> {
         out.part("xl/persons/person.xml", Some(CT_PERSONS), x.into_bytes());
         wb_rels.add_uri(REL_PERSON, "persons/person.xml");
     }
-    out.part("xl/workbook.xml", Some(if wb.vba_project.is_some() { CT_WORKBOOK_MAIN_MACRO } else { CT_WORKBOOK_MAIN }), w.into_bytes());
-    if let Some(data) = &wb.vba_project {
+    out.part("xl/workbook.xml", Some(kind.main_content_type()), w.into_bytes());
+    // A macro-free package can't hold a VBA project (Excel refuses such a file).
+    if let Some(data) = wb.vba_project.as_ref().filter(|_| kind.is_macro_enabled()) {
         wb_rels.add("vbaProject", "vbaProject.bin");
         out.part("xl/vbaProject.bin", Some(CT_VBA), data.clone());
     }

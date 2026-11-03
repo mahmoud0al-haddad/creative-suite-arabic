@@ -179,7 +179,7 @@ pub fn velocity(app: &mut EffectcraftApp, ctx: &egui::Context, t: &Tokens) {
             params["outInfluence"] = json!(d.out_inf);
         }
         if let Err(e) = app.session.execute("keys.velocity", params) {
-            app.ui.status = e.to_string();
+            app.ui.status = crate::diagnostics::message(&e.to_string());
         }
         cancel = true;
     }
@@ -234,7 +234,7 @@ pub fn interpolation(app: &mut EffectcraftApp, ctx: &egui::Context, t: &Tokens) 
         if params.as_object().is_some_and(|m| !m.is_empty())
             && let Err(e) = app.session.execute("keys.interpolation", params)
         {
-            app.ui.status = e.to_string();
+            app.ui.status = crate::diagnostics::message(&e.to_string());
         }
         cancel = true;
     }
@@ -279,7 +279,7 @@ pub fn time_stretch(app: &mut EffectcraftApp, ctx: &egui::Context, t: &Tokens) {
     if ok || super::dialogs::ui_enter(ctx) {
         let hold = ["in", "current", "out"][d.hold.min(2)];
         if let Err(e) = app.session.execute("layer.timeStretch", json!({"percent": d.percent, "hold": hold})) {
-            app.ui.status = e.to_string();
+            app.ui.status = crate::diagnostics::message(&e.to_string());
         }
         cancel = true;
     }

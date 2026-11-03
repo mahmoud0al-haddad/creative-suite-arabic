@@ -18,7 +18,7 @@ var selectorValue = [100, 100, 100];
 
 // Request ops (must match runtime.rs).
 var __COMP = 0, __COMPNAME = 1, __LAYER = 2, __LINFO = 3, __CHILD = 4, __PINFO = 5, __VALUE = 6, __XFORM = 7, __RECT = 8, __MARKERS = 9, __DOC = 10;
-var __FOOT = 11, __FDATA = 12, __SAMPLE = 13, __PROJ = 14;
+var __FOOT = 11, __FDATA = 12, __SAMPLE = 13, __PROJ = 14, __SOURCE = 15;
 
 function __begin(t, v, c, l, path, uid, idx, fd, ti, tt, sv) {
   time = t;
@@ -261,7 +261,10 @@ function noise(x) {
 function timeToFrames(t, fps, isDuration) {
   if (t === undefined) t = time + thisComp.displayStartTime;
   if (fps === undefined) fps = 1 / __S.fd;
-  return Math.floor(t * fps + 1e-6);
+  var frames = t * fps;
+  // The 1e-6 keeps a whole number of frames that floating point overshoots (31/24 - 5/24) whole.
+  if (isDuration && frames !== 0) return frames < 0 ? Math.floor(frames + 1e-6) : Math.ceil(frames - 1e-6);
+  return Math.floor(frames + 1e-6);
 }
 
 function framesToTime(frames, fps) {
@@ -569,6 +572,14 @@ Layer.prototype = {
   get enabled() { return this.__info[11]; },
   get active() { return this.__info[11] && time >= this.inPoint && time < this.outPoint; },
   get containingComp() { return new Comp(this.__c); },
+  // The source item (AE's Layer.source): a Comp for a precomp layer, a Footage for footage, solid
+  // and model layers, null for text, shape, null, camera and light layers (#809).
+  get source() {
+    var s = __h(__SOURCE, this.__c, this.__l);
+    if (s === null) return null;
+    if (s[0] === 'comp') return new Comp(s[1]);
+    return new Footage([s[2], s[3], s[4], s[5], s[6], s[7], s[0], null, null]);
+  },
   __group: function (k) {
     var g = __child(this.__c, this.__l, '', k);
     if (g === undefined) __err('Layer "' + this.name + '" has no property "' + k + '"');
@@ -810,10 +821,18 @@ Prop.prototype = {
 
 var __propHandler = {
   get: function (t, k) {
-    if (typeof k !== 'string' || k in t) return t[k];
+    if (typeof k !== 'string') return t[k];
+    // A layer-valued property (a Layer Control's Layer) is named as its layer (#809).
+    if (k === 'name' && t.__info[2] === 'layer') {
+      var lv = t.value;
+      if (lv !== null && lv !== undefined && lv.__isLayer) return lv.name;
+    }
+    if (k in t) return t[k];
     var v = t.value;
     if (v === null || v === undefined) return undefined;
     var x = v[k];
+    // Property groups are callable proxies: hand them over as they are, not bound like methods (#809).
+    if (x !== null && x !== undefined && x.__isGroup) return x;
     return typeof x === 'function' ? x.bind(v) : x;
   },
 };

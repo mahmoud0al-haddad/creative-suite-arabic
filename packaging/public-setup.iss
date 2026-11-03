@@ -70,6 +70,7 @@ Source: "{#PublicPayload}\portable.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#PublicPayload}\apps\*"; DestDir: "{app}\apps"; Excludes: "{#ExcludedRuntime},*.pdb"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#PublicPayload}\licenses\*"; DestDir: "{app}\licenses"; Excludes: "microsoft-runtime\*"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#PublicPayload}\ArtCraftLauncherData\data\installed.json"; DestDir: "{app}\ArtCraftLauncherData\data"; Flags: ignoreversion
+Source: "{#PublicPayload}\ArtCraftLauncherData\data\bundle.json"; DestDir: "{app}\ArtCraftLauncherData\data"; Flags: ignoreversion
 Source: "{#PublicPayload}\ArtCraftLauncherData\personal-suite.txt"; DestDir: "{app}\ArtCraftLauncherData"; Flags: ignoreversion
 Source: "{#PublicPayload}\ArtCraftLauncherData\app.ron"; DestDir: "{app}\ArtCraftLauncherData"; Flags: onlyifdoesntexist uninsneveruninstall; Languages: ar
 Source: "{#PublicPayload}\ArtCraftLauncherData\app-en.ron"; DestDir: "{app}\ArtCraftLauncherData"; DestName: "app.ron"; Flags: onlyifdoesntexist uninsneveruninstall; Languages: en
@@ -82,7 +83,8 @@ Name: "{group}\{cm:LauncherName}"; Filename: "{app}\artcraft-launcher.exe"; Work
 Name: "{autodesktop}\{cm:LauncherName}"; Filename: "{app}\artcraft-launcher.exe"; WorkingDir: "{app}"; Tasks: desktopicon; AppUserModelID: "local.creative-suite.launcher"
 
 [Run]
-Filename: "{app}\artcraft-launcher.exe"; Description: "{cm:StartLauncher}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\artcraft-launcher.exe"; Description: "{cm:StartLauncher}"; Flags: nowait postinstall skipifsilent; Check: ShouldOfferLauncher
 
 [Code]
+#include "suite-update-mode.iss"
 #include "runtime-prerequisite.iss"

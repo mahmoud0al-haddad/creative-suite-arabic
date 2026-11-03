@@ -391,7 +391,7 @@ pub struct HfContext {
 
 /// Today's date and the current time as headers and footers show them (`&D`, `&T`).
 pub fn hf_date_time(wb: &Workbook) -> (String, String) {
-    let now = gridcraft_calc::now_serial();
+    let now = gridcraft_core::date::serial_in_system(wb.date_system, gridcraft_calc::now_serial());
     let date = crate::display::format(&Value::Number(now.floor()), "m/d/yyyy", wb).text;
     let time = crate::display::format(&Value::Number(now), "h:mm AM/PM", wb).text;
     (date, time)
@@ -1027,6 +1027,21 @@ fn empty_for_overflow(sh: &Sheet, c: CellRef, merges: &[RangeRef]) -> bool {
     sh.value_ref(c).is_none_or(|v| v.is_empty()) && !merges.iter().any(|m| m.contains(c))
 }
 
+/// Unscaled width of the empty Center Across Selection cells right of `c`, which its text is centred over too.
+fn center_across_width(styles: &StyleTable, sh: &Sheet, c: CellRef, merges: &[RangeRef]) -> f32 {
+    let mut ext = 0.0;
+    let mut col = c.col + 1;
+    while col < MAX_COLS && ext < 20_000.0 {
+        let nc = CellRef::new(c.row, col);
+        if !empty_for_overflow(sh, nc, merges) || styles.get(sh.style_id(nc)).align.h != HAlign::CenterAcross {
+            break;
+        }
+        ext += sh.col_width(col);
+        col += 1;
+    }
+    ext
+}
+
 fn draw_text(pg: &mut Page, b: &Block, c: CellRef, l: &Look, rect: (f32, f32, f32, f32), merged: bool, merges: &[RangeRef], limits: (f32, f32)) {
     let (x, y, w, h) = rect;
     let sh = b.sh;
@@ -1110,8 +1125,11 @@ fn draw_text(pg: &mut Page, b: &Block, c: CellRef, l: &Look, rect: (f32, f32, f3
         VAlign::Bottom => y + h - pad - size * 0.22 - (n - 1.0) * line_h,
     };
     // Overflow into empty neighbours (single-line text, not merged).
-    let (mut clip_l, mut clip_r) = (x, x + w);
-    if !wrap && !merged && !is_num && rot.abs() != 90 && tw + 2.0 * pad + indent > w {
+    // Center Across Selection spans the empty Center Across cells to its right; the text stays within that run.
+    let spans = st.align.h == HAlign::CenterAcross && !wrap && !merged && rot == 0;
+    let across = if spans { center_across_width(&wb.styles, sh, c, merges) * b.k } else { 0.0 };
+    let (mut clip_l, mut clip_r) = (x, x + w + across);
+    if !wrap && !merged && !is_num && rot.abs() != 90 && across <= 0.0 && tw + 2.0 * pad + indent > w {
         let need = tw + 2.0 * pad + indent - w;
         let grow = |dir: i64, mut need: f32| -> f32 {
             let mut ext = 0.0;
@@ -1183,7 +1201,7 @@ fn draw_text(pg: &mut Page, b: &Block, c: CellRef, l: &Look, rect: (f32, f32, f3
         let lw = gridcraft_pdf::text_width(font, size, line);
         let lx = match h_align {
             HAlign::Right => x + w - pad - lw - indent,
-            HAlign::Center => x + (w - lw) / 2.0,
+            HAlign::Center => x + (w + across - lw) / 2.0,
             _ => x + pad + indent,
         };
         let ly = first_baseline + i as f32 * line_h;
@@ -1267,7 +1285,7 @@ fn draw_objects(pg: &mut Page, wb: &Workbook, si: usize, sh: &Sheet, b: &Block) 
         }
         let (x, y, w, h) = place(r);
         let fill = rgb_of(shp.fill, wb);
-        let line = rgb_of(shp.line, wb).map(|c| (c, (0.75 * b.k).max(0.25)));
+        let line = rgb_of(shp.line, wb).filter(|_| !shp.format.no_line).map(|c| (c, (0.75 * b.k).max(0.25)));
         match shp.kind {
             ShapeKind::Ellipse => {
                 let pts: Vec<[f32; 2]> = (0..72)
@@ -1294,13 +1312,29 @@ fn draw_objects(pg: &mut Page, wb: &Workbook, si: usize, sh: &Sheet, b: &Block) 
             }
         }
         if !shp.text.is_empty() {
-            let size = 11.0 * b.scale;
-            let lines = wrap_lines(&shp.text, Font::Helvetica, size, (w - 4.0 * b.k).max(size));
-            let mut yy = y + 2.0 * b.k + size * 0.8;
+            use gridcraft_model::{ShapeTextAlign, ShapeTextAnchor};
+            let fm = &shp.format;
+            let text_box = shp.kind == ShapeKind::TextBox;
+            let size = fm.font_size.unwrap_or(11.0).clamp(1.0, 4000.0) * b.scale;
+            let font = Font::styled(Font::family_for(fm.font.as_deref().unwrap_or("")), fm.bold, fm.italic);
+            let color = fm.text_color.and_then(|c| rgb_of(c, wb)).unwrap_or([0, 0, 0]);
+            let align = fm.align.unwrap_or(if text_box { ShapeTextAlign::Left } else { ShapeTextAlign::Center });
+            let anchor = fm.anchor.unwrap_or(if text_box { ShapeTextAnchor::Top } else { ShapeTextAnchor::Middle });
+            let lines = wrap_lines(&shp.text, font, size, (w - 4.0 * b.k).max(size));
+            let block_h = lines.len().min(500) as f32 * size * 1.2;
+            let mut yy = match anchor {
+                ShapeTextAnchor::Top => y + 2.0 * b.k,
+                ShapeTextAnchor::Middle => y + (h - block_h) / 2.0,
+                ShapeTextAnchor::Bottom => y + h - 2.0 * b.k - block_h,
+            } + size * 0.8;
             for l in lines.iter().take(500) {
-                let lw = gridcraft_pdf::text_width(Font::Helvetica, size, l);
-                let lx = if shp.kind == ShapeKind::TextBox { x + 2.0 * b.k } else { x + (w - lw) / 2.0 };
-                pg.text(lx, yy, size, Font::Helvetica, [0, 0, 0], l);
+                let lw = gridcraft_pdf::text_width(font, size, l);
+                let lx = match align {
+                    ShapeTextAlign::Left => x + 2.0 * b.k,
+                    ShapeTextAlign::Center => x + (w - lw) / 2.0,
+                    ShapeTextAlign::Right => x + w - 2.0 * b.k - lw,
+                };
+                pg.text(lx, yy, size, font, color, l);
                 yy += size * 1.2;
             }
         }
@@ -1353,11 +1387,11 @@ fn draw_headings(pg: &mut Page, b: &Block, col_heads: bool, row_heads: bool, at:
     }
 }
 
-fn draw_header_footer(pg: &mut Page, lay: &SheetLayout, cx: &HfContext) {
+fn draw_header_footer(pg: &mut Page, lay: &SheetLayout, which: gridcraft_model::HfPage, cx: &HfContext) {
     let [l, r, _, _, hm, fm] = lay.margins;
     let pw = lay.page_w;
     let ph = lay.page_h;
-    for (spec, header) in [(&lay.settings.header, true), (&lay.settings.footer, false)] {
+    for (spec, header) in [(lay.settings.hf(which, false), true), (lay.settings.hf(which, true), false)] {
         if spec.is_empty() {
             continue;
         }
@@ -1433,7 +1467,7 @@ pub fn render_pdf(wb: &Workbook, layouts: &[SheetLayout], file: &str, path: &str
         let mut cf = if sh.cond_formats.is_empty() { None } else { Some(crate::cf::CfCache::new()) };
         let k = lay.k();
         let (aw, ah) = lay.avail();
-        for (ri, ci) in &lay.pages {
+        for (pi, (ri, ci)) in lay.pages.iter().enumerate() {
             page_no += 1;
             let (Some(rband), Some(cband)) = (lay.row_bands.get(*ri).copied(), lay.col_bands.get(*ci).copied()) else { continue };
             let rsegs = segments(lay.title_rows, rband);
@@ -1477,7 +1511,7 @@ pub fn render_pdf(wb: &Workbook, layouts: &[SheetLayout], file: &str, path: &str
                 date: date.clone(),
                 time: time.clone(),
             };
-            draw_header_footer(pg, lay, &cx);
+            draw_header_footer(pg, lay, lay.settings.hf_page(pi == 0, page_no), &cx);
         }
     }
     let n = doc.page_count();
@@ -1494,7 +1528,7 @@ fn build_pdf(s: &Session, p: &Json, cmd: &str) -> Result<(Vec<u8>, usize)> {
     Ok(render_pdf(&d.wb, &lays, &d.display_title(), &path))
 }
 
-fn export_pdf(s: &mut Session, p: &Json) -> Result<Json> {
+pub(crate) fn export_pdf(s: &mut Session, p: &Json) -> Result<Json> {
     let (bytes, pages) = build_pdf(s, p, "file.exportPdf")?;
     match str_param(p, "path").filter(|x| !x.is_empty()) {
         Some(path) => {
@@ -1750,6 +1784,14 @@ mod tests {
     }
 
     #[test]
+    fn header_footer_date_follows_the_workbook_date_system() {
+        let mut wb = Workbook::new();
+        let date_1900 = hf_date_time(&wb).0;
+        wb.date_system = gridcraft_core::DateSystem::D1904;
+        assert_eq!(hf_date_time(&wb).0, date_1900);
+    }
+
+    #[test]
     fn header_footer_section_edits_are_undoable_and_views_are_per_sheet() {
         let mut s = s();
         s.execute("pageLayout.headerFooter", json!({"header": "&LLeft&RRight"})).unwrap();
@@ -1827,6 +1869,32 @@ mod tests {
     }
 
     #[test]
+    fn first_and_even_pages_print_their_own_headers() {
+        let mut s = s();
+        s.execute("range.setValues", json!({"range": "A1", "values": [["a"], ["b"], ["c"], ["d"], ["e"], ["f"]]})).unwrap();
+        s.execute("pageLayout.pageSetup", json!({"rowBreaks": [2, 4]})).unwrap();
+        let r = s
+            .execute(
+                "pageLayout.headerFooter",
+                json!({"header": "&COdd &P", "evenHeader": "&CEven &P", "firstHeader": "&CCover", "differentFirst": true, "differentOddEven": true}),
+            )
+            .unwrap();
+        assert_eq!(r["firstHeader"], "&CCover");
+        let (pdf, pages) = pdf_of(&mut s, json!({}));
+        assert_eq!(pages, 3);
+        assert!(contains(&pdf, "(Cover) Tj") && contains(&pdf, "(Even 2) Tj") && contains(&pdf, "(Odd 3) Tj"));
+        assert!(!contains(&pdf, "(Odd 1) Tj"), "the first page has its own header");
+        // One section of the even-page footer, edited in place.
+        s.execute("pageLayout.headerFooter", json!({"page": "even", "part": "footer", "section": "right", "text": "&[Tab]"})).unwrap();
+        assert_eq!(s.doc().unwrap().wb.sheet(0).unwrap().print.even_footer, "&R&A");
+        assert!(s.execute("pageLayout.headerFooter", json!({"page": "last", "part": "header", "text": "x"})).is_err());
+        // Turned off, every page prints the odd header again.
+        s.execute("pageLayout.headerFooter", json!({"differentFirst": false, "differentOddEven": false})).unwrap();
+        let (pdf, _) = pdf_of(&mut s, json!({}));
+        assert!(contains(&pdf, "(Odd 1) Tj") && contains(&pdf, "(Odd 2) Tj") && !contains(&pdf, "(Cover) Tj"));
+    }
+
+    #[test]
     fn pdf_contains_text_and_header_codes_expand() {
         let mut s = s();
         s.execute("range.setValues", json!({"range": "A1", "values": [["Quarterly Report", null], ["Total", 1234.5]]})).unwrap();
@@ -1879,6 +1947,24 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
         let r = s.execute("file.print", json!({})).unwrap();
         assert!(r["base64"].as_str().unwrap().len() > 100);
+    }
+
+    #[test]
+    fn save_as_pdf_writes_a_pdf_and_keeps_the_workbook_file() {
+        let mut s = s();
+        s.execute("cell.set", json!({"cell": "B2", "input": "hello"})).unwrap();
+        let dir = std::env::temp_dir().join(format!("gridcraft-save-pdf-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("Out.PDF");
+        let r = s.execute("file.saveAs", json!({"path": path.to_str().unwrap()})).unwrap();
+        assert_eq!(r["pages"], 1);
+        let bytes = std::fs::read(&path).unwrap();
+        assert!(bytes.starts_with(b"%PDF-"));
+        assert!(contains(&bytes, "(hello) Tj"));
+        // The PDF is a print, not the workbook's file: Save still asks where to put the workbook.
+        let d = s.doc().unwrap();
+        assert!(d.path.is_none() && d.is_dirty());
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]
@@ -1987,6 +2073,23 @@ mod tests {
     }
 
     #[test]
+    fn export_pdf_without_a_path_returns_bytes_and_never_opens_a_dialog() {
+        let mut s = s();
+        for params in [json!({}), json!({"path": ""}), json!({"path": null})] {
+            let r = s.execute("file.exportPdf", params).unwrap();
+            assert!(r.get("path").is_none(), "no file is written without a path");
+            let bytes = crate::io::base64_decode(r["base64"].as_str().unwrap()).unwrap();
+            assert!(bytes.starts_with(b"%PDF-"));
+        }
+        assert!(s.take_ui_requests().is_empty(), "a programmatic call never queues a dialog");
+        // Headless callers (CLI, MCP) get the same bytes, not an error.
+        assert!(s.execute_headless("file.exportPdf", json!({})).is_ok());
+        // With no workbook open it is a clear error, not a panic.
+        let mut none = Session::new();
+        assert!(none.execute("file.exportPdf", json!({})).is_err());
+    }
+
+    #[test]
     fn bands_unit() {
         let b = bands(0, 9, |_| 10.0, |_| 35.0, &[], 100);
         assert_eq!(b, vec![(0, 2), (3, 5), (6, 8), (9, 9)]);
@@ -2001,6 +2104,23 @@ mod tests {
         assert!(w.iter().all(|l| gridcraft_pdf::text_width(Font::Helvetica, 10.0, l) <= 50.0 || !l.contains(' ')));
         let w = wrap_lines("Supercalifragilistic", Font::Helvetica, 10.0, 20.0);
         assert!(w.len() > 2);
+    }
+
+    #[test]
+    fn center_across_spans_following_empty_center_across_cells() {
+        let mut styles = StyleTable::default();
+        let across = styles.intern(Style { align: Alignment { h: HAlign::CenterAcross, ..Alignment::default() }, ..Style::default() });
+        let mut sh = Sheet::new("S");
+        for col in 0..3 {
+            sh.set_style(CellRef::new(0, col), across);
+        }
+        sh.set_value(CellRef::new(0, 0), Value::Text("Title".into()));
+        let a1 = CellRef::new(0, 0);
+        assert_eq!(center_across_width(&styles, &sh, a1, &[]), sh.col_width(1) + sh.col_width(2));
+        sh.set_value(CellRef::new(0, 2), Value::Text("x".into()));
+        assert_eq!(center_across_width(&styles, &sh, a1, &[]), sh.col_width(1));
+        let merged = [RangeRef::new(CellRef::new(0, 1), CellRef::new(1, 1))];
+        assert_eq!(center_across_width(&styles, &sh, a1, &merged), 0.0);
     }
 
     #[test]

@@ -60,6 +60,8 @@ pub enum WidgetKind {
     },
     /// A signature field, to be signed in the app.
     Signature,
+    /// An image field: a push button that picks a picture (the picture itself is page content).
+    Image,
     /// A date field with its Acrobat format pattern (`yyyy-mm-dd`).
     Date(String),
     CheckBox {
@@ -217,12 +219,6 @@ struct Layouter<'t> {
 pub fn instance_count(occur: &Occur, from_data: usize) -> usize {
     let n = if from_data > 0 { from_data } else { occur.initial };
     n.min(occur.max.unwrap_or(usize::MAX)).clamp(1, MAX_INSTANCES)
-}
-
-/// Index of child `i` among the earlier siblings with the same name (the SOM index).
-fn sib_index(children: &[Node], i: usize) -> usize {
-    let name = children.get(i).and_then(|c| c.common().name.as_deref());
-    children.iter().take(i).filter(|c| c.common().name.as_deref() == name && name.is_some()).count()
 }
 
 /// Lay a template out, with the values and repeat counts of `data` (the `xfa:data` element).
@@ -519,8 +515,9 @@ impl Layouter<'_> {
         // Master page content: positioned draws and fields.
         let ctx = Ctx { font: Font::default(), para: Para::default(), som: area.name.clone().map(|n| format!("{n}[0]")).unwrap_or_default() };
         let page_rect = Rect::new(0.0, 0.0, area.width, area.height);
+        let sibs = SomIndices::of(&area.items);
         for (i, item) in area.items.iter().enumerate() {
-            self.draw_positioned_child(item, page_rect, &ctx, 1, sib_index(&area.items, i))?;
+            self.draw_positioned_child(item, page_rect, &ctx, 1, sibs.at(i))?;
         }
         Ok(())
     }
@@ -726,6 +723,7 @@ impl Layouter<'_> {
         }
         // Data adds instances of a repeating subform (rows added in another viewer).
         let instances = self.instances(node, &ctx.som);
+        self.warn_truncated(node, &ctx.som, instances);
         let ctx_parent = ctx;
         for i in 0..instances {
             let ctx = ctx_parent.with_som(&sf.common, sib + i);
@@ -745,11 +743,12 @@ impl Layouter<'_> {
             match sf.layout {
                 Layout::Table => self.flow_table(sf, inner_x, inner_w, &ctx, depth)?,
                 _ => {
+                    let sibs = SomIndices::of(&sf.children);
                     for (ci, child) in sf.children.iter().enumerate() {
                         if !child.common().presence.occupies() {
                             continue;
                         }
-                        let csib = sib_index(&sf.children, ci);
+                        let csib = sibs.at(ci);
                         if let Node::Subform(_) = child
                             && splittable(child)
                         {
@@ -781,16 +780,18 @@ impl Layouter<'_> {
         let cols = self.columns(sf, inner_w);
         let leader =
             sf.overflow_leader.as_ref().and_then(|name| sf.children.iter().position(|c| c.common().name.as_deref() == Some(name) && is_row(c)));
+        let sibs = SomIndices::of(&sf.children);
         for (ci, child) in sf.children.iter().enumerate() {
             if !child.common().presence.occupies() {
                 continue;
             }
-            let csib = sib_index(&sf.children, ci);
+            let csib = sibs.at(ci);
             if let Node::Subform(row) = child
                 && row.layout == Layout::Row
             {
                 // Rows added as data (in another viewer) repeat the row.
                 let instances = self.instances(child, &ctx.som);
+                self.warn_truncated(child, &ctx.som, instances);
                 for inst in 0..instances {
                     let h = self.row_height(row, &cols, inner_w, ctx, depth + 1);
                     if self.make_room(h)?
@@ -800,7 +801,7 @@ impl Layouter<'_> {
                     {
                         let lh = self.row_height(l, &cols, inner_w, ctx, depth + 1);
                         let (_, y, _) = self.cursor();
-                        self.draw_row(l, &cols, Rect::new(x, y, inner_w, lh), ctx, depth + 1, sib_index(&sf.children, li))?;
+                        self.draw_row(l, &cols, Rect::new(x, y, inner_w, lh), ctx, depth + 1, sibs.at(li))?;
                         self.place(lh);
                     }
                     let (_, y, _) = self.cursor();
@@ -835,6 +836,22 @@ impl Layouter<'_> {
             _ => 0,
         };
         instance_count(&sf.occur, from_data)
+    }
+
+    /// The data holds more instances of `node` than `laid_out`: say so, since calculations
+    /// then see only those.
+    fn warn_truncated(&mut self, node: &Node, parent_som: &str, laid_out: usize) {
+        let Node::Subform(sf) = node else { return };
+        let from_data = match (&sf.common.name, self.data) {
+            (Some(name), Some(d)) if sf.occur.max != Some(1) => d.count(&data_path(self.tpl, parent_som), name),
+            _ => 0,
+        };
+        if from_data > laid_out {
+            self.warn_once(format!(
+                "{}: the data holds {from_data} rows; only the first {laid_out} are laid out (calculations see those)",
+                sf.common.name.as_deref().unwrap_or("a subform")
+            ));
+        }
     }
 
     fn size_of(&self, node: &Node, avail_w: f64, ctx: &Ctx, depth: usize) -> (f64, f64) {
@@ -957,9 +974,13 @@ impl Layouter<'_> {
                 let sum: f64 = visible.map(|k| self.size_of(k, avail_w, ctx, depth + 1).0).sum();
                 if sum <= avail_w + 0.05 { sum } else { avail_w }
             }
-            Layout::Positioned => {
-                visible.map(|k| k.common().x.unwrap_or(0.0) + self.size_of(k, avail_w, ctx, depth + 1).0).fold(0.0, f64::max).min(avail_w)
-            }
+            Layout::Positioned => visible
+                .map(|k| {
+                    let (w, h) = self.size_of(k, avail_w, ctx, depth + 1);
+                    k.common().top_left(w, h).0 + w
+                })
+                .fold(0.0, f64::max)
+                .min(avail_w),
             Layout::Tb | Layout::Table => visible.map(|k| self.size_of(k, avail_w, ctx, depth + 1).0).fold(0.0, f64::max).min(avail_w),
         }
     }
@@ -1056,8 +1077,8 @@ impl Layouter<'_> {
             .filter(|k| k.common().presence.occupies())
             .map(|k| {
                 let c = k.common();
-                let (_, h) = self.size_of(k, (inner_w - c.x.unwrap_or(0.0)).max(1.0), ctx, depth + 1);
-                c.y.unwrap_or(0.0) + h
+                let (w, h) = self.size_of(k, (inner_w - c.x.unwrap_or(0.0)).max(1.0), ctx, depth + 1);
+                c.top_left(w, h).1 + h
             })
             .fold(0.0, f64::max)
     }
@@ -1139,10 +1160,11 @@ impl Layouter<'_> {
         let ctx = ctx.with_som(&row.common, sib);
         let inner = rect.inset(&row.common.margin);
         let (cells, _) = self.cells(row, cols, inner.w, &ctx, depth);
+        let sibs = SomIndices::of(&row.children);
         for (i, r) in cells {
             if let Some(k) = row.children.get(i) {
                 // Cells stretch to the row height.
-                self.draw_node(k, Rect::new(inner.x + r.x, inner.y, r.w, inner.h), &ctx, depth + 1, sib_index(&row.children, i))?;
+                self.draw_node(k, Rect::new(inner.x + r.x, inner.y, r.w, inner.h), &ctx, depth + 1, sibs.at(i))?;
             }
         }
         Ok(())
@@ -1153,8 +1175,8 @@ impl Layouter<'_> {
         if !c.presence.occupies() {
             return Ok(());
         }
-        let (x, y) = (c.x.unwrap_or(0.0), c.y.unwrap_or(0.0));
-        let (w, h) = self.size_of(k, (inner.w - x).max(1.0), ctx, depth + 1);
+        let (w, h) = self.size_of(k, (inner.w - c.x.unwrap_or(0.0)).max(1.0), ctx, depth + 1);
+        let (x, y) = c.top_left(w, h);
         self.draw_node(k, Rect::new(inner.x + x, inner.y + y, w, h), ctx, depth + 1, sib)
     }
 
@@ -1185,8 +1207,9 @@ impl Layouter<'_> {
             Node::ExclGroup(g) => self.draw_group(g, rect, ctx, depth, sib),
             Node::Area(a) => {
                 let ctx = ctx.with_som(&a.common, sib);
+                let sibs = SomIndices::of(&a.children);
                 for (i, k) in a.children.iter().enumerate() {
-                    self.draw_positioned_child(k, rect, &ctx, depth + 1, sib_index(&a.children, i))?;
+                    self.draw_positioned_child(k, rect, &ctx, depth + 1, sibs.at(i))?;
                 }
                 Ok(())
             }
@@ -1197,10 +1220,11 @@ impl Layouter<'_> {
                 let parent_ctx = ctx;
                 let ctx = ctx.with_som(&s.common, sib);
                 let inner = rect.inset(&s.common.margin);
+                let sibs = SomIndices::of(&s.children);
                 match s.layout {
                     Layout::Positioned => {
                         for (i, k) in s.children.iter().enumerate() {
-                            self.draw_positioned_child(k, inner, &ctx, depth + 1, sib_index(&s.children, i))?;
+                            self.draw_positioned_child(k, inner, &ctx, depth + 1, sibs.at(i))?;
                         }
                     }
                     Layout::Tb => {
@@ -1213,7 +1237,7 @@ impl Layouter<'_> {
                             // A repeating subform here (a table in an area of a positioned page,
                             // say) gets its instances, as in a flowed one, one under another.
                             for instance in 0..self.instances(k, &ctx.som) {
-                                self.draw_node(k, Rect::new(inner.x, y, w, h), &ctx, depth + 1, sib_index(&s.children, i) + instance)?;
+                                self.draw_node(k, Rect::new(inner.x, y, w, h), &ctx, depth + 1, sibs.at(i) + instance)?;
                                 y += h;
                             }
                         }
@@ -1225,7 +1249,7 @@ impl Layouter<'_> {
                         for (i, instance, r) in placed {
                             if let Some(k) = s.children.get(i) {
                                 let x = if s.layout == Layout::RlTb { inner.right() - r.x - r.w } else { inner.x + r.x };
-                                self.draw_node(k, Rect::new(x, inner.y + r.y, r.w, r.h), &ctx, depth + 1, sib_index(&s.children, i) + instance)?;
+                                self.draw_node(k, Rect::new(x, inner.y + r.y, r.w, r.h), &ctx, depth + 1, sibs.at(i) + instance)?;
                             }
                         }
                     }
@@ -1236,7 +1260,7 @@ impl Layouter<'_> {
                             if !k.common().presence.occupies() {
                                 continue;
                             }
-                            let csib = sib_index(&s.children, i);
+                            let csib = sibs.at(i);
                             if let Node::Subform(r) = k
                                 && r.layout == Layout::Row
                             {
@@ -1372,17 +1396,19 @@ impl Layouter<'_> {
                 .map(|(i, k)| {
                     let c = k.common();
                     let (w, h) = self.size_of(k, (inner.w - c.x.unwrap_or(0.0)).max(1.0), &ctx, depth + 1);
-                    (i, Rect::new(c.x.unwrap_or(0.0), c.y.unwrap_or(0.0), w, h))
+                    let (x, y) = c.top_left(w, h);
+                    (i, Rect::new(x, y, w, h))
                 })
                 .collect(),
             _ => self.pack(&nodes, inner.w, &ctx, depth).0,
         };
+        let sibs = SomIndices::of(&nodes);
         for (i, r) in placed {
             if let Some(f) = g.fields.get(i) {
                 let on = f.items.first().cloned().filter(|s| !s.trim().is_empty()).unwrap_or_else(|| (i + 1).to_string());
                 let tip = f.tooltip.clone().or_else(|| g.tooltip.clone());
                 let chosen = selected.as_deref() == Some(on.as_str());
-                self.draw_field(f, Rect::new(inner.x + r.x, inner.y + r.y, r.w, r.h), &ctx, Some((&group, &on, tip, chosen)), sib_index(&nodes, i))?;
+                self.draw_field(f, Rect::new(inner.x + r.x, inner.y + r.y, r.w, r.h), &ctx, Some((&group, &on, tip, chosen)), sibs.at(i))?;
             }
         }
         Ok(())
@@ -1499,8 +1525,7 @@ impl Layouter<'_> {
                     (None, Value::Image { content_type, data }) => self.draw_image(data, content_type, box_)?,
                     _ => {}
                 }
-                self.warn_once("image fields show their picture; a new picture can't be chosen yet");
-                return Ok(());
+                // Then the field itself, which clicking gives a new picture.
             }
             Ui::Barcode => {
                 // The value as text, where the bars would be.
@@ -1616,6 +1641,10 @@ impl Layouter<'_> {
                 (kind, ui, widget_border(f.ui_border.as_ref(), false), value, f.tooltip.clone())
             }
             Ui::Signature => (WidgetKind::Signature, ui, widget_border(f.ui_border.as_ref(), false), None, f.tooltip.clone()),
+            Ui::ImageEdit => {
+                let none = WidgetBorder { color: None, fill: None, shape: BorderShape::None, width: 0.0 };
+                (WidgetKind::Image, ui, none, None, f.tooltip.clone())
+            }
             Ui::PasswordEdit => (WidgetKind::Password, ui, widget_border(f.ui_border.as_ref(), false), plain_value, f.tooltip.clone()),
             _ => (WidgetKind::Text, ui, widget_border(f.ui_border.as_ref(), false), plain_value, f.tooltip.clone()),
         };

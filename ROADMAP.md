@@ -4,7 +4,7 @@
 
 | Priority | Work | Completion evidence |
 | --- | --- | --- |
-| P0 | Public Windows package with independent runtime prerequisite | Clean-machine install, missing/old/new runtime paths, twelve launcher opens, source/license/hash checks |
+| P0 | Public Windows package with independent runtime prerequisite | Clean-machine install, missing/old/new runtime paths, 26 launcher opens (13 apps × 2 languages), source/license/hash checks, real GitHub download/install/restart |
 | P1 | Arabic captions, diagnostics and terminology regressions | Minimal issue example, catalog/placeholder test, reviewed Arabic/English screenshot |
 | P1 | RTL mixed-text input, caret and selection | Event-level regression for logical positions and visible selection/wrapping |
 | P1 | Lag and narrow/scaled UI problems | Before/after timing on a synthetic project and readable 1×/1.5×/2× UI |

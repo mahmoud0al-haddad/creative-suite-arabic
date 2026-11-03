@@ -1,4 +1,4 @@
-//! ArtCraft Launcher's desktop backend.
+//! Creative Suite Launcher's desktop backend.
 //!
 //! [`NativeBackend`] runs every slow thing (HTTP, scanning disks, installers) on worker threads
 //! and reports back through [`Event`](artcraft_launcher_core::protocol::Event)s, so the UI never
@@ -17,12 +17,16 @@ pub mod login;
 pub mod manifest;
 pub mod packages;
 pub mod paths;
+#[cfg(windows)]
+pub mod portable;
 pub mod process;
 pub mod proxy;
 pub mod queue;
+pub mod screenshots;
 pub mod self_update;
 pub mod single_instance;
 pub mod source;
+pub mod suite_update;
 
 pub use backend::NativeBackend;
 

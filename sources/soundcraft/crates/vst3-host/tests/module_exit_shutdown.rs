@@ -38,19 +38,13 @@ fn main() {
     assert!(up_front.status.success(), "shutdown before exit: {:?}\n{}", up_front.status, String::from_utf8_lossy(&up_front.stderr));
     let too_late = run("exit-handler");
     let err = String::from_utf8_lossy(&too_late.stderr);
-    #[cfg(unix)]
-    {
+    if cfg!(windows) {
+        // Windows runs the executable's exit handlers before a DLL's own, so the fixture's late
+        // state is still there when the host's exit handler runs its module exit.
+        assert!(too_late.status.success(), "the exit handler alone: {:?}\n{err}", too_late.status);
+    } else {
         assert_eq!(too_late.status.code(), Some(3), "the exit handler alone comes too late: {err}");
         assert!(err.contains("module exit after the process exit tore down state"), "{err}");
-    }
-    #[cfg(windows)]
-    {
-        // MSVC runs a DLL's atexit callbacks at DLL_PROCESS_DETACH, separately from the
-        // executable's callbacks. The fixture's late teardown therefore follows the host
-        // exit handler here, unlike Unix's shared callback stack. Explicit shutdown above
-        // is still required to release hosting before the application's own teardown.
-        // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/atexit
-        assert!(too_late.status.success(), "Windows DLL teardown: {:?}\n{err}", too_late.status);
     }
     println!("module_exit_shutdown: ok");
 }

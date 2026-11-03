@@ -71,7 +71,7 @@ pub fn hud_elided(ui: &mut Ui, text: &str, color: Color32, max_width: f32) -> Re
     if elided { resp.on_hover_text(text) } else { resp }
 }
 
-/// "01 / Classic apps": a section eyebrow, the index faint.
+/// "01 / Features": a section eyebrow, the index faint.
 pub fn eyebrow(ui: &mut Ui, index: &str, label: &str) {
     let t = Tokens::get(ui.ctx());
     ui.horizontal(|ui| {
@@ -312,6 +312,12 @@ pub enum Kind {
     Danger,
 }
 
+/// The natural width of a button, including its horizontal padding.
+pub fn button_width(ui: &Ui, text: &str, minimum: f32) -> f32 {
+    let galley = caps(ui, text, theme::HUD_SIZE, theme::mono_bold(), theme::BUTTON_SPACING, Tokens::get(ui.ctx()).ink);
+    (galley.size().x + 32.0).max(minimum)
+}
+
 /// A square button with a mono upper-case label, at least `width` wide.
 pub fn button(ui: &mut Ui, text: &str, kind: Kind, width: f32) -> Response {
     let t = Tokens::get(ui.ctx());
@@ -412,14 +418,16 @@ pub fn progress(ui: &mut Ui, fraction: Option<f32>, caption: &str, color: Color3
             p.rect_filled(Rect::from_min_size(bar.min, vec2(bar.width() * f.clamp(0.0, 1.0), bar.height())), CornerRadius::ZERO, color);
         }
         None => {
-            // Indeterminate: a sweeping segment.
-            let x = (ui.input(|i| i.time) as f32 * 0.8).fract();
-            let seg = Rect::from_min_size(
-                egui::pos2(bar.left() + bar.width() * (x * 1.3 - 0.3).max(0.0), bar.top()),
-                vec2(bar.width() * 0.3, bar.height()),
-            )
-            .intersect(bar);
-            p.rect_filled(seg, CornerRadius::ZERO, color);
+            // Keep the segment moving through the track boundary without resetting visibly.
+            let width = bar.width();
+            let segment_width = width * 0.3;
+            let x = (ui.input(|i| i.time) * 0.8).fract() as f32 * width;
+            for left in [x, x - width] {
+                let seg = Rect::from_min_size(egui::pos2(bar.left() + left, bar.top()), vec2(segment_width, bar.height())).intersect(bar);
+                if seg.is_positive() {
+                    p.rect_filled(seg, CornerRadius::ZERO, color);
+                }
+            }
             ui.ctx().request_repaint();
         }
     }

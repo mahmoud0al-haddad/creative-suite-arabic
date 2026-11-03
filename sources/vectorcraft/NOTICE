@@ -80,3 +80,23 @@ Local changes include Arabic interface catalogs, display-time diagnostics, selec
 The amended egui/epaint0.36.2 sources add Arabic shaping/bidi and logical editing/selection mappings; their MIT and Apache-2.0 notices remain in vendor/.
 Optional embedded Noto Sans Arabic is from the pinned craft-fonts input under SIL OFL1.1; its authors, source checksum and OFL text remain with build-inputs/craft-fonts.
 Installed Tahoma may be read at runtime but no proprietary system font file is distributed. ArtCraft graphical marks are excluded; original brand terms and factual upstream credit are retained.
+
+Shared PDF backend
+
+The patched hayro-interpret 0.7.0, hayro-syntax 0.7.2 and hayro-jbig2 0.3.0
+are fetched from https://github.com/storytold/craft-libs at revision
+ca50d63b773c99f96e75c77ce5a1d21e7c9cda0d. Their upstream project is
+https://github.com/LaurenzV/hayro, licensed MIT OR Apache-2.0. The snapshot retains each
+crate's upstream licence files. The patch ledger is at
+https://github.com/storytold/craft-libs/blob/ca50d63b773c99f96e75c77ce5a1d21e7c9cda0d/vendor/README.craft-reader.md.
+
+Assets already bundled through Hayro's default features retain their licences:
+- Foxit standard-14 substitutes: Copyright 2014 PDFium Authors. All rights reserved.
+  Original code copyright 2014 Foxit Software Inc. BSD-3-Clause; see
+  licenses/pdf-backend/hayro-interpret/assets/LICENSE_FOXIT.
+- CGATS001Compat-v2-micro.icc: CC0-1.0, Clinton Ingram; see
+  licenses/pdf-backend/hayro-interpret/assets/CGATS_LICENSE.txt.
+- Predefined CMaps: Copyright 1990-2023 Adobe. All rights reserved. BSD-3-Clause,
+  non-visual character-mapping data; see licenses/pdf-backend/hayro-cmap/LICENSE.txt.
+  Adobe and contributor names do not endorse or promote this product.
+Per-file hashes and sources are recorded in ASSETS.md.

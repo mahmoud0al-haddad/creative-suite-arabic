@@ -13,3 +13,6 @@
 *.ico binary
 *.png binary
 *.brotli binary
+
+# Preserve exported source and fixture bytes across checkout platforms.
+* -text

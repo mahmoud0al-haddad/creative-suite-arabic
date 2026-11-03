@@ -78,6 +78,35 @@ fn mode_sngl(v: &[f64]) -> R<f64> {
     modes(v).first().copied().ok_or(CellError::NA)
 }
 
+/// Numbers for MODE / MODE.SNGL / MODE.MULT. Inside multi-cell ranges and arrays only numbers
+/// count, like [`numbers`]. Scalar arguments differ from SUM: in Excel 365, text and logical
+/// values are skipped whether typed or referenced (even numeric text such as `"1"`, so
+/// `MODE(1,"1",2,3)` is `#N/A`, and `MODE(1,TRUE,TRUE,2)` is `#N/A`), but a single-cell reference
+/// to a blank cell is `#VALUE!` (`MODE(B9,2,D7)` with D7 blank). Arguments are processed left to
+/// right, so the first error wins. The results cached in POI's FormulaEvalTestData come from an
+/// older Excel that answered `#VALUE!` for typed text; they are not the reference here.
+fn mode_numbers(args: &[Arg]) -> R<Vec<f64>> {
+    let mut out = Vec::new();
+    for a in args {
+        match &a.value {
+            Value::Array(arr) => {
+                for v in arr.iter() {
+                    match v {
+                        Value::Number(n) => out.push(*n),
+                        Value::Error(e) => return Err(*e),
+                        _ => {}
+                    }
+                }
+            }
+            Value::Number(n) => out.push(*n),
+            Value::Error(e) => return Err(*e),
+            Value::Text(_) | Value::Bool(_) => {}
+            Value::Empty => return Err(CellError::Value),
+        }
+    }
+    Ok(out)
+}
+
 fn product(v: &[f64]) -> f64 {
     if v.is_empty() { 0.0 } else { v.iter().product() }
 }
@@ -277,7 +306,7 @@ fn countblank(a: &[Arg], _: C) -> R<Value> {
 }
 
 fn mode_mult(a: &[Arg], _: C) -> R<Value> {
-    let v = numbers(a)?;
+    let v = mode_numbers(a)?;
     let m = modes(&v);
     if m.is_empty() {
         return Err(CellError::NA);
@@ -433,7 +462,7 @@ fn prob(a: &[Arg], _: C) -> R<Value> {
     let (xs, ps) = arg_pairs(a, 0, 1)?;
     let lo = num(a, 2)?;
     let hi = if has(a, 3) { num(a, 3)? } else { lo };
-    if ps.iter().any(|&p| !(0.0..=1.0).contains(&p)) {
+    if ps.iter().any(|&p| p <= 0.0 || p > 1.0) {
         return Err(CellError::Num);
     }
     let total: f64 = ps.iter().sum();
@@ -1566,10 +1595,10 @@ pub(crate) fn specs() -> Vec<FnSpec> {
             numbers(a)?
         )?)),
         f!("MODE", 1, VAR, Compatibility, A, "MODE(number1, [number2], ...)", "Most frequently occurring number.", |a: &[Arg], _c: C| num_val(
-            mode_sngl(&numbers(a)?)?
+            mode_sngl(&mode_numbers(a)?)?
         )),
         f!("MODE.SNGL", 1, VAR, Statistical, A, "MODE.SNGL(number1, [number2], ...)", "Most frequently occurring number.", |a: &[Arg], _c: C| {
-            num_val(mode_sngl(&numbers(a)?)?)
+            num_val(mode_sngl(&mode_numbers(a)?)?)
         }),
         f!("MODE.MULT", 1, VAR, Statistical, A, "MODE.MULT(number1, [number2], ...)", "Vertical array of all the most frequent numbers.", mode_mult),
         f!("STDEV", 1, VAR, Compatibility, A, "STDEV(number1, [number2], ...)", "Sample standard deviation.", |a: &[Arg], _c: C| num_val(
@@ -2251,6 +2280,61 @@ mod tests {
         assert_eq!(rows_of(&ev("MODE.MULT", vec![c(&[1.0, 2.0, 3.0, 4.0, 3.0, 2.0, 1.0, 2.0, 3.0])])), vec![vec![nv(2.0)], vec![nv(3.0)]]);
     }
 
+    /// MODE argument semantics in Excel 365, on the inputs of FormulaEvalTestData (row "Mode"):
+    /// text is skipped, typed or referenced, but a single-cell reference to a blank cell is
+    /// `#VALUE!`; the first error from the left wins. The values cached in POI's file come from an
+    /// older Excel and say `#VALUE!` for `MODE(C9,E16,"1",B8)`, `MODE(B8,"1",2,3)` and
+    /// `MODE("1",1,#DIV/0!,2,3)`; Excel 365 gives `#N/A`, `#N/A` and `#DIV/0!`.
+    #[test]
+    fn mode_scalar_arguments() {
+        let data = arr(vec![vec![tv(""), nv(0.0), nv(1.0)], vec![tv("x"), nv(1.0), nv(1.001)], vec![tv("y"), nv(9e9), nv(2.3456)]]);
+        let cases: Vec<(Vec<crate::Arg>, Result<f64, CellError>)> = vec![
+            (vec![n(1.0), n(1.0), n(2.0), n(3.0)], Ok(1.0)),
+            (vec![rf(data)], Ok(1.0)),
+            (vec![rf(arr(vec![vec![nv(-1.1), Value::Empty, tv("1.1")]])), n(-1.1)], Ok(-1.1)),
+            // MODE(C9,E16,"1",B8): E16 holds the text "1.1".
+            (vec![rf(nv(1.1)), rf(tv("1.1")), t("1"), rf(nv(1.0))], Err(CellError::NA)),
+            (vec![rf(nv(1.0)), t("1"), n(2.0), n(3.0)], Err(CellError::NA)),
+            (vec![t("1"), n(1.0), e(CellError::Div0), n(2.0), n(3.0)], Err(CellError::Div0)),
+            // MODE(B9,2,D7) with D7 blank.
+            (vec![rf(nv(2.0)), n(2.0), rf(Value::Empty)], Err(CellError::Value)),
+            (vec![n(1.0), n(1.0), e(CellError::Div0), t("1")], Err(CellError::Div0)),
+        ];
+        for name in ["MODE", "MODE.SNGL"] {
+            for (args, want) in &cases {
+                match want {
+                    Ok(x) => close(ev(name, args.clone()), *x),
+                    Err(err) => is_err(ev(name, args.clone()), *err),
+                }
+            }
+        }
+        is_err(ev("MODE.MULT", vec![rf(nv(1.0)), t("1"), rf(Value::Empty)]), CellError::Value);
+    }
+
+    /// Text and logical values typed as arguments are skipped, not coerced (Excel 365, #736).
+    #[test]
+    fn mode_skips_typed_text_and_logicals() {
+        let cases: Vec<(Vec<crate::Arg>, Result<f64, CellError>)> = vec![
+            (vec![n(1.0), n(1.0), t("x")], Ok(1.0)),
+            (vec![n(1.0), n(2.0), t("x")], Err(CellError::NA)),
+            (vec![n(1.0), t("1"), n(2.0), n(3.0)], Err(CellError::NA)),
+            (vec![t("1"), n(1.0), n(2.0), n(3.0)], Err(CellError::NA)),
+            (vec![t("1"), n(1.0), e(CellError::Div0), n(2.0), n(3.0)], Err(CellError::Div0)),
+            (vec![n(1.0), b(true), b(true), n(2.0)], Err(CellError::NA)),
+            (vec![n(1.0), n(1.0), b(true)], Ok(1.0)),
+        ];
+        for name in ["MODE", "MODE.SNGL"] {
+            for (args, want) in &cases {
+                match want {
+                    Ok(x) => close(ev(name, args.clone()), *x),
+                    Err(err) => is_err(ev(name, args.clone()), *err),
+                }
+            }
+        }
+        assert_eq!(rows_of(&ev("MODE.MULT", vec![n(1.0), t("1"), n(1.0), t("x")])), vec![vec![nv(1.0)]]);
+        is_err(ev("MODE.MULT", vec![n(1.0), b(true), b(true), n(2.0)]), CellError::NA);
+    }
+
     #[test]
     fn spread() {
         let d = [1345.0, 1301.0, 1368.0, 1322.0, 1310.0, 1370.0, 1318.0, 1350.0, 1303.0, 1299.0];
@@ -2415,7 +2499,10 @@ mod tests {
         let p = c(&[0.2, 0.3, 0.1, 0.4]);
         close(ev("PROB", vec![x.clone(), p.clone(), n(2.0)]), 0.1);
         close(ev("PROB", vec![x.clone(), p, n(1.0), n(3.0)]), 0.8);
-        is_err(ev("PROB", vec![x, c(&[0.5, 0.5, 0.5, 0.5]), n(1.0)]), CellError::Num);
+        is_err(ev("PROB", vec![x.clone(), c(&[0.5, 0.5, 0.5, 0.5]), n(1.0)]), CellError::Num);
+        // Excel: any probability <= 0 is #NUM!, even when it sums to one and lies outside the limits.
+        is_err(ev("PROB", vec![x.clone(), c(&[0.5, 0.0, 0.25, 0.25]), n(0.0), n(3.0)]), CellError::Num);
+        is_err(ev("PROB", vec![x, c(&[0.5, 0.0, 0.25, 0.25]), n(2.0), n(3.0)]), CellError::Num);
     }
 
     #[test]

@@ -121,7 +121,7 @@ fn run_now(app: &mut FilmcraftApp, cmd: &str, params: serde_json::Value, play: b
         Ok(r) => {
             if play {
                 if let Err(e) = app.play_tts_preview() {
-                    app.ui.status = e;
+                    app.ui.status = crate::diagnostics::message(&e.to_string());
                 }
             } else {
                 app.ui.status = match cmd {

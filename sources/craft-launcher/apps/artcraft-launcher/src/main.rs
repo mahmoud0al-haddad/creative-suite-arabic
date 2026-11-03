@@ -5,9 +5,13 @@
 #![cfg_attr(windows, windows_subsystem = "windows")]
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
+mod logging;
+mod motion;
 mod settings_file;
 #[cfg(target_os = "macos")]
 mod spaces;
+#[cfg(target_os = "linux")]
+mod system_theme;
 mod tray;
 
 use std::path::PathBuf;
@@ -30,9 +34,13 @@ const SETTINGS_KEY: &str = "settings";
 type Wake = Arc<OnceLock<Box<dyn Fn() + Send + Sync>>>;
 
 fn main() -> ExitCode {
-    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
+    // First, so the panic report and every start-up warning are recorded (`logging`).
+    let logs = logging::install();
+    logging::install_panic_hook();
     // Detect system language in the background so the first frame can use it.
     artcraft_launcher_ui_egui::i18n::detect_system_lang_in_background();
+    // Detect Discord protocol handler in the background without blocking startup.
+    artcraft_launcher_native::process::ensure_discord_detection_started();
     let args: Vec<String> = std::env::args().skip(1).collect();
     if args.iter().any(|a| a == "--version" || a == "-V") {
         println!("artcraft-launcher {}", env!("CARGO_PKG_VERSION"));
@@ -45,6 +53,25 @@ fn main() -> ExitCode {
         Instance::Secondary => return ExitCode::SUCCESS,
         Instance::Primary(rx) => rx,
     };
+    // The log file lives in the launcher's data folder (beside the executable in portable mode);
+    // opened after the arguments (so `--version` leaves no file behind) and once this is the only
+    // launcher running, so a second start doesn't rotate away the running one's log. Records
+    // logged until now are written to it first.
+    if let Some(logs) = logs {
+        match artcraft_launcher_native::paths::Paths::new() {
+            Ok(paths) => match logs.attach_dir(&paths.logs()) {
+                Ok(path) => log::info!("Creative Suite Launcher {}, log file {}", env!("CARGO_PKG_VERSION"), path.display()),
+                Err(e) => {
+                    logs.no_file();
+                    log::warn!("no log file: {e}");
+                }
+            },
+            Err(e) => {
+                logs.no_file();
+                log::warn!("no log file: {e}");
+            }
+        }
+    }
     let (tray_loop, woken) = sync_channel(1);
     let waker = Arc::new(Waker { window: Mutex::new(None), tray_loop, quit_pending: AtomicBool::new(false) });
     {
@@ -52,9 +79,18 @@ fn main() -> ExitCode {
         let _ = wake.set(Box::new(move || waker.wake()));
     }
 
+    // The desktop's animation setting comes over D-Bus: ask now, so the answer is in by the first frame.
+    #[cfg(all(unix, not(target_os = "macos")))]
+    let _ = motion::reduced();
+
     let backend_waker = waker.clone();
     let settings_path = settings_file::path(APP_ID);
     let mut launcher = Launcher::new(Box::new(NativeBackend::new(move || backend_waker.wake())), starts, settings_path.clone());
+    #[cfg(target_os = "linux")]
+    {
+        let theme_waker = waker.clone();
+        launcher.system_theme = system_theme::Monitor::start(move || theme_waker.wake());
+    }
     // Started hidden at login where a window can't hide: start in the tray without mapping one,
     // so no window flashes up. Without a tray to come back from, the window opens after all.
     let mut window = true;
@@ -109,7 +145,12 @@ fn native_options(hidden: bool) -> eframe::NativeOptions {
     } else {
         viewport.with_decorations(false)
     };
-    if let Some(icon) = icon {
+    // On macOS the bundle's .icns is the icon. Any icon given to eframe (its egui logo when none
+    // is) replaces it in the Dock at runtime with a raw bitmap, which skips the system's icon
+    // treatment, so pass the empty icon, which eframe takes as "leave it alone".
+    if cfg!(target_os = "macos") {
+        viewport = viewport.with_icon(egui::IconData::default());
+    } else if let Some(icon) = icon {
         viewport = viewport.with_icon(icon);
     }
     eframe::NativeOptions {
@@ -126,12 +167,20 @@ fn native_options(hidden: bool) -> eframe::NativeOptions {
 /// integrated and discrete GPUs run different driver packages (common on OEM machines, where the
 /// Adrenalin installer leaves the integrated GPU on the OEM driver) it crashes inside
 /// `amdvlk64.dll` before the first frame. `WGPU_BACKEND` still overrides the default, and then
-/// wgpu picks the adapter itself.
+/// wgpu picks the adapter itself. Direct3D 12 shaders compile with FXC ([`pin_dx12_compiler`]).
+///
+/// Direct3D 12 presents through DirectComposition rather than straight to the window. The
+/// borderless window's drop shadow moves its client area down a pixel, and a swapchain made from
+/// the window is then stretched over it vertically by the compositor, blurring every horizontal
+/// edge and line of text. `WGPU_DX12_PRESENTATION_SYSTEM` still overrides it.
 #[cfg(windows)]
 fn wgpu_options() -> eframe::WgpuConfiguration {
-    use eframe::wgpu::{Backends, PowerPreference};
+    use eframe::wgpu::{Backends, Dx12Compiler, Dx12SwapchainKind, PowerPreference};
     let mut config = eframe::WgpuConfiguration::default();
+    pin_dx12_compiler(&mut config, Dx12Compiler::from_env());
     if let eframe::egui_wgpu::WgpuSetup::CreateNew(setup) = &mut config.wgpu_setup {
+        setup.instance_descriptor.backend_options.dx12.presentation_system =
+            Dx12SwapchainKind::from_env().unwrap_or(Dx12SwapchainKind::DxgiFromVisual);
         if let Some(backends) = Backends::from_env() {
             setup.instance_descriptor.backends = backends;
         } else {
@@ -153,6 +202,19 @@ fn wgpu_options() -> eframe::WgpuConfiguration {
     config
 }
 
+/// Compiles Direct3D 12 shaders with FXC (`d3dcompiler_47.dll`, part of Windows) unless
+/// `env_choice` (normally `Dx12Compiler::from_env()`, i.e. `WGPU_DX12_COMPILER`) names another.
+/// wgpu's default (`Auto`) loads whichever `dxcompiler.dll` the DLL search path finds. The launcher
+/// ships none, and without a matching `dxil.dll` DXC warns that the DXIL is unsigned; wgpu takes
+/// the warning for a compile error, its indirect-validation pipeline fails, the device is lost
+/// and the launcher exits before the first frame (#126).
+#[cfg(any(windows, test))]
+fn pin_dx12_compiler(config: &mut eframe::WgpuConfiguration, env_choice: Option<eframe::wgpu::Dx12Compiler>) {
+    if let eframe::egui_wgpu::WgpuSetup::CreateNew(setup) = &mut config.wgpu_setup {
+        setup.instance_descriptor.backend_options.dx12.shader_compiler = env_choice.unwrap_or(eframe::wgpu::Dx12Compiler::Fxc);
+    }
+}
+
 /// wgpu's own adapter order (by device type, then enumeration order), except that any Direct3D 12
 /// adapter, the WARP software one included, comes before GL. wgpu ranks WARP last, so on GPUs with
 /// no D3D12 driver (Intel HD 4000, Radeon TeraScale) it picked the GL one, whose legacy driver
@@ -170,7 +232,38 @@ fn adapter_rank(backend: eframe::wgpu::Backend, device_type: eframe::wgpu::Devic
     (backend != Backend::Dx12, device)
 }
 
-#[cfg(not(windows))]
+/// wgpu's adapter on Linux and the BSDs: the GPU the desktop runs on. egui asks for the
+/// high-performance GPU, which on a hybrid laptop in PRIME on-demand mode is the discrete one while
+/// the display server runs on the integrated one: every frame then crosses between the GPUs, and
+/// while the window is resized it shows stale or garbled frames and can stop drawing (issue #69).
+/// With no preference wgpu takes the first adapter Vulkan lists, and Mesa's device-select layer
+/// lists the display server's GPU first (or the one `DRI_PRIME` picks). Without that layer the
+/// order follows the ICD files, where lavapipe (`lvp_icd`) can sort before the real driver, so a
+/// software rasterizer only wins when nothing else can draw. `WGPU_POWER_PREF` (`low`, `high` or
+/// `none`) still overrides it, and then wgpu picks the adapter itself.
+#[cfg(not(any(windows, target_os = "macos")))]
+fn wgpu_options() -> eframe::WgpuConfiguration {
+    use eframe::wgpu::{DeviceType, PowerPreference};
+    let mut config = eframe::WgpuConfiguration::default();
+    if let eframe::egui_wgpu::WgpuSetup::CreateNew(setup) = &mut config.wgpu_setup {
+        if let Some(preference) = PowerPreference::from_env() {
+            setup.power_preference = preference;
+        } else {
+            setup.power_preference = PowerPreference::None;
+            setup.native_adapter_selector = Some(Arc::new(|adapters, surface| {
+                adapters
+                    .iter()
+                    .filter(|a| surface.is_none_or(|s| a.is_surface_supported(s)))
+                    .min_by_key(|a| a.get_info().device_type == DeviceType::Cpu)
+                    .cloned()
+                    .ok_or_else(|| "no graphics adapter can draw to the window".to_owned())
+            }));
+        }
+    }
+    config
+}
+
+#[cfg(target_os = "macos")]
 fn wgpu_options() -> eframe::WgpuConfiguration {
     eframe::WgpuConfiguration::default()
 }
@@ -287,6 +380,21 @@ fn no_window() -> egui::RawInput {
     egui::RawInput { focused: false, viewports: std::iter::once((egui::ViewportId::ROOT, viewport)).collect(), ..Default::default() }
 }
 
+/// macOS sends notifications on behalf of a bundle id. When none is set, the library looks up an app named
+/// "use_default" and macOS asks the user "Where is use_default?". Set ours before the first notification.
+/// The library accepts only one call (even a failed one skips that lookup), so the first outcome is kept and logged once.
+#[cfg(target_os = "macos")]
+fn claim_notification_identity() -> &'static Result<(), String> {
+    static CLAIMED: OnceLock<Result<(), String>> = OnceLock::new();
+    CLAIMED.get_or_init(|| {
+        let claimed = notify_rust::set_application(APP_ID).map_err(|e| e.to_string());
+        if let Err(e) = &claimed {
+            log::warn!("notification identity {APP_ID}: {e}");
+        }
+        claimed
+    })
+}
+
 struct DesktopHost {
     tray: bool,
     quit: bool,
@@ -301,6 +409,8 @@ impl Host for DesktopHost {
         let (title, body) = (title.to_string(), body.to_string());
         // Some platforms block while the notification is delivered.
         std::thread::spawn(move || {
+            #[cfg(target_os = "macos")]
+            claim_notification_identity();
             let mut n = notify_rust::Notification::new();
             n.summary(&title).body(&body).appname("Creative Suite Launcher");
             #[cfg(windows)]
@@ -329,6 +439,22 @@ impl Host for DesktopHost {
         login::set_enabled(on)
     }
 
+    fn pick_folder(&mut self, initial: Option<&str>) -> Option<String> {
+        let mut dialog = rfd::FileDialog::new();
+        if let Some(folder) = initial.filter(|p| std::path::Path::new(p).is_dir()) {
+            dialog = dialog.set_directory(folder);
+        }
+        dialog.pick_folder().and_then(|p| p.to_str().map(str::to_string))
+    }
+
+    fn reduce_motion(&self) -> bool {
+        motion::reduced()
+    }
+
+    fn discord_url(&self) -> &'static str {
+        artcraft_launcher_native::process::discord_url()
+    }
+
     fn quit(&mut self) {
         self.quit = true;
     }
@@ -337,6 +463,8 @@ impl Host for DesktopHost {
 /// Everything that outlives a window: the UI state and its backend, the tray icon, and the work
 /// that goes on with or without a window.
 struct Launcher {
+    #[cfg(target_os = "linux")]
+    system_theme: system_theme::Monitor,
     ui: LauncherUi,
     tray: Option<tray::Tray>,
     host: DesktopHost,
@@ -364,6 +492,8 @@ impl Launcher {
             let _ = asked.send(info.delay);
         });
         Self {
+            #[cfg(target_os = "linux")]
+            system_theme: system_theme::Monitor::default(),
             ui: LauncherUi::new(&windowless, backend, Settings::default()),
             tray: None,
             host: DesktopHost { tray: false, quit: false },
@@ -430,7 +560,9 @@ impl Launcher {
                 tray::TrayAction::Check => self.ui.check_now(),
                 // Straight to the browser: works while the window is hidden in the tray.
                 tray::TrayAction::Open(url) => {
-                    if let Err(e) = artcraft_launcher_native::process::open(std::ffi::OsStr::new(url)) {
+                    if url == artcraft_launcher_core::catalog::DISCORD_APP_URL {
+                        artcraft_launcher_native::process::open_url_with_fallback(url, artcraft_launcher_core::catalog::DISCORD_URL);
+                    } else if let Err(e) = artcraft_launcher_native::process::open(std::ffi::OsStr::new(url)) {
                         log::warn!("couldn't open {url}: {e}");
                     }
                 }
@@ -599,6 +731,25 @@ impl eframe::App for Shell<'_> {
 
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         self.launcher.ui.ui(ui, &mut self.launcher.host);
+        ui.ctx().output_mut(|o| {
+            o.commands.retain(|cmd| {
+                // The Discord deep link goes to the system opener, falling back to the web invite;
+                // egui's own link handling only opens web pages.
+                if let egui::OutputCommand::OpenUrl(open_url) = cmd
+                    && open_url.url == artcraft_launcher_core::catalog::DISCORD_APP_URL
+                {
+                    artcraft_launcher_native::process::open_url_with_fallback(&open_url.url, artcraft_launcher_core::catalog::DISCORD_URL);
+                    return false;
+                }
+                true
+            });
+        });
+    }
+
+    fn raw_input_hook(&mut self, ctx: &egui::Context, raw_input: &mut egui::RawInput) {
+        #[cfg(target_os = "linux")]
+        self.launcher.system_theme.apply(raw_input);
+        self.launcher.ui.raw_input(ctx, raw_input);
     }
 
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
@@ -623,6 +774,15 @@ mod tests {
     use super::*;
 
     const NOW: i64 = 1_791_500_000;
+
+    /// The bundle id is set once: asking again gives the first outcome, not the library's "already set" error.
+    /// (Setting it fails where the launcher is not installed, so the outcome itself is not asserted.)
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn notification_identity_is_claimed_once() {
+        let first = claim_notification_identity();
+        assert_eq!(claim_notification_identity(), first);
+    }
 
     /// What the tests can see of a [`Quiet`] backend, and its clock.
     #[derive(Default)]
@@ -863,6 +1023,27 @@ mod tests {
     }
 
     #[test]
+    fn dx12_shaders_compile_with_fxc_unless_asked() {
+        use eframe::egui_wgpu::WgpuSetup;
+        use eframe::wgpu::Dx12Compiler;
+        fn compiler(env_choice: Option<Dx12Compiler>) -> Dx12Compiler {
+            let mut config = eframe::WgpuConfiguration::default();
+            if let WgpuSetup::CreateNew(setup) = &mut config.wgpu_setup {
+                // wgpu's default: whichever dxcompiler.dll the DLL search path finds (#126).
+                setup.instance_descriptor.backend_options.dx12.shader_compiler = Dx12Compiler::Auto;
+            }
+            pin_dx12_compiler(&mut config, env_choice);
+            match config.wgpu_setup {
+                WgpuSetup::CreateNew(setup) => setup.instance_descriptor.backend_options.dx12.shader_compiler,
+                WgpuSetup::Existing(_) => panic!("the default configuration creates its own instance"),
+            }
+        }
+        assert!(matches!(compiler(None), Dx12Compiler::Fxc));
+        assert!(matches!(compiler(Some(Dx12Compiler::Auto)), Dx12Compiler::Auto));
+        assert!(matches!(compiler(Some(Dx12Compiler::default_dynamic_dxc())), Dx12Compiler::DynamicDxc { .. }));
+    }
+
+    #[test]
     fn warp_beats_a_gl_gpu_but_not_a_d3d12_gpu() {
         use eframe::wgpu::{Backend, DeviceType};
         // Intel HD 4000 + Radeon HD 7600M have no D3D12 driver; their GL one fails to configure.
@@ -874,5 +1055,18 @@ mod tests {
         assert!(adapter_rank(Backend::Dx12, integrated, false) < warp);
         assert!(adapter_rank(Backend::Dx12, discrete, false) < adapter_rank(Backend::Dx12, integrated, false));
         assert!(adapter_rank(Backend::Dx12, integrated, true) < adapter_rank(Backend::Dx12, discrete, true));
+    }
+
+    #[cfg(not(any(windows, target_os = "macos")))]
+    #[test]
+    fn linux_draws_on_the_desktops_gpu_unless_told_otherwise() {
+        use eframe::wgpu::PowerPreference;
+        let config = wgpu_options();
+        let eframe::egui_wgpu::WgpuSetup::CreateNew(setup) = &config.wgpu_setup else {
+            panic!("the launcher creates its own wgpu instance");
+        };
+        // egui would ask for the discrete GPU: on a PRIME laptop that's not the desktop's (issue #69).
+        let expected = PowerPreference::from_env().unwrap_or(PowerPreference::None);
+        assert_eq!(setup.power_preference, expected);
     }
 }

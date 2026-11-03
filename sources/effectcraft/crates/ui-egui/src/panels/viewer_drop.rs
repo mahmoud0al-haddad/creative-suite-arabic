@@ -52,7 +52,7 @@ pub(crate) fn show(app: &mut EffectcraftApp, ui: &egui::Ui, painter: &egui::Pain
         egui::DragAndDrop::clear_payload(&ctx);
         for (id, params) in actions {
             if let Err(e) = crate::menus::invoke(app, &ctx, id, params) {
-                app.ui.status = e;
+                app.ui.status = crate::diagnostics::message(&e.to_string());
             }
         }
     }

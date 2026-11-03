@@ -3,10 +3,11 @@
 use std::collections::HashSet;
 use std::f32::consts::{PI, TAU};
 
-use gridcraft_model::{Chart, ChartKind, LegendPos, Theme};
+use gridcraft_model::{Chart, ChartKind, LegendPos, LineDash, Theme, TrendlineKind};
 
 use crate::axis::{Fmt, Scale, clean, fixed_scale, nice_scale};
-use crate::resolve::{MAX_POINTS, MAX_SERIES, series_color};
+use crate::resolve::{MAX_POINTS, MAX_SERIES, MAX_TRENDLINES, series_color};
+use crate::trend::{auto_name, fit_trendline, moving_average};
 use crate::{ChartData, HAlign, Measure, Prim, Rgba, SeriesData, VAlign};
 
 pub(crate) const TEXT: Rgba = [0x59, 0x59, 0x59, 0xFF];
@@ -128,7 +129,7 @@ fn plot_kind(chart: &Chart, s: &SeriesData) -> ChartKind {
 fn point_color(data: &ChartData, j: usize) -> Rgba {
     match (j, data.series.first()) {
         (0, Some(s)) => s.color,
-        _ => series_color(&Theme::default(), j),
+        _ => j.checked_rem(data.palette.len()).and_then(|k| data.palette.get(k)).copied().unwrap_or_else(|| series_color(&Theme::default(), j)),
     }
 }
 
@@ -158,20 +159,28 @@ pub fn legend_entries(chart: &Chart, data: &ChartData) -> Vec<(String, Rgba, Swa
             let total = data.series.first().map(|s| s.color).unwrap_or(TEXT);
             vec![("Increase".into(), UP, Swatch::Box), ("Decrease".into(), DOWN, Swatch::Box), ("Total".into(), total, Swatch::Box)]
         }
-        _ => data
-            .series
-            .iter()
-            .take(MAX_SERIES)
-            .map(|s| {
-                let sw = match plot_kind(chart, s) {
-                    ChartKind::Line | ChartKind::LineStacked | ChartKind::Radar | ChartKind::ScatterLines => Swatch::Line,
-                    ChartKind::LineMarkers => Swatch::LineMarker,
-                    ChartKind::Scatter | ChartKind::Bubble => Swatch::Marker,
-                    _ => Swatch::Box,
-                };
-                (s.name.clone(), s.color, sw)
-            })
-            .collect(),
+        _ => {
+            let series = data.series.iter().take(MAX_SERIES);
+            let mut out: Vec<(String, Rgba, Swatch)> = series
+                .clone()
+                .map(|s| {
+                    let sw = match plot_kind(chart, s) {
+                        ChartKind::Line | ChartKind::LineStacked | ChartKind::Radar | ChartKind::ScatterLines => Swatch::Line,
+                        ChartKind::LineMarkers => Swatch::LineMarker,
+                        ChartKind::Scatter | ChartKind::Bubble => Swatch::Marker,
+                        _ => Swatch::Box,
+                    };
+                    (s.name.clone(), s.color, sw)
+                })
+                .collect();
+            // Trendlines follow the series, named "Linear (Sales)" unless given a name.
+            for s in series.filter(|s| supports_trendline(plot_kind(chart, s))) {
+                for t in s.trendlines.iter().take(MAX_TRENDLINES) {
+                    out.push((t.spec.name.clone().unwrap_or_else(|| auto_name(t.spec.kind, &s.name)), t.color, Swatch::Line));
+                }
+            }
+            out
+        }
     }
 }
 
@@ -181,6 +190,7 @@ fn sanitize_vals(v: &[Option<f64>]) -> Vec<Option<f64>> {
 
 fn sanitize(d: &ChartData) -> ChartData {
     ChartData {
+        palette: d.palette.iter().take(MAX_POINTS).copied().collect(),
         categories: d.categories.iter().take(MAX_POINTS).cloned().collect(),
         series: d
             .series
@@ -195,6 +205,7 @@ fn sanitize(d: &ChartData) -> ChartData {
                 kind: s.kind,
                 secondary: s.secondary,
                 smooth: s.smooth,
+                trendlines: s.trendlines.iter().take(MAX_TRENDLINES).cloned().collect(),
                 number_format: s.number_format.clone(),
             })
             .collect(),
@@ -244,7 +255,7 @@ fn draw_kind(ctx: &mut Ctx, chart: &Chart, data: &ChartData, area: Bx) {
         Doughnut => pie(ctx, chart, data, area, 0.5, false),
         Sunburst => pie(ctx, chart, data, area, 0.2, true),
         Treemap => treemap(ctx, chart, data, area),
-        Funnel => funnel(ctx, data, area),
+        Funnel => funnel(ctx, chart, data, area),
         Radar => radar(ctx, chart, data, area),
         _ => {
             let area = axis_titles(ctx, chart, area);
@@ -256,8 +267,8 @@ fn draw_kind(ctx: &mut Ctx, chart: &Chart, data: &ChartData, area: Bx) {
                 Scatter | ScatterLines | Bubble => scatter(ctx, chart, data, area),
                 Histogram => histogram(ctx, chart, data, area),
                 Waterfall => waterfall(ctx, chart, data, area),
-                BoxWhisker => box_whisker(ctx, data, area),
-                Stock => stock(ctx, data, area),
+                BoxWhisker => box_whisker(ctx, chart, data, area),
+                Stock => stock(ctx, chart, data, area),
                 _ => cartesian(ctx, chart, data, area, false),
             }
         }
@@ -630,6 +641,160 @@ fn value_range(it: impl Iterator<Item = f64>) -> Option<(f64, f64)> {
     })
 }
 
+// ---------------------------------------------------------------- trendlines
+
+/// Samples along a regression trendline.
+const TREND_STEPS: usize = 200;
+
+/// Whether series drawn as `k` show trendlines (Excel offers them on 2-D unstacked column,
+/// bar, line, area, scatter and bubble charts).
+pub fn supports_trendline(k: ChartKind) -> bool {
+    use ChartKind::*;
+    matches!(k, ColumnClustered | BarClustered | Line | LineMarkers | Area | Scatter | ScatterLines | Bubble)
+}
+
+/// A forecast distance as drawn: finite, non-negative and bounded.
+fn forecast(v: f64) -> f64 {
+    if v.is_finite() && v > 0.0 { v.min(1e9) } else { 0.0 }
+}
+
+/// Longest forward forecast among `s`'s regression trendlines.
+fn max_forward(s: &SeriesData) -> f64 {
+    s.trendlines.iter().filter(|t| !matches!(t.spec.kind, TrendlineKind::MovingAverage(_))).map(|t| forecast(t.spec.forward)).fold(0.0, f64::max)
+}
+
+/// Longest backward forecast among `s`'s regression trendlines.
+fn max_backward(s: &SeriesData) -> f64 {
+    s.trendlines.iter().filter(|t| !matches!(t.spec.kind, TrendlineKind::MovingAverage(_))).map(|t| forecast(t.spec.backward)).fold(0.0, f64::max)
+}
+
+/// Liang–Barsky: the part of segment `a`–`b` inside the unit square, with whether the start and
+/// end were cut.
+#[allow(clippy::type_complexity)]
+fn clip_segment(a: (f64, f64), b: (f64, f64)) -> Option<((f64, f64), (f64, f64), bool, bool)> {
+    let (dx, dy) = (b.0 - a.0, b.1 - a.1);
+    let (mut t0, mut t1) = (0.0f64, 1.0f64);
+    for (p, q) in [(-dx, a.0), (dx, 1.0 - a.0), (-dy, a.1), (dy, 1.0 - a.1)] {
+        if p == 0.0 {
+            if q < 0.0 {
+                return None;
+            }
+        } else {
+            let r = q / p;
+            if p < 0.0 {
+                if r > t1 {
+                    return None;
+                }
+                t0 = t0.max(r);
+            } else {
+                if r < t0 {
+                    return None;
+                }
+                t1 = t1.min(r);
+            }
+        }
+    }
+    Some(((a.0 + t0 * dx, a.1 + t0 * dy), (a.0 + t1 * dx, a.1 + t1 * dy), t0 > 0.0, t1 < 1.0))
+}
+
+/// Clips a sampled polyline in plot fractions (`None` = gap) to the plot box (the unit
+/// square), returning the visible runs.
+fn clip_unit(pts: &[Option<(f64, f64)>]) -> Vec<Vec<(f64, f64)>> {
+    const LIM: f64 = 1e9;
+    let ok = |p: &(f64, f64)| p.0.is_finite() && p.1.is_finite();
+    let cl = |p: (f64, f64)| (p.0.clamp(-LIM, LIM), p.1.clamp(-LIM, LIM));
+    let mut runs: Vec<Vec<(f64, f64)>> = Vec::new();
+    let mut run: Vec<(f64, f64)> = Vec::new();
+    for w in pts.windows(2) {
+        let seg = match w {
+            [Some(a), Some(b)] if ok(a) && ok(b) => clip_segment(cl(*a), cl(*b)),
+            _ => None,
+        };
+        match seg {
+            Some((p, q, cut_start, cut_end)) => {
+                if cut_start || run.is_empty() {
+                    if run.len() >= 2 {
+                        runs.push(std::mem::take(&mut run));
+                    }
+                    run.clear();
+                    run.push(p);
+                }
+                run.push(q);
+                if cut_end {
+                    runs.push(std::mem::take(&mut run));
+                }
+            }
+            None => {
+                if run.len() >= 2 {
+                    runs.push(std::mem::take(&mut run));
+                }
+                run.clear();
+            }
+        }
+    }
+    if run.len() >= 2 {
+        runs.push(run);
+    }
+    runs
+}
+
+/// Draws `s`'s trendlines fitted to its plotted points `pts` (data x, y). `frac` maps data to
+/// fractions of the plot box (0..1 inside, along the x and y axes), `px` fractions to pixels.
+/// Equation and R² label lines are appended to `labels`. Degenerate fits draw nothing.
+fn draw_trendlines(
+    ctx: &mut Ctx,
+    s: &SeriesData,
+    pts: &[(f64, f64)],
+    frac: &dyn Fn(f64, f64) -> (f64, f64),
+    px: &dyn Fn((f64, f64)) -> [f32; 2],
+    labels: &mut Vec<String>,
+) {
+    let Some((xlo, xhi)) = value_range(pts.iter().map(|p| p.0)) else { return };
+    for t in s.trendlines.iter().take(MAX_TRENDLINES) {
+        let spec = &t.spec;
+        let samples: Vec<Option<(f64, f64)>> = match spec.kind {
+            TrendlineKind::MovingAverage(p) => moving_average(pts, p).into_iter().map(|(x, y)| Some(frac(x, y))).collect(),
+            _ => {
+                let Some(fit) = fit_trendline(spec, pts) else { continue };
+                let (lo, hi) = (xlo - forecast(spec.backward), xhi + forecast(spec.forward));
+                if spec.display_equation {
+                    labels.push(fit.equation());
+                }
+                if spec.display_r_squared {
+                    labels.push(fit.r_squared());
+                }
+                (0..=TREND_STEPS)
+                    .map(|i| {
+                        let x = lo + (hi - lo) * i as f64 / TREND_STEPS as f64;
+                        fit.eval(x).map(|y| frac(x, y))
+                    })
+                    .collect()
+            }
+        };
+        let width = spec.width.filter(|w| w.is_finite()).unwrap_or(1.5).clamp(0.25, 12.0);
+        let dash = spec.dash != Some(LineDash::Solid);
+        for run in clip_unit(&samples) {
+            let line = decimate(run.into_iter().map(px).collect(), MAX_LINE_PTS);
+            if line.len() >= 2 {
+                ctx.out.push(Prim::Line { pts: line, color: t.color, width, dash });
+            }
+        }
+    }
+}
+
+/// Trendline equation / R² labels, stacked in the plot's top-right corner.
+fn draw_trend_labels(ctx: &mut Ctx, plot: Bx, labels: &[String]) {
+    let lh = LABEL_SIZE * 1.3;
+    for (i, t) in labels.iter().enumerate() {
+        let y = plot.y + 4.0 + i as f32 * lh;
+        if y + lh > plot.bottom() {
+            break;
+        }
+        let t = ctx.fit(t, LABEL_SIZE, plot.w - 8.0);
+        ctx.text(plot.right() - 4.0, y, &t, LABEL_SIZE, TEXT, HAlign::Right, VAlign::Top);
+    }
+}
+
 // ---------------------------------------------------------------- cartesian (column/bar/line/area/combo)
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -763,14 +928,23 @@ fn cartesian(ctx: &mut Ctx, chart: &Chart, data: &ChartData, area: Bx, horizonta
     let Some((s1, f1)) = axes.first() else { return };
     let y1 = ValAxis { scale: *s1, fmt: f1 };
     let y2 = axes.get(1).map(|(s, f)| ValAxis { scale: *s, fmt: f });
-    let labels: Vec<String> = (0..ncat).map(|j| cat_label(data, j)).collect();
+    // A forward forecast on a category axis adds empty category slots after the data.
+    let fwd = data
+        .series
+        .iter()
+        .enumerate()
+        .filter(|(i, _)| kinds.get(*i).is_some_and(|k| supports_trendline(*k)))
+        .map(|(_, s)| max_forward(s))
+        .fold(0.0, f64::max);
+    let ncat_slots = ncat.saturating_add(fwd.ceil() as usize).min(MAX_CATS.max(ncat));
+    let labels: Vec<String> = (0..ncat_slots).map(|j| if j < ncat { cat_label(data, j) } else { String::new() }).collect();
     let plot = frame(ctx, area, CatAxis::Labels(&labels), &y1, y2.as_ref(), horizontal, chart.gridlines);
     if !plot.ok() {
         return;
     }
     let scale_of = |i: usize| -> Scale { if sec.get(i).copied().unwrap_or(false) { y2.as_ref().map(|a| a.scale).unwrap_or(*s1) } else { *s1 } };
     let cat_len = if horizontal { plot.h } else { plot.w };
-    let cw = cat_len / ncat as f32;
+    let cw = cat_len / ncat_slots as f32;
     let center = |j: usize| if horizontal { plot.bottom() - (j as f32 + 0.5) * cw } else { plot.x + (j as f32 + 0.5) * cw };
     let vpos = |v: f64, sc: &Scale| if horizontal { plot.x + sc.frac(v) * plot.w } else { plot.bottom() - sc.frac(v) * plot.h };
 
@@ -797,6 +971,8 @@ fn cartesian(ctx: &mut Ctx, chart: &Chart, data: &ChartData, area: Bx, horizonta
     let nslots = slot_keys.len().max(1) as f32;
     let bw = cw / (nslots + 1.5);
     let labels_on = chart.data_labels && ncat <= MAX_LABELS;
+    // Area labels wait until every area is filled, so a later (stacked) area can't paint over them.
+    let mut area_labels = Vec::new();
 
     // Areas first, then columns, then lines on top.
     for pass in 0..3 {
@@ -825,6 +1001,13 @@ fn cartesian(ctx: &mut Ctx, chart: &Chart, data: &ChartData, area: Bx, horizonta
                         let c = center(j);
                         top.push([c, vpos(t, &sc)]);
                         base.push([c, vpos(b, &sc)]);
+                        // Source values (not stack totals), just above the top edge like the line labels.
+                        if labels_on
+                            && sp.is_some()
+                            && let Some(v) = s.values.get(j).copied().flatten()
+                        {
+                            area_labels.push((c, vpos(t, &sc) - 5.0, fmt.format(v, None)));
+                        }
                     }
                     if top.len() == 1 {
                         // A single point: give it some width.
@@ -899,7 +1082,29 @@ fn cartesian(ctx: &mut Ctx, chart: &Chart, data: &ChartData, area: Bx, horizonta
                 }
             }
         }
+        for (x, y, t) in area_labels.drain(..) {
+            ctx.text(x, y, &t, LABEL_SIZE, TEXT, HAlign::Center, VAlign::Bottom);
+        }
     }
+    // Trendlines on top: x is the category number 1..n.
+    let mut trend_labels = Vec::new();
+    for (i, s) in data.series.iter().enumerate() {
+        if s.trendlines.is_empty() || !kinds.get(i).is_some_and(|k| supports_trendline(*k)) {
+            continue;
+        }
+        let sc = scale_of(i);
+        let pts: Vec<(f64, f64)> = s.values.iter().take(ncat).enumerate().filter_map(|(j, v)| v.map(|v| ((j + 1) as f64, v))).collect();
+        let frac = |x: f64, y: f64| ((x - 0.5) / ncat_slots as f64, (y - sc.min) / (sc.max - sc.min));
+        let px = |(fx, fy): (f64, f64)| {
+            if horizontal {
+                [plot.x + fy as f32 * plot.w, plot.bottom() - fx as f32 * plot.h]
+            } else {
+                [plot.x + fx as f32 * plot.w, plot.bottom() - fy as f32 * plot.h]
+            }
+        };
+        draw_trendlines(ctx, s, &pts, &frac, &px, &mut trend_labels);
+    }
+    draw_trend_labels(ctx, plot, &trend_labels);
 }
 
 // ---------------------------------------------------------------- scatter & bubble
@@ -922,7 +1127,14 @@ fn scatter(ctx: &mut Ctx, chart: &Chart, data: &ChartData, area: Bx) {
             .collect()
     };
     let all: Vec<Vec<Option<(f64, f64)>>> = data.series.iter().map(pts_of).collect();
-    let Some((xlo, xhi)) = value_range(all.iter().flatten().flatten().map(|p| p.0)) else { return };
+    let Some((mut xlo, mut xhi)) = value_range(all.iter().flatten().flatten().map(|p| p.0)) else { return };
+    // Forecasts extend the x axis to the trendline's ends.
+    for (s, pts) in data.series.iter().zip(&all) {
+        if let Some((lo, hi)) = value_range(pts.iter().flatten().map(|p| p.0)).filter(|_| !s.trendlines.is_empty()) {
+            xlo = xlo.min(lo - max_backward(s));
+            xhi = xhi.max(hi + max_forward(s));
+        }
+    }
     let Some((ylo, yhi)) = value_range(all.iter().flatten().flatten().map(|p| p.1)) else { return };
     let xs = nice_scale(xlo, xhi, false);
     let ys = nice_scale(ylo, yhi, false);
@@ -976,6 +1188,17 @@ fn scatter(ctx: &mut Ctx, chart: &Chart, data: &ChartData, area: Bx) {
             }
         }
     }
+    let mut trend_labels = Vec::new();
+    for (s, pts) in data.series.iter().zip(&all) {
+        if s.trendlines.is_empty() {
+            continue;
+        }
+        let pts: Vec<(f64, f64)> = pts.iter().flatten().copied().collect();
+        let frac = |x: f64, y: f64| ((x - xs.min) / (xs.max - xs.min), (y - ys.min) / (ys.max - ys.min));
+        let px = |(fx, fy): (f64, f64)| [plot.x + fx as f32 * plot.w, plot.bottom() - fy as f32 * plot.h];
+        draw_trendlines(ctx, s, &pts, &frac, &px, &mut trend_labels);
+    }
+    draw_trend_labels(ctx, plot, &trend_labels);
 }
 
 // ---------------------------------------------------------------- histogram
@@ -991,10 +1214,12 @@ fn histogram(ctx: &mut Ctx, chart: &Chart, data: &ChartData, area: Bx) {
         bins = 1;
     }
     let width = if bins == 1 && span.partial_cmp(&0.0) != Some(std::cmp::Ordering::Greater) { 1.0 } else { span / bins as f64 };
+    // Upper edge of each bin, exactly as shown in the labels below. Bins are right-inclusive (the first is closed on both sides), so a value
+    // equal to an edge belongs to the bin that ends there.
+    let edges: Vec<f64> = (0..bins).map(|b| if b + 1 == bins { hi.max(lo + b as f64 * width) } else { lo + (b + 1) as f64 * width }).collect();
     let mut counts = vec![0usize; bins];
     for v in &vals {
-        let b = if width > 0.0 { ((v - lo) / width).floor() } else { 0.0 };
-        let b = if b.is_finite() && b > 0.0 { (b as usize).min(bins - 1) } else { 0 };
+        let b = edges.partition_point(|e| e < v).min(bins - 1);
         if let Some(c) = counts.get_mut(b) {
             *c += 1;
         }
@@ -1003,7 +1228,7 @@ fn histogram(ctx: &mut Ctx, chart: &Chart, data: &ChartData, area: Bx) {
     let labels: Vec<String> = (0..bins)
         .map(|b| {
             let a = lo + b as f64 * width;
-            let e = if b + 1 == bins { hi.max(a) } else { a + width };
+            let e = edges.get(b).copied().unwrap_or(a);
             let open = if b == 0 { '[' } else { '(' };
             format!("{open}{}, {}]", f.format(a, Some(width / 10.0)), f.format(e, Some(width / 10.0)))
         })
@@ -1091,7 +1316,7 @@ fn waterfall(ctx: &mut Ctx, chart: &Chart, data: &ChartData, area: Bx) {
 
 // ---------------------------------------------------------------- funnel
 
-fn funnel(ctx: &mut Ctx, data: &ChartData, area: Bx) {
+fn funnel(ctx: &mut Ctx, chart: &Chart, data: &ChartData, area: Bx) {
     let Some(s) = data.series.first() else { return };
     let n = data.categories.len().max(s.values.len()).min(MAX_CATS);
     if n == 0 {
@@ -1121,9 +1346,11 @@ fn funnel(ctx: &mut Ctx, data: &ChartData, area: Bx) {
         }
         if show {
             let yc = y + bh / 2.0;
-            let t = f.format(s.values.get(j).copied().flatten().unwrap_or(0.0), None);
-            let color = if ctx.tw(&t, LABEL_SIZE) + 4.0 <= bw { on(s.color) } else { TEXT };
-            ctx.text(plot.cx(), yc, &t, LABEL_SIZE, color, HAlign::Center, VAlign::Middle);
+            if chart.data_labels {
+                let t = f.format(s.values.get(j).copied().flatten().unwrap_or(0.0), None);
+                let color = if ctx.tw(&t, LABEL_SIZE) + 4.0 <= bw { on(s.color) } else { TEXT };
+                ctx.text(plot.cx(), yc, &t, LABEL_SIZE, color, HAlign::Center, VAlign::Middle);
+            }
             let l = ctx.fit(labels.get(j).map(String::as_str).unwrap_or(""), LABEL_SIZE, lw - 8.0);
             ctx.text(plot.x - 6.0, yc, &l, LABEL_SIZE, TEXT, HAlign::Right, VAlign::Middle);
         }
@@ -1347,12 +1574,12 @@ fn quantile(sorted: &[f64], q: f64) -> f64 {
     a + (b - a) * frac
 }
 
-fn box_whisker(ctx: &mut Ctx, data: &ChartData, area: Bx) {
+fn box_whisker(ctx: &mut Ctx, chart: &Chart, data: &ChartData, area: Bx) {
     let labels: Vec<String> = data.series.iter().map(|s| s.name.clone()).collect();
     let Some((lo, hi)) = value_range(data.series.iter().flat_map(|s| s.values.iter().flatten().copied())) else { return };
     let ys = nice_scale(lo, hi, false);
     let f = Fmt::new(data.series.first().map(|s| s.number_format.as_str()).unwrap_or("General"));
-    let plot = frame(ctx, area, CatAxis::Labels(&labels), &ValAxis { scale: ys, fmt: &f }, None, false, true);
+    let plot = frame(ctx, area, CatAxis::Labels(&labels), &ValAxis { scale: ys, fmt: &f }, None, false, chart.gridlines);
     if !plot.ok() {
         return;
     }
@@ -1391,7 +1618,7 @@ fn box_whisker(ctx: &mut Ctx, data: &ChartData, area: Bx) {
 
 // ---------------------------------------------------------------- stock
 
-fn stock(ctx: &mut Ctx, data: &ChartData, area: Bx) {
+fn stock(ctx: &mut Ctx, chart: &Chart, data: &ChartData, area: Bx) {
     let ncat = data.categories.len().max(data.series.iter().map(|s| s.values.len()).max().unwrap_or(0)).min(MAX_CATS);
     if ncat == 0 {
         return;
@@ -1400,7 +1627,7 @@ fn stock(ctx: &mut Ctx, data: &ChartData, area: Bx) {
     let Some((lo, hi)) = value_range(data.series.iter().flat_map(|s| s.values.iter().flatten().copied())) else { return };
     let ys = nice_scale(lo, hi, false);
     let f = Fmt::new(data.series.first().map(|s| s.number_format.as_str()).unwrap_or("General"));
-    let plot = frame(ctx, area, CatAxis::Labels(&labels), &ValAxis { scale: ys, fmt: &f }, None, false, true);
+    let plot = frame(ctx, area, CatAxis::Labels(&labels), &ValAxis { scale: ys, fmt: &f }, None, false, chart.gridlines);
     if !plot.ok() {
         return;
     }

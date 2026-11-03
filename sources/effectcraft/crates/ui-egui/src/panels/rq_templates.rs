@@ -157,7 +157,7 @@ pub fn show(app: &mut EffectcraftApp, ctx: &egui::Context, t: &Tokens) {
     });
     for (id, p) in actions {
         if let Err(e) = app.session.execute(id, p) {
-            app.ui.status = e.to_string();
+            app.ui.status = crate::diagnostics::message(&e.to_string());
         }
     }
     ctx.data_mut(|d| d.insert_temp(state_id(), st));

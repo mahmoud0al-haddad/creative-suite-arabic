@@ -1,0 +1,4 @@
+# Additional open UI fallback used only by the community edition of DeckCraft.
+Nanum Gothic | Regular | fonts/community-nanum-gothic/NanumGothic-Regular.ttf | Hang,Latn,Hani | OFL-1.1 | fonts/community-nanum-gothic/OFL.txt | 76f45ef4a6bcff344c837c95a7dcc26e017e38b5846d5ae0cdcb5b86be2e2d31 | https://github.com/google/fonts/tree/133ccbee9a8b408eb71f31a36ccb9116f5c695ad/ofl/nanumgothic
+ZCOOL XiaoWei | Regular | fonts/community-zcool-xiaowei/ZCOOLXiaoWei-Regular.ttf | Hans,Latn | OFL-1.1 | fonts/community-zcool-xiaowei/OFL.txt | a42b620140f493db42f741351dfbf343c0936d58588ee8004b8b2a218d997ff1 | https://github.com/google/fonts/tree/d427686494a89f0b7ecb9833273b6aabb83a6350/ofl/zcoolxiaowei
+Inter | Variable | fonts/community-inter/Inter[opsz,wght].ttf | Latn,Grek,Cyrl | OFL-1.1 | fonts/community-inter/OFL.txt | 29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031 | https://github.com/google/fonts/tree/0b58fb370093f9a9f4ff785d94405710b79de67c/ofl/inter

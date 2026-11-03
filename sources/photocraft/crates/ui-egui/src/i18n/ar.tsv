@@ -5532,3 +5532,710 @@ layerLabel	No Color	لا لون
 @msg	{path}: file too large ({len} bytes)	المسار {path}: الملف كبير جدًا ({len} بايت)
 @msg	{path}: {_1}	خطأ المسار {path}: {_1}
 @msg	{p}: cannot read files here	{p}: لا يمكن قراءة الملفات هنا
+
+# Reviewed exact reuse for the newest official release
+	(none)	(لا شيء)
+	Amount:	المقدار:
+	Arrows	أسهم
+	Basic Latin	اللاتينية الأساسية
+	Clipping Path…	مسار القص…
+	Convert	تحويل
+	Currency	عملة
+	Cyrillic	السيريلية
+	Dark Gray	رمادي داكن
+	Exported {path}	تم تصدير {path}
+	Functions	دوال
+	Greek	اليونانية
+	Grid Size:	حجم الشبكة:
+	Latin Extended-A	اللاتينية الموسعة A
+	Latin Extended-B	اللاتينية الموسعة B
+	Light Blue	أزرق فاتح
+	Light Gray	رمادي فاتح
+	Link	رابط
+	Medium Gray	رمادي متوسط
+	Opened {url}	تاريخ الفتح {url}
+	To	إلى
+	Unlink	فك الارتباط
+	Up	أعلى
+	none	لا شيء
+@plural	{n} step|{n} steps	{n} خطوة|{n} خطوة|{n} خطوة|{n} خطوات|{n} خطوة|{n} خطوة
+@msg	`name` is required	المعامل `name` مطلوب
+
+# Reviewed exact reuse for the newest official release
+	Added swatch {name}	أُضيفت عينة اللون {name}
+	Exported contents to {path}	صُدّرت المحتويات إلى {path}
+	Exported presets to {path}	صُدّرت الإعدادات المسبقة إلى {path}
+	Invalid panel layout; restored the default dock	تخطيط لوحات غير صالح؛ استُعيد الرصيف الافتراضي
+	No custom shape "{name}": pick one in the options bar or Window › Shapes	لا يوجد شكل مخصص «{name}»: اختر واحدًا في شريط الخيارات أو «نافذة › أشكال»
+	Nothing to paste: the clipboard holds no image	لا يوجد ما يمكن لصقه: لا تحتوي الحافظة على صورة
+	Open Recent is unavailable on the web	فتح الملفات الأخيرة غير متاح على الويب
+	Preferences saved	حُفظت التفضيلات
+	Ran script {name}	شُغّل البرنامج النصي {name}
+	Recovered {name}	استُرد {name}
+	Saved a copy as {path}	حُفظت نسخة باسم {path}
+cameraRaw	Balance	توازن
+cameraRaw	Clarity	وضوح
+cameraRaw	Color Mixer	خلاط اللون
+cameraRaw	Contrast	تباين
+cameraRaw	Curve	منحنى
+cameraRaw	Dehaze	إزالة الضباب
+cameraRaw	Detail	تفصيل
+cameraRaw	Effects	تأثيرات
+cameraRaw	Feather	تلاشي الحواف
+cameraRaw	Highlights	إضاءات
+cameraRaw	Midpoint	نقطة المنتصف
+cameraRaw	Midtones	درجات متوسطة
+cameraRaw	Radius	نصف قطر
+cameraRaw	Roundness	استدارة
+cameraRaw	Saturation	تشبع
+cameraRaw	Shadows	ظلال
+cameraRaw	Size	حجم
+cameraRaw	Texture	نسيج
+colorRange	Invert	عكس الألوان
+curves	Smooth	ناعم
+document	Orientation	الاتجاه
+layerLabel	Magenta	أرجواني
+layerLabel	Red	أحمر
+layers	Fill	تعبئة
+layers	Fill:	تعبئة:
+navigator	Zoom	تكبير
+shape	Appearance	مظهر
+
+# Manually reviewed additions for the newest official release
+	(No neutral color exists for {mode} mode.)	(لا يوجد لون محايد للوضع {mode}.)
+	Action playback failed: {error}	فشل تشغيل الإجراء: {error}
+	Adobe-rgb-compat	متوافق مع Adobe RGB
+	Adwaita (Dark)	Adwaita (داكن)
+	Adwaita (Light)	Adwaita (فاتح)
+	All shortcuts reset to Photoshop defaults.	أُعيدت جميع الاختصارات إلى إعدادات Photoshop الافتراضية.
+	Apply Vanishing Point ({key})	تطبيق نقطة التلاشي ({key})
+	Apply mask to layer before removing?	تطبيق القناع على الطبقة قبل إزالته؟
+	Apply the removal ({key})	تطبيق الإزالة ({key})
+	Apply {option}: {state}	تطبيق {option}: {state}
+	Arc Lower	قوس سفلي
+	Arc Upper	قوس علوي
+	Ask On Mismatch	السؤال عند عدم التطابق
+	Ask On Missing	السؤال عند غياب ملف التعريف
+	Ask On Paste	السؤال عند اللصق
+	Autosave failed: {error}	فشل الحفظ التلقائي: {error}
+	Backend: {backend} ({type})	الواجهة الخلفية: {backend} ‏({type})
+	Background Eraser	ممحاة الخلفية
+	Blend Clipped Layers as Group	مزج الطبقات المقصوصة كمجموعة
+	Blend Interior Effects as Group	مزج التأثيرات الداخلية كمجموعة
+	Blend Text Gamma	جاما مزج النص
+	Bloat	انتفاخ
+	Bpc	بت لكل قناة
+	Breeze Dark	Breeze داكن
+	Breeze Light	Breeze فاتح
+	Cancel transform	إلغاء التحويل
+	Click: corner · Drag: smooth · {alt}-drag: break handle · Click or drag first point: close · {key} finish · Esc cancel	نقر: زاوية · سحب: تنعيم · سحب مع {alt}: فصل المقبض · نقر أو سحب النقطة الأولى: إغلاق · {key} للإنهاء · Esc للإلغاء
+	Clone source set at {x}, {y}	حُدد مصدر الاستنساخ عند {x}، {y}
+	Coated-cmyk	CMYK للورق المطلي
+	Color Indicates Masked Areas	اللون يدل على المناطق المقنّعة
+	Color Indicates Selected Areas	اللون يدل على المناطق المحددة
+	Color Picker (Background Color)	منتقي الألوان (لون الخلفية)
+	Color Picker (Custom Canvas Color)	منتقي الألوان (لون مخصص لمساحة الرسم)
+	Color Picker (Foreground Color)	منتقي الألوان (لون المقدمة)
+	Color management: {error}	إدارة الألوان: {error}
+	Commit transform	تثبيت التحويل
+	Convert to Alpha Channel	تحويل إلى قناة ألفا
+	Copy Complete Stroke	نسخ كامل الحد
+	Copy Fill	نسخ التعبئة
+	Could not rename the action: {error}	تعذرت إعادة تسمية الإجراء: {error}
+	Couldn't open {name}: {error}	تعذر فتح {name}: {error}
+	Couldn't save preferences: {error}. Retrying…	تعذر حفظ التفضيلات: {error}. جارٍ إعادة المحاولة…
+	Create Vector Mask	إنشاء قناع متجهي
+	Data Set: {name}  ({index}/{total})	مجموعة البيانات: {name} ‏({index}/{total})
+	Decontaminate	إزالة تلوث الألوان
+	Deep	عميق
+	Default Photoshop Size	حجم Photoshop الافتراضي
+	Delete Channel	حذف القناة
+	Delete the vector mask?	حذف القناع المتجهي؟
+	Disable Symmetry Path	تعطيل مسار التناظر
+	Display profile not used	لا يُستخدم ملف تعريف الشاشة
+	Display profiles: {reason}	ملفات تعريف الشاشات: {reason}
+	Display-p3	Display P3
+	Drag a crop box · drag inside to move · edges resize ({ratio} ratio, {centre} centre) · Space moves while drawing · {commit} commits · Esc cancels	اسحب مربع اقتصاص · اسحب داخله لتحريكه · الحواف تغيّر الحجم ({ratio} للنسبة، {centre} للمركز) · Space للتحريك أثناء الرسم · {commit} للتثبيت · Esc للإلغاء
+	Drag to draw the curve · {key}-click draws a straight line	اسحب لرسم المنحنى · النقر مع {key} يرسم خطًا مستقيمًا
+	Drag: draw freehand · {alt}-click: straight segment · Release on the start point: close	سحب: رسم حر · نقر مع {alt}: مقطع مستقيم · تحرير الزر عند نقطة البداية: إغلاق
+	Draw to modify the curve	ارسم لتعديل المنحنى
+	Driver: {driver}	برنامج التشغيل: {driver}
+	Duplicate Channel	تكرار القناة
+	Edit points to modify the curve	حرّر النقاط لتعديل المنحنى
+	Emulsion Down	المستحلب لأسفل
+	Enable animations	تفعيل الحركات
+	Exit Quick Mask	الخروج من القناع السريع
+	Exported {path} ({size})	تم تصدير {path} ‏({size})
+	Fallback: {reason}	البديل: {reason}
+	Fill Path…	تعبئة المسار…
+	Fill with {mode}-neutral color (50% gray)	تعبئة باللون المحايد للوضع {mode} (رمادي 50%)
+	Fill with {mode}-neutral color (black)	تعبئة باللون المحايد للوضع {mode} (أسود)
+	Fill with {mode}-neutral color (white)	تعبئة باللون المحايد للوضع {mode} (أبيض)
+	Fix the red plane first: its corners must form a convex quad	أصلح المستوى الأحمر أولًا: يجب أن تشكّل زواياه رباعيًا محدّبًا
+	Forward Warp	تشويه للأمام
+	Free Transform Path	تحويل حر للمسار
+	Freeze Lasso	تجميد بالتحديد الحر
+	Freeze Mask	قناع التجميد
+	GPU backend preference: {backend}	تفضيل الواجهة الخلفية للمعالج الرسومي: {backend}
+	GPU device was lost; using the CPU renderer.	فُقد الجهاز الرسومي؛ يُستخدم التصيير بالمعالج المركزي.
+	GPU error; using the CPU renderer.	خطأ في المعالج الرسومي؛ يُستخدم التصيير بالمعالج المركزي.
+	GPU retry scheduled	جُدولت إعادة محاولة المعالج الرسومي
+	General Blending	المزج العام
+	Graphics adapter	محوّل الرسومات
+	Graphics adapter: {adapter}	محوّل الرسومات: {adapter}
+	Gray-gamma-2.2	رمادي بجاما 2.2
+	Healing Brush	فرشاة المعالجة
+	Image compositor: {processor}	مركّب الصورة: {processor}
+	Import Photoshop brushes (.abr)	استيراد فرش Photoshop ‏(.abr)
+	Importing {what} from {file}…	جارٍ استيراد {what} من {file}…
+	Intent	هدف التحويل اللوني
+	Join the ArtCraft Discord ({url})	الانضمام إلى Discord الخاص بـ ArtCraft ‏({url})
+	Kerning: Metrics, Optical or a value in 1/1000 em (Alt+←/→ at the caret)	تقارب الحروف: مقاييس الخط أو بصري أو قيمة بوحدة 1/1000 em ‏(Alt+←/→ عند المؤشر)
+	Latin 1	لاتيني 1
+	Layer Mask Hides Effects	قناع الطبقة يخفي التأثيرات
+	Light Red	أحمر فاتح
+	Linear-srgb	sRGB خطي
+	Loading fonts…	جارٍ تحميل الخطوط…
+	Make Selection…	إنشاء تحديد…
+	Make Symmetry Path	إنشاء مسار تناظر
+	Make Work Path…	إنشاء مسار عمل…
+	Mask None	بدون قناع
+	Math Symbols	رموز رياضية
+	Medium Blue	أزرق متوسط
+	Merge Channels…	دمج القنوات…
+	Merge Group	دمج المجموعة
+	Merge Spot Channel	دمج قناة اللون الموضعي
+	Monitor Profile	ملف تعريف الشاشة
+	Monitor profile in use on {display}: {profile}	ملف التعريف المستخدم على الشاشة {display}: {profile}
+	Monitor profile in use: {profile}	ملف تعريف الشاشة المستخدم: {profile}
+	Monitor profile on {display} (main window): {profile}	ملف تعريف الشاشة {display} (النافذة الرئيسية): {profile}
+	Monitor profile on {display}: {profile}	ملف تعريف الشاشة {display}: {profile}
+	Monitor profile: {profile}	ملف تعريف الشاشة: {profile}
+	New Brush Preset	إعداد مسبق جديد للفرشاة
+	New Channel…	قناة جديدة…
+	New Spot Channel…	قناة لون موضعي جديدة…
+	Numbers	أرقام
+	Paste Complete Stroke	لصق كامل الحد
+	Paste Fill	لصق التعبئة
+	PhotoCraft keeps retrying; until a save succeeds, preference changes are lost when it closes.	يواصل PhotoCraft المحاولة؛ حتى ينجح الحفظ، ستُفقد تغييرات التفضيلات عند إغلاقه.
+	Platform: {os} {arch}	النظام: {os} ‏{arch}
+	Policy Cmyk	سياسة CMYK
+	Policy Gray	سياسة الرمادي
+	Policy Rgb	سياسة RGB
+	Preferences can't be saved	يتعذر حفظ التفضيلات
+	Preferences were reset: {error}	أُعيد ضبط التفضيلات: {error}
+	Print Resolution:	دقة الطباعة:
+	Printed to {path}	تمت الطباعة إلى {path}
+	Prophoto-compat	متوافق مع ProPhoto
+	Protect skin tones	حماية درجات لون البشرة
+	Protect:	حماية:
+	Pucker	انكماش
+	Push Left	دفع لليسار
+	Rec2020	Rec2020
+	Reconstruct All	إعادة بناء الكل
+	Refine Edge	تحسين الحافة
+	Refine Strokes	تحسين الضربات
+	Remove after each stroke	الإزالة بعد كل ضربة
+	Rename Channel…	إعادة تسمية القناة…
+	Save Path	حفظ المسار
+	Save your work and restart PhotoCraft to retry GPU acceleration. CPU rendering remains active for this session.	احفظ عملك وأعد تشغيل PhotoCraft لإعادة محاولة التسريع الرسومي. يبقى التصيير بالمعالج المركزي نشطًا لهذه الجلسة.
+	Saved {path}; image assets: {n} in {dir}	تم حفظ {path}؛ موارد الصور: {n} في {dir}
+	Saving {percent}	جارٍ الحفظ {percent}
+	Scale or rotate the moved area, then press {key}	غيّر حجم المنطقة المنقولة أو أدرها، ثم اضغط {key}
+	Scroll menu down	تمرير القائمة لأسفل
+	Scroll menu up	تمرير القائمة لأعلى
+	Select Custom Color…	اختيار لون مخصص…
+	Selected at launch: {backend}	المحدد عند بدء التشغيل: {backend}
+	Sent to the printer ({spooler})	أُرسل إلى الطابعة ({spooler})
+	Sgray	sGray
+	Shallow	سطحي
+	Shift Edge	إزاحة الحافة
+	Simulate Pressure	محاكاة الضغط
+	Smart Radius	نصف قطر ذكي
+	Smooth the curve values	تنعيم قيم المنحنى
+	Smudge	تلطيخ
+	Software adapter	محوّل رسومي برمجي
+	Solarized Dark	Solarized داكن
+	Split Channels	فصل القنوات
+	Spot Healing Brush	فرشاة المعالجة الموضعية
+	Step {step} ({id}) failed: {error}	فشلت الخطوة {step} ‏({id}): {error}
+	Stroke Path…	رسم حد المسار…
+	Strokes to remove: {n} (Enter applies, Esc cancels)	ضربات الإزالة: {n} ‏(Enter للتطبيق، Esc للإلغاء)
+	Subtract Shapes at Overlap	طرح الأشكال عند التداخل
+	Temporary	مؤقت
+	Thaw Mask	إلغاء تجميد القناع
+	The canvas is shown as sRGB. Choose a monitor profile in Edit › Color Settings.	تُعرض مساحة الرسم بنظام sRGB. اختر ملف تعريف للشاشة من تحرير › إعدادات الألوان.
+	The canvas on {display} is shown as sRGB. Choose a monitor profile in Edit › Color Settings.	تُعرض مساحة الرسم على {display} بنظام sRGB. اختر ملف تعريف للشاشة من تحرير › إعدادات الألوان.
+	The document does not have an embedded colour profile. Working space: {working}.	لا يحتوي المستند على ملف تعريف ألوان مضمن. مساحة العمل: {working}.
+	The document has an embedded colour profile that does not match the working space.\nEmbedded: {embedded}\nWorking: {working}	يحتوي المستند على ملف تعريف ألوان مضمن لا يطابق مساحة العمل.\nالمضمن: {embedded}\nمساحة العمل: {working}
+	The layer or its mask changed. Drag the mask onto the Trash again.	تغيرت الطبقة أو قناعها. اسحب القناع إلى سلة المهملات مرة أخرى.
+	This Layer:	هذه الطبقة:
+	This Smart Object must be rasterized before proceeding. Its contents will no longer be editable. Rasterize the Smart Object?	يجب تحويل هذا الكائن الذكي إلى نقطي قبل المتابعة. لن يعود محتواه قابلًا للتحرير. هل تريد تحويله إلى نقطي؟
+	This adjustment ({key}) is kept as imported and can't be edited yet.	يُحتفظ بهذا الضبط ({key}) كما استُورد ولا يمكن تحريره بعد.
+	This fill layer must be rasterized before proceeding. Its fill content will no longer be editable. Rasterize the layer?	يجب تحويل طبقة التعبئة هذه إلى نقطية قبل المتابعة. لن يعود محتواها قابلًا للتحرير. هل تريد تحويل الطبقة إلى نقطية؟
+	This layer must be rasterized before proceeding.	يجب تحويل هذه الطبقة إلى نقطية قبل المتابعة.
+	This session: {reason}	هذه الجلسة: {reason}
+	This shape layer must be rasterized before proceeding. It will no longer be editable as a shape. Rasterize the shape?	يجب تحويل طبقة الشكل هذه إلى نقطية قبل المتابعة. لن تعود قابلة للتحرير كشكل. هل تريد تحويل الشكل إلى نقطي؟
+	This type layer must be rasterized before proceeding. Its text will no longer be editable. Rasterize the type?	يجب تحويل طبقة النص هذه إلى نقطية قبل المتابعة. لن يعود نصها قابلًا للتحرير. هل تريد تحويل النص إلى نقطي؟
+	Toggle the Brush Settings panel	إظهار لوحة إعدادات الفرشاة أو إخفاؤها
+	Transform On Drop	التحويل عند الإفلات
+	Transparency Shapes Layer	الشفافية تحدد شكل الطبقة
+	Twirl Clockwise	التواء مع عقارب الساعة
+	Twirl Counterclockwise	التواء عكس عقارب الساعة
+	Underlying Layer:	الطبقة السفلية:
+	Unite Shapes at Overlap	اتحاد الأشكال عند التداخل
+	Use Previous Layer to Create Clipping Mask	استخدام الطبقة السابقة لإنشاء قناع قص
+	Vanishing Point is not active	نقطة التلاشي غير نشطة
+	Vanishing Point: click four corners to create a plane	نقطة التلاشي: انقر أربع زوايا لإنشاء مستوى
+	Vector Mask Hides Effects	القناع المتجهي يخفي التأثيرات
+	Window renderer: {renderer}	مصيّر النافذة: {renderer}
+	Working Cmyk	مساحة عمل CMYK
+	Working Gray	مساحة عمل الرمادي
+	Working Rgb	مساحة عمل RGB
+	auto	تلقائي
+	blue	أزرق
+	brushes	فرش
+	fallback	بديل
+	gradients	تدرجات
+	gray	رمادي
+	green	أخضر
+	layer mask	قناع الطبقة
+	manual	يدوي
+	off	متوقف
+	on	نشط
+	orange	برتقالي
+	previous reading kept; the last re-read failed: {reason}	احتُفظ بالقراءة السابقة؛ فشلت آخر إعادة قراءة: {reason}
+	red	أحمر
+	unknown	غير معروف
+	unknown type	نوع غير معروف
+	vector mask	قناع متجهي
+	violet	بنفسجي
+	yellow	أصفر
+	{index} of {total}	{index} من {total}
+	{label} is not available: {reason}	{label} غير متاح: {reason}
+	{message} (notes: {n}; {warning})	{message} (ملاحظات: {n}؛ {warning})
+	{shortcut} assigned.	تم تعيين {shortcut}.
+	{shortcut} is already in use by {commands} and will be removed from it when you click OK.	{shortcut} مستخدم بالفعل بواسطة {commands} وسيُزال منه عند النقر على موافق.
+	{verb} {mask} {layer}	{verb} ‏{mask} ‏{layer}
+	✓ Color Indicates Masked Areas	✓ اللون يدل على المناطق المقنّعة
+	✓ Color Indicates Selected Areas	✓ اللون يدل على المناطق المحددة
+@id	edit.clear	مسح
+@id	file.close	إغلاق
+@id	layer.layerMask.apply	تطبيق
+@plural	Exported {n} swatch to {file}|Exported {n} swatches to {file}	لم تُصدّر أي عينة لونية ({n}) إلى {file}|تم تصدير عينة لونية واحدة ({n}) إلى {file}|تم تصدير عينتين لونيتين ({n}) إلى {file}|تم تصدير {n} عينات لونية إلى {file}|تم تصدير {n} عينة لونية إلى {file}|تم تصدير {n} عينة لونية إلى {file}
+@plural	Imported {n} brush from {file}|Imported {n} brushes from {file}	لم تُستورد أي فرشاة ({n}) من {file}|تم استيراد فرشاة واحدة ({n}) من {file}|تم استيراد فرشاتين ({n}) من {file}|تم استيراد {n} فرش من {file}|تم استيراد {n} فرشاة من {file}|تم استيراد {n} فرشاة من {file}
+@plural	Imported {n} brush from {group}|Imported {n} brushes from {group}	لم تُستورد أي فرشاة ({n}) من {group}|تم استيراد فرشاة واحدة ({n}) من {group}|تم استيراد فرشاتين ({n}) من {group}|تم استيراد {n} فرش من {group}|تم استيراد {n} فرشاة من {group}|تم استيراد {n} فرشاة من {group}
+@plural	Imported {n} gradient from {file}|Imported {n} gradients from {file}	لم يُستورد أي تدرج ({n}) من {file}|تم استيراد تدرج واحد ({n}) من {file}|تم استيراد تدرجين ({n}) من {file}|تم استيراد {n} تدرجات من {file}|تم استيراد {n} تدرجًا من {file}|تم استيراد {n} تدرج من {file}
+@plural	Imported {n} swatch from {file}|Imported {n} swatches from {file}	لم تُستورد أي عينة لونية ({n}) من {file}|تم استيراد عينة لونية واحدة ({n}) من {file}|تم استيراد عينتين لونيتين ({n}) من {file}|تم استيراد {n} عينات لونية من {file}|تم استيراد {n} عينة لونية من {file}|تم استيراد {n} عينة لونية من {file}
+@plural	Played {n} step|Played {n} steps	لم تُشغّل أي خطوة ({n})|تم تشغيل خطوة واحدة ({n})|تم تشغيل خطوتين ({n})|تم تشغيل {n} خطوات|تم تشغيل {n} خطوة|تم تشغيل {n} خطوة
+@plural	Saved for Web: {n} file|Saved for Web: {n} files	حفظ للويب: لا ملفات ({n})|حفظ للويب: ملف واحد ({n})|حفظ للويب: ملفان ({n})|حفظ للويب: {n} ملفات|حفظ للويب: {n} ملفًا|حفظ للويب: {n} ملف
+@plural	Updated {n} linked smart object changed on disk|Updated {n} linked smart objects changed on disk	لم يُحدّث أي كائن ذكي مرتبط تغير على القرص ({n})|تم تحديث كائن ذكي مرتبط واحد تغير على القرص ({n})|تم تحديث كائنين ذكيين مرتبطين تغيرا على القرص ({n})|تم تحديث {n} كائنات ذكية مرتبطة تغيرت على القرص|تم تحديث {n} كائنًا ذكيًا مرتبطًا تغير على القرص|تم تحديث {n} كائن ذكي مرتبط تغير على القرص
+@plural	{n} layer recorded by this comp was deleted. Update the comp, or clear the warning.|{n} layers recorded by this comp were deleted. Update the comp, or clear the warning.	لا طبقات محذوفة سجلتها هذه التركيبة ({n}). حدّث التركيبة أو أزل التحذير.|حُذفت طبقة واحدة سجلتها هذه التركيبة ({n}). حدّث التركيبة أو أزل التحذير.|حُذفت طبقتان سجلتهما هذه التركيبة ({n}). حدّث التركيبة أو أزل التحذير.|حُذفت {n} طبقات سجلتها هذه التركيبة. حدّث التركيبة أو أزل التحذير.|حُذفت {n} طبقة سجلتها هذه التركيبة. حدّث التركيبة أو أزل التحذير.|حُذفت {n} طبقة سجلتها هذه التركيبة. حدّث التركيبة أو أزل التحذير.
+@plural	{n} plane|{n} planes	لا مستويات ({n})|مستوى واحد ({n})|مستويان ({n})|{n} مستويات|{n} مستوى|{n} مستوى
+@plural	{n} preset|{n} presets	لا إعدادات مسبقة ({n})|إعداد مسبق واحد ({n})|إعدادان مسبقان ({n})|{n} إعدادات مسبقة|{n} إعدادًا مسبقًا|{n} إعداد مسبق
+@plural	{n} sample point removed|{n} sample points removed	لم تُزل أي نقطة عينة ({n})|أُزيلت نقطة عينة واحدة ({n})|أُزيلت نقطتا عينة ({n})|أُزيلت {n} نقاط عينة|أُزيلت {n} نقطة عينة|أُزيلت {n} نقطة عينة
+@plural	{n} slice|{n} slices	لا شرائح ({n})|شريحة واحدة ({n})|شريحتان ({n})|{n} شرائح|{n} شريحة|{n} شريحة
+@plural	{warning} (+{n} more brush preset warning)|{warning} (+{n} more brush preset warnings)	{warning} (لا تحذيرات إضافية لإعدادات الفرشاة؛ {n})|{warning} (+تحذير إضافي واحد لإعدادات الفرشاة؛ {n})|{warning} (+تحذيران إضافيان لإعدادات الفرشاة؛ {n})|{warning} (+{n} تحذيرات إضافية لإعدادات الفرشاة)|{warning} (+{n} تحذيرًا إضافيًا لإعدادات الفرشاة)|{warning} (+{n} تحذير إضافي لإعدادات الفرشاة)
+@plural	{what} with {n} warning|{what} with {n} warnings	{what} دون تحذيرات ({n})|{what} مع تحذير واحد ({n})|{what} مع تحذيرين ({n})|{what} مع {n} تحذيرات|{what} مع {n} تحذيرًا|{what} مع {n} تحذير
+cameraRaw	Exposure	التعريض
+@msg	Commit or cancel the crop first	ثبّت الاقتصاص أو ألغِه أولًا
+@msg	Content-Aware Scale preview failed	فشلت معاينة تغيير الحجم بحسب المحتوى
+@msg	Content-Aware Scale preview stopped	توقفت معاينة تغيير الحجم بحسب المحتوى
+@msg	Merge Group needs a group	دمج المجموعة يتطلب مجموعة
+@msg	The document or selected layers changed. Choose Duplicate Layer again.	تغير المستند أو الطبقات المحددة. اختر تكرار الطبقة مرة أخرى.
+@msg	Warp on type takes only the warp styles	تشويه النص يدعم أنماط التشويه فقط
+@msg	`eyedropper` applies to Levels and Curves adjustment layers only	ينطبق `eyedropper` على طبقات ضبط المستويات والمنحنيات فقط
+@msg	`eyedropper` applies to Levels and Curves only	ينطبق `eyedropper` على المستويات والمنحنيات فقط
+@msg	`index` can't be combined with `into` (use `before`)	لا يمكن الجمع بين `index` و`into` (استخدم `before`)
+@msg	`into.folder` needs `into.group`	يتطلب `into.folder` وجود `into.group`
+@msg	`into` names the folder being moved or one of its own folders	يشير `into` إلى المجلد المنقول أو أحد مجلداته
+@msg	`position` is out of range (at most {MAX_GUIDE_PX} px from the canvas origin)	يتجاوز `position` النطاق (الحد الأقصى {MAX_GUIDE_PX} بكسل من أصل مساحة الرسم)
+@msg	`rect` must have a positive width and height (a straight path needs a `rect`)	يجب أن يكون عرض `rect` وارتفاعه موجبين (المسار المستقيم يحتاج إلى `rect`)
+@msg	`strokes` is a list of point lists	`strokes` قائمة من قوائم النقاط
+@msg	`strokes` is empty	`strokes` فارغة
+@msg	`{key}` must hold {n} finite numbers with magnitude at most 1000000	يجب أن يحتوي `{key}` على {n} أعداد محدودة القيمة مقدارها المطلق لا يتجاوز 1000000
+@msg	expected a Levels adjustment	المطلوب ضبط المستويات
+@msg	folders can be nested at most {MAX_FOLDER_DEPTH} deep	الحد الأقصى لعمق تداخل المجلدات {MAX_FOLDER_DEPTH}
+@msg	imagesFolder must be a relative folder name	يجب أن يكون imagesFolder اسم مجلد نسبيًا
+@msg	layer {_1} is not a smart object	الطبقة {_1} ليست كائنًا ذكيًا
+@msg	no room for an artboard {side} of "{_1}"	لا توجد مساحة للوحة رسم {side} من "{_1}"
+@msg	no selected layers	لا توجد طبقات محددة
+@msg	no snapshot {id}	لا توجد لقطة {id}
+@msg	no such snapshot	لا توجد لقطة كهذه
+@msg	not enough memory while copying the mask ({e}); the document was not changed	الذاكرة غير كافية لنسخ القناع ({e})؛ لم يتغير المستند
+@msg	only RGB channel Levels are supported	مستويات قنوات RGB فقط هي المدعومة
+@msg	pass `matrix`, `quad`, a warp (`style`, `mesh` or `warp`) or translate/scale/angle parameters	مرّر `matrix` أو `quad` أو تشويهًا (`style` أو `mesh` أو `warp`) أو معاملات الإزاحة والمقياس والزاوية
+@msg	preview read out of bounds	قراءة المعاينة خارج الحدود
+@msg	the Background layer can't lock transparent pixels	لا يمكن لطبقة الخلفية قفل البكسلات الشفافة
+@msg	the Displace PSD data is not a Displace filter with an embedded map	بيانات PSD الخاصة بالإزاحة ليست مرشح إزاحة بخريطة مضمنة
+@msg	the Displace PSD data is too large	بيانات PSD الخاصة بالإزاحة كبيرة جدًا
+@msg	the active layer has no layer mask	لا تحتوي الطبقة النشطة على قناع طبقة
+@msg	the distortion sends part of the path out of bounds	يرسل التشويه جزءًا من المسار خارج الحدود
+@msg	the document is busy with a background job	المستند مشغول بمهمة في الخلفية
+@msg	the layer has {count} effect(s), no effect {index}	تحتوي الطبقة على {count} تأثيرات، ولا يوجد تأثير {index}
+@msg	the new artboard is outside the 32-bit coordinate range	لوحة الرسم الجديدة خارج نطاق الإحداثيات ذات 32 بت
+@msg	the pattern is empty or too large to paint	النمط فارغ أو كبير جدًا للرسم
+@msg	the transformed selection is too large to move ({pixels} pixels, at most {MAX_PIXELS})	التحديد المحوّل كبير جدًا للتحريك ({pixels} بكسل، والحد الأقصى {MAX_PIXELS})
+@msg	the transformed selection must land on the canvas	يجب أن يقع التحديد المحوّل على مساحة الرسم
+@msg	the ungrouped presets are not a folder that can be moved	الإعدادات المسبقة غير المجمّعة ليست مجلدًا قابلًا للنقل
+@msg	type can only take a warp style (arc, flag, …); a custom mesh needs rasterized type	النص يدعم نمط تشويه فقط (arc أو flag أو …)؛ الشبكة المخصصة تتطلب تحويل النص إلى نقطي
+@msg	unknown `line` {other} (row|column)	قيمة `line` غير معروفة: {other} ‏(row|column)
+@msg	unknown tool `{o}` ({_1})	أداة غير معروفة `{o}` ‏({_1})
+@msg	warp values must be finite numbers with magnitude at most 1000000	يجب أن تكون قيم التشويه أعدادًا محدودة القيمة مقدارها المطلق لا يتجاوز 1000000
+
+# Reviewed exact reuse for the newest official release
+	Add to Dictionary	إضافة إلى القاموس
+	Any	أي
+	Case Sensitive	مراعاة حالة الأحرف
+	Checkerboard	رقعة مربعات
+	Files	الملفات
+	Message:	الرسالة:
+	Nearest	الأقرب
+	Presentation	عرض تقديمي
+	Sent to {printer}	أُرسل إلى {printer}
+	Simulate Paper	محاكاة الورق
+	Space	مسافة
+	Title	العنوان
+	W:	العرض:
+
+# Reviewed additions for the 2026-10-15 official release integration
+	A brush preset with this name already exists	يوجد إعداد مسبق للفرشاة بهذا الاسم بالفعل
+	A:	زاوية:
+	Action playback stopped	توقف تشغيل الإجراء
+	Add Mask to Selection	إضافة القناع إلى التحديد
+	Add Open Files	إضافة الملفات المفتوحة
+	Allow Continue	السماح بالمتابعة
+	Attempt to Automatically Align Source Images	محاولة محاذاة الصور المصدر تلقائيًا
+	Author Title	المسمى الوظيفي للمؤلف
+	Auto Add/Delete	إضافة/حذف تلقائي
+	Based On	استنادًا إلى
+	Bend	الانحناء
+	Capture Brush Size in Preset	تضمين حجم الفرشاة في الإعداد المسبق
+	Ccw	عكس عقارب الساعة
+	Change Find	استبدال والبحث عن التالي
+	Channel Color	لون القناة
+	Choose Stack Mode:	اختر وضع التكديس:
+	Choose a format that keeps it, such as Photoshop (PSD), or save a copy.	اختر صيغة تحافظ عليه، مثل Photoshop (PSD)، أو احفظ نسخة.
+	Choose a gradient file (.grd).	اختر ملف تدرجات (.grd).
+	Clear Brush Controls	مسح عناصر التحكم في الفرشاة
+	Click the image to add a pin; drag a pin to move it, or its ring to change its blur. Delete removes the selected pin.	انقر على الصورة لإضافة دبوس؛ واسحب الدبوس لتحريكه أو حلقته لتغيير تمويهه. يحذف مفتاح Delete الدبوس المحدد.
+	Cmyk	ألوان CMYK
+	Color Indicates:	اللون يشير إلى:
+	Color Sampler Tool	أداة أخذ عينات اللون
+	Copy Texture to Other Tools	نسخ النسيج إلى الأدوات الأخرى
+	Copyright Url	رابط حقوق النشر
+	Create Smart Object after Loading Layers	إنشاء كائن ذكي بعد تحميل الطبقات
+	Custom background color	لون خلفية مخصص
+	Cw	مع عقارب الساعة
+	Decrease Brush Hardness	تقليل صلابة الفرشاة
+	Decrease Brush Size	تصغير حجم الفرشاة
+	Decrease Type Size	تصغير حجم الخط
+	Decrease Type Size by 10	تصغير حجم الخط بمقدار 10
+	Don't also tick Mirror Image in Print Settings…: the two flips cancel out.	لا تفعّل أيضًا «عكس الصورة» في إعدادات الطباعة…، لأن القلب مرتين يلغي أثره.
+	Dont Enlarge	عدم التكبير
+	Drag to pan · Scroll to zoom · Double-click to fit	اسحب للتحريك · مرّر للتكبير والتصغير · انقر مرتين للملاءمة
+	Embedded: {embedded}	المضمن: {embedded}
+	Enter a name for the brush preset	أدخل اسمًا للإعداد المسبق للفرشاة
+	Erase with Brush or Pencil (hold)	المسح بالفرشاة أو القلم (اضغط باستمرار)
+	Export As: {name}	تصدير باسم: {name}
+	Fill with Background Color	تعبئة بلون الخلفية
+	Fill with Background Color, Preserve Transparency	تعبئة بلون الخلفية مع الحفاظ على الشفافية
+	Fill with Foreground Color	تعبئة بلون المقدمة
+	Fill with Foreground Color, Preserve Transparency	تعبئة بلون المقدمة مع الحفاظ على الشفافية
+	Forward	إلى الأمام
+	Gradient Preset Options	خيارات إعداد التدرج المسبق
+	Hand Tool (hold)	أداة اليد (اضغط باستمرار)
+	Horizontal Distortion	تشوه أفقي
+	ICO is limited to 256 × 256 pixels	تقتصر صيغة ICO على 256 × 256 بكسل
+	Import .GRD	استيراد ‎.GRD
+	Include Color	تضمين اللون
+	Include Tool Settings	تضمين إعدادات الأداة
+	Increase Brush Hardness	زيادة صلابة الفرشاة
+	Increase Brush Size	تكبير حجم الفرشاة
+	Increase Type Size	تكبير حجم الخط
+	Increase Type Size by 10	تكبير حجم الخط بمقدار 10
+	Ink Characteristics	خصائص الحبر
+	Insert Stop…	إدراج توقف…
+	Intersect Mask with Selection	تقاطع القناع مع التحديد
+	Load Actions…	تحميل إجراءات…
+	Load Settings…	تحميل إعدادات…
+	Load settings from a Camera Raw .xmp file	تحميل الإعدادات من ملف Camera Raw بصيغة ‎.xmp
+	Loaded Camera Raw settings from {file}	تم تحميل إعدادات Camera Raw من {file}
+	Loaded Camera Raw settings from {file} ({n} not supported)	تم تحميل إعدادات Camera Raw من {file} ({n} غير مدعوم)
+	Make Selection from Path	إنشاء تحديد من المسار
+	Manage submitted jobs in the system print queue	إدارة المهام المرسلة في قائمة انتظار الطباعة بالنظام
+	Mask Channel	قناة القناع
+	No Spelling Suggestions	لا توجد اقتراحات إملائية
+	No object found there — drag a rectangle around it	لم يُعثر على كائن هناك؛ اسحب مستطيلًا حوله
+	No pin selected	لم يُحدد أي دبوس
+	Object Finder	الباحث عن الكائنات
+	Paper Height	ارتفاع الورق
+	Paper Width	عرض الورق
+	Pattern Fill…	تعبئة بنمط…
+	Pick Color From Image	انتقاء اللون من الصورة
+	Print Settings…	إعدادات الطباعة…
+	Proof Setup…	إعداد المحاكاة اللونية…
+	R G B	ألوان RGB
+	R g b	ألوان RGB
+	Redrawing	إعادة الرسم
+	Remember to turn off the printer's own colour management in Print Settings…	تذكر إيقاف إدارة الألوان الخاصة بالطابعة في إعدادات الطباعة…
+	Reset All Locked Settings	إعادة جميع الإعدادات المقفلة إلى قيمها الافتراضية
+	Save Actions…	حفظ الإجراءات…
+	Save Settings…	حفظ الإعدادات…
+	Save Set…	حفظ المجموعة…
+	Save these settings as a Camera Raw .xmp file	حفظ هذه الإعدادات في ملف Camera Raw بصيغة ‎.xmp
+	Select an action first	حدد إجراءً أولًا
+	Set horizontal skew	ضبط الميل الأفقي
+	Set vertical skew	ضبط الميل الرأسي
+	Show dialog during playback	إظهار مربع الحوار أثناء التشغيل
+	Soft Dark Theme	سمة غامقة هادئة
+	Soft Light Theme	سمة فاتحة هادئة
+	Soft dark	غامق هادئ
+	Soft light	فاتح هادئ
+	Solidity:	كثافة الحبر:
+	Sort By Name	الترتيب حسب الاسم
+	Source Channel	القناة المصدر
+	Source Files	الملفات المصدر
+	Source Invert	عكس المصدر
+	Source1 Channel	قناة المصدر 1
+	Source1 Invert	عكس المصدر 1
+	Source2 Channel	قناة المصدر 2
+	Source2 Invert	عكس المصدر 2
+	Starting serial	بداية الرقم التسلسلي
+	Step {step} is waiting for its dialog	الخطوة {step} تنتظر مربع الحوار الخاص بها
+	Subtract Mask from Selection	طرح القناع من التحديد
+	Target Channel 3	القناة الهدف 3
+	Target Channel 4	القناة الهدف 4
+	Target Channel 5	القناة الهدف 5
+	Target Channel 6	القناة الهدف 6
+	Target Channel 7	القناة الهدف 7
+	Target Channel 8	القناة الهدف 8
+	Target Channel 9	القناة الهدف 9
+	Target Composite Channel	القناة المركبة الهدف
+	The document “{name}” does not have an embedded {mode} profile.	لا يتضمن المستند «{name}» ملف تعريف ألوان {mode} مضمنًا.
+	The document “{name}” has an embedded color profile that does not match the current {mode} working space.	يتضمن المستند «{name}» ملف تعريف ألوان مضمنًا لا يطابق حيز العمل الحالي {mode}.
+	Toggle Layer Mask Overlay	تبديل تراكب قناع الطبقة
+	Use:	استخدام:
+	Vertical Distortion	تشوه رأسي
+	Warming Filter (85)	مرشح تدفئة (85)
+	Whole Word	الكلمة كاملة
+	Working-cmyk	حيز عمل CMYK
+	Working: {working}	حيز العمل: {working}
+	Zoom In (hold, drag to scrub)	تكبير (اضغط باستمرار واسحب لضبط التكبير)
+	Zoom Out (hold)	تصغير (اضغط باستمرار)
+	set in Print Settings…	يُضبط في إعدادات الطباعة…
+	{message} ({note})	{message} ({note})
+	{name} (Photoshop)	{name} (Photoshop)
+	{name} can't keep everything in this document	لا تستطيع صيغة {name} الحفاظ على كل محتويات هذا المستند
+@plural	Imported {n} pattern from {file}|Imported {n} patterns from {file}	لم يُستورد أي نمط من {file} ({n})|استُورد نمط واحد من {file} ({n})|استُورد نمطان من {file} ({n})|استُوردت {n} أنماط من {file}|استُورد {n} نمطًا من {file}|استُورد {n} نمط من {file}
+@plural	Loaded {n} action from {file}|Loaded {n} actions from {file}	لم يُحمّل أي إجراء من {file} ({n})|حُمّل إجراء واحد من {file} ({n})|حُمّل إجراءان من {file} ({n})|حُمّلت {n} إجراءات من {file}|حُمّل {n} إجراءً من {file}|حُمّل {n} إجراء من {file}
+@plural	Saved {n} action to {file}|Saved {n} actions to {file}	لم يُحفظ أي إجراء في {file} ({n})|حُفظ إجراء واحد في {file} ({n})|حُفظ إجراءان في {file} ({n})|حُفظت {n} إجراءات في {file}|حُفظ {n} إجراءً في {file}|حُفظ {n} إجراء في {file}
+@plural	{n} action|{n} actions	لا إجراءات ({n})|إجراء واحد ({n})|إجراءان ({n})|{n} إجراءات|{n} إجراءً|{n} إجراء
+@plural	{n} step has no PhotoCraft equivalent yet|{n} steps have no PhotoCraft equivalent yet	لا توجد خطوات بلا مكافئ في PhotoCraft بعد ({n})|خطوة واحدة بلا مكافئ في PhotoCraft بعد ({n})|خطوتان بلا مكافئ في PhotoCraft بعد ({n})|{n} خطوات بلا مكافئ في PhotoCraft بعد|{n} خطوة بلا مكافئ في PhotoCraft بعد|{n} خطوة بلا مكافئ في PhotoCraft بعد
+@plural	{n} step with no Photoshop equivalent left out|{n} steps with no Photoshop equivalent left out	لم تُستبعد أي خطوة بلا مكافئ في Photoshop ({n})|استُبعدت خطوة واحدة بلا مكافئ في Photoshop ({n})|استُبعدت خطوتان بلا مكافئ في Photoshop ({n})|استُبعدت {n} خطوات بلا مكافئ في Photoshop|استُبعدت {n} خطوة بلا مكافئ في Photoshop|استُبعدت {n} خطوة بلا مكافئ في Photoshop
+@msg	Add the files to load	أضف الملفات المطلوب تحميلها
+@msg	Choose a folder to load	اختر مجلدًا لتحميله
+@msg	ICO export is limited to 256 × 256 pixels; reduce the export scale	تقتصر صيغة ICO على 256 × 256 بكسل؛ قلل مقياس التصدير
+@msg	Load Files into Stack reads files from disk	يقرأ تحميل الملفات في تكديس الملفات من القرص
+@msg	Photoshop step "{name}" ({event}) has no PhotoCraft equivalent yet; switch it off in the Actions panel to skip it	خطوة Photoshop المسماة «{name}» ({event}) ليس لها مكافئ في PhotoCraft بعد؛ عطّلها في لوحة الإجراءات لتجاوزها
+@msg	`at` {at} is past the last step ({len})	الموضع `at` وقيمته {at} يتجاوز الخطوة الأخيرة ({len})
+@msg	`data` is not base64	`data` ليس بترميز base64
+@msg	`preset` must contain only pattern ids or names	يجب ألا يتضمن `preset` إلا معرّفات الأنماط أو أسماءها
+@msg	`set` is empty; pass null to take the action out of its set	`set` فارغ؛ مرر null لإخراج الإجراء من مجموعته
+@msg	`{key}` = {v} must be a whole number ({lo}..={hi})	يجب أن تكون `{key}` = {v} عددًا صحيحًا ({lo}..={hi})
+@msg	an action cannot play itself	لا يمكن للإجراء تشغيل نفسه
+@msg	angle {angle} is outside -180..180	الزاوية {angle} خارج النطاق -180..180
+@msg	can't copy linked smart objects from layers nested too deeply	لا يمكن نسخ الكائنات الذكية المرتبطة من طبقات متداخلة بعمق كبير جدًا
+@msg	cannot repeat an empty document	لا يمكن تكرار مستند فارغ
+@msg	colorTable entries must be #rrggbb colours	يجب أن تكون إدخالات colorTable ألوانًا بصيغة #rrggbb
+@msg	colorTable must contain 1–256 #rrggbb colours	يجب أن يتضمن colorTable من 1 إلى 256 لونًا بصيغة #rrggbb
+@msg	colorTableEdits index is outside colorTable	فهرس colorTableEdits خارج حدود colorTable
+@msg	colorTableEdits must be an object of palette indices to #rrggbb colours	يجب أن يكون colorTableEdits كائنًا يربط فهارس لوحة الألوان بألوان بصيغة #rrggbb
+@msg	colorTableEdits requires colorTable	يتطلب colorTableEdits وجود colorTable
+@msg	colorTableEdits values must be #rrggbb colours	يجب أن تكون قيم colorTableEdits ألوانًا بصيغة #rrggbb
+@msg	detach the type layer from its path first	افصل الطبقة النصية عن مسارها أولًا
+@msg	export dimensions exceed the 300,000 px per-side limit	تتجاوز أبعاد التصدير حد 300,000 بكسل لكل جانب
+@msg	invalid benchmark dimensions/reps	أبعاد اختبار الأداء أو عدد تكراراته غير صالح
+@msg	invalid depth	عمق غير صالح
+@msg	invalid web settings	إعدادات الويب غير صالحة
+@msg	layer id {n} is not a non-negative integer	معرّف الطبقة {n} ليس عددًا صحيحًا غير سالب
+@msg	layers can't be duplicated with a {_1} document	لا يمكن تكرار الطبقات مع مستند {_1}
+@msg	localized clusters need eyedropper `points` (where the colour was picked)	تحتاج المجموعات الموضعية إلى `points` للقطارة (موضع انتقاء اللون)
+@msg	needs `id`, the command the step runs	يلزم `id`، وهو الأمر الذي تنفذه الخطوة
+@msg	needs `if`, one of {_1}	يلزم `if`، بإحدى القيم {_1}
+@msg	no Camera Raw settings in the file	لا توجد إعدادات Camera Raw في الملف
+@msg	no actions in a set named `{set}`	لا توجد إجراءات في مجموعة باسم `{set}`
+@msg	no destination document	لا يوجد مستند وجهة
+@msg	no file is waiting to open	لا يوجد ملف ينتظر الفتح
+@msg	no layer named "{name}"	لا توجد طبقة باسم «{name}»
+@msg	no surface	لا يوجد سطح
+@msg	no unsaved-changes prompt is open	لا يوجد مربع حوار مفتوح للمطالبة بحفظ التغييرات
+@msg	not enough memory to copy smart-object source IDs	لا توجد ذاكرة كافية لنسخ معرّفات مصادر الكائنات الذكية
+@msg	not enough memory to copy smart-object source records	لا توجد ذاكرة كافية لنسخ سجلات مصادر الكائنات الذكية
+@msg	not enough memory to paste smart-object source records	لا توجد ذاكرة كافية للصق سجلات مصادر الكائنات الذكية
+@msg	periodic source window exceeds its 64 MiB budget	تتجاوز نافذة المصدر الدوري ميزانية الذاكرة المحددة بـ 64 MiB
+@msg	preview worker panicked	تعطل عامل المعاينة
+@msg	printing cannot be cancelled here; use the system print queue	لا يمكن إلغاء الطباعة هنا؛ استخدم قائمة انتظار الطباعة بالنظام
+@msg	queue refused	رُفضت الإضافة إلى قائمة الانتظار
+@msg	raster required	يلزم محتوى نقطي
+@msg	shape.edit is unavailable	الأمر shape.edit غير متاح
+@msg	smart filters can only be dropped on a smart object	لا يمكن إسقاط المرشحات الذكية إلا على كائن ذكي
+@msg	stop recording or playing before loading actions	أوقف التسجيل أو التشغيل قبل تحميل الإجراءات
+@msg	target an alpha or spot channel first	استهدف قناة ألفا أو قناة لون خاص أولًا
+@msg	the channel is too large to copy	القناة أكبر من أن تُنسخ
+@msg	the clipboard origin is outside the coordinate range for a new document	نقطة أصل الحافظة خارج نطاق الإحداثيات لمستند جديد
+@msg	the history can't move while a command is still running on this document	لا يمكن التنقل في السجل أثناء استمرار تنفيذ أمر على هذا المستند
+@msg	the history can't step right now	لا يمكن التنقل خطوة في السجل الآن
+@msg	the history holds only one state	لا يحتفظ السجل إلا بحالة واحدة
+@msg	the history stopped at state {at}	توقف السجل عند الحالة {at}
+@msg	the path cannot be mapped into the type layer	لا يمكن مواءمة المسار مع الطبقة النصية
+@msg	the selection is too large to preview ({pixels} pixels, at most {PREVIEW_MAX_PIXELS})	التحديد أكبر من أن تُعرض معاينته ({pixels} بكسل، والحد الأقصى {PREVIEW_MAX_PIXELS})
+@msg	the settings file is too large	ملف الإعدادات كبير جدًا
+@msg	the smart filters are already on that layer	المرشحات الذكية موجودة على تلك الطبقة بالفعل
+@msg	the type layer is locked	الطبقة النصية مقفلة
+@msg	the type layer is not on a path	الطبقة النصية ليست على مسار
+@msg	the type layer is path text	الطبقة النصية نص على مسار
+@msg	the type layer's transform cannot be inverted	لا يمكن عكس تحويل الطبقة النصية
+@msg	the unsaved-changes prompt is waiting for a save to finish	مربع حوار التغييرات غير المحفوظة ينتظر انتهاء الحفظ
+@msg	there are no actions to save	لا توجد إجراءات لحفظها
+@msg	type.setStyle is unavailable	الأمر type.setStyle غير متاح
+@msg	unknown answer `{other}` (preserve|convert|discard|assignWorking)	الإجابة `{other}` غير معروفة (preserve|convert|discard|assignWorking)
+@msg	unknown condition `{condition}` ({_1})	الشرط `{condition}` غير معروف ({_1})
+@msg	unknown units `{other}` (px|pt)	الوحدات `{other}` غير معروفة (px|pt)
+@msg	unstable preview output	ناتج المعاينة غير مستقر
+@msg	wrapped stroke exceeds its coverage budget	يتجاوز الحد الملتف ميزانية تغطيته
+@msg	{key} must be a finite number	يجب أن تكون {key} عددًا منتهيًا
+@msg	{key} must be a number in 0..1 (1 = 100 %), got {v}	يجب أن تكون {key} عددًا بين 0 و1 (1 = 100 %)، والقيمة الواردة {v}
+
+# Explicit print, color-table and filter display readouts
+	  ·  larger than the paper	  ·  أكبر من الورقة
+	Scale {scale}%  ·  {width} × {height} in{note}	المقياس {scale}%  ·  {width} × {height} بوصة{note}
+	Index {index}: {color}	الفهرس {index}: {color}
+	Strokes: {count} · field {cell} px/node · dab {dab} ms · preview {preview} ms	ضربات الفرشاة: {count} · الحقل {cell} بكسل/عقدة · البصمة {dab} مللي ثانية · المعاينة {preview} مللي ثانية
+	Adaptive Wide Angle ({layer})	زاوية واسعة تكيفية ({layer})
+	{time} ms · straightness {residual} px	{time} مللي ثانية · الاستقامة {residual} بكسل
+
+# Reviewed additions for the official 2026-10-19 source freeze
+	Accept and Go to Conflict	قبول والانتقال إلى التعارض
+	Add Shortcut	إضافة اختصار
+	Background (Default)	خلفية (افتراضي)
+	Bundle Arrow-Key Nudges	تجميع إزاحات مفاتيح الأسهم
+	Button Mode	وضع الأزرار
+	Button Mode On	وضع الأزرار مفعّل
+	Changes undone.	تم التراجع عن التغييرات.
+	Chisel Hard	نحت حاد
+	Chisel Soft	نحت ناعم
+	Choose a new shortcut for this command, or leave it without one.	اختر اختصارًا جديدًا لهذا الأمر، أو اتركه دون اختصار.
+	Clear Selected Guides	مسح خطوط الإرشاد المحددة
+	Clip Thumbnails to Layer Bounds	اقتصاص المصغرات إلى حدود الطبقة
+	Clip thumbnails to layer bounds	اقتصاص المصغرات إلى حدود الطبقة
+	Convert to the working space ({profile})	التحويل إلى مساحة العمل اللونية ({profile})
+	Darken Interface	تعتيم الواجهة
+	Delete this set	حذف هذه المجموعة
+	Drag the handles on the outline to resize and turn it, the square to round its corners, and the dots inside to set where the blur starts.	اسحب مقابض المحيط لتغيير حجمه وتدويره، والمربع لتدوير زواياه، والنقاط الداخلية لتحديد موضع بدء التمويه.
+	Drag the handles on the outline to resize and turn it; the ring sets the blur angle.	اسحب مقابض المحيط لتغيير حجمه وتدويره؛ وتحدد الحلقة زاوية التمويه.
+	Drag the pin to move the band, or its ring to change its blur. Drag the solid lines to widen the sharp band, the dashed lines to set the transition, and the dots to turn it.	اسحب الدبوس لتحريك الشريط، أو حلقته لتغيير تمويهه. اسحب الخطوط المتصلة لتوسيع الشريط الواضح، والمتقطعة لتحديد الانتقال، والنقاط لتدويره.
+	Edit Selected Guides	تحرير خطوط الإرشاد المحددة
+	Free Transform is still being applied; try again when it has finished.	لا يزال التحويل الحر قيد التطبيق؛ حاول مجددًا بعد انتهائه.
+	GPU Memory (MB, 0 = Automatic)	ذاكرة معالج الرسومات (MB، ‏0 = تلقائي)
+	GPU Memory Full	ذاكرة معالج الرسومات ممتلئة
+	GPU memory budget: {budget}	ميزانية ذاكرة معالج الرسومات: {budget}
+	Import Brush from Image…	استيراد فرشاة من صورة…
+	Import Brushes… (.abr or image)	استيراد فرش… (ملف ‎.abr أو صورة)
+	Include All Subfolders	تضمين جميع المجلدات الفرعية
+	Its layers need {needed} of GPU memory; the budget leaves them {budget}.	تحتاج طبقاته إلى {needed} من ذاكرة معالج الرسومات؛ وتتيح لها الميزانية {budget}.
+	Lighten Interface	تفتيح الواجهة
+	Low-Latency Drawing (vsync off, applies at next launch)	رسم منخفض التأخير (تعطيل vsync، يُطبق عند التشغيل التالي)
+	New Set…	مجموعة جديدة…
+	Nudge Bundle Pause (ms)	مهلة تجميع الإزاحات (ms)
+	Open color-less EXR as ACEScg	فتح ملفات EXR الخالية من البيانات اللونية بصيغة ACEScg
+	PhotoCraft Defaults	إعدادات PhotoCraft الافتراضية
+	Put this command's shortcuts back as they were	إعادة اختصارات هذا الأمر إلى حالتها السابقة
+	Remember this choice for future images	تذكّر هذا الاختيار للصور القادمة
+	Replace it with this document, or cancel and use File › Save As to keep both.	استبدله بهذا المستند، أو ألغِ واستخدم ملف › حفظ باسم للاحتفاظ بكليهما.
+	Response curve	منحنى الاستجابة
+	Save a list of these shortcuts as a web page	حفظ قائمة بهذه الاختصارات كصفحة ويب
+	Save the changes to this set	حفظ التغييرات في هذه المجموعة
+	Save these shortcuts as a .kys file	حفظ هذه الاختصارات كملف ‎.kys
+	Save these shortcuts as a new set	حفظ هذه الاختصارات كمجموعة جديدة
+	Set GPU Memory in Preferences › Performance to what your graphics card can hold, at most 3/8 of its memory. Automatic follows Memory Usage, within a quarter of this computer's memory and 3/8 of the card's, and doesn't count the document against a card whose memory is known. The status bar shows GPU Memory Full while they don't fit.	اضبط ذاكرة معالج الرسومات في التفضيلات › الأداء على سعة بطاقتك، بحد أقصى 3/8 من ذاكرتها. يتبع الوضع التلقائي إعداد استخدام الذاكرة، ضمن ربع ذاكرة هذا الحاسوب و3/8 من ذاكرة البطاقة، ولا يحتسب المستند ضمن ذاكرة البطاقة عندما تكون سعتها معروفة. يعرض شريط الحالة «ذاكرة معالج الرسومات ممتلئة» عندما لا تتسع للطبقات.
+	Set deleted.	تم حذف المجموعة.
+	Set saved.	تم حفظ المجموعة.
+	Set:	المجموعة:
+	Show home recent files	إظهار الملفات الحديثة في الصفحة الرئيسية
+	Summarize…	تلخيص…
+	Take the shortcut from the other command and select it	نقل الاختصار من الأمر الآخر وتحديده
+	Technique	التقنية
+	The layers need {needed} of GPU memory and may hold {budget}, so edits that redraw the whole document do it on the CPU. Click to set GPU Memory.	تحتاج الطبقات إلى {needed} من ذاكرة معالج الرسومات والمتاح لها {budget}؛ لذا تُنفذ عمليات التحرير التي تعيد رسم المستند كاملًا على المعالج المركزي. انقر لضبط ذاكرة معالج الرسومات.
+	The transform couldn't be applied.	تعذر تطبيق التحويل.
+	There are too many sets: delete one first.	عدد المجموعات كبير جدًا؛ احذف إحداها أولًا.
+	This document's layers need {needed} but may hold {budget}: whole-document redraws use the CPU	تحتاج طبقات هذا المستند إلى {needed} لكن المتاح لها {budget}: تُستخدم وحدة المعالجة المركزية لإعادة رسم المستند كاملًا
+	This document's layers: {needed} of {budget} for layers	طبقات هذا المستند: {needed} من {budget} مخصصة للطبقات
+	Turn the prompt back on with Ask On Mismatch in Edit › Color Settings.	أعد تفعيل السؤال بخيار «السؤال عند عدم التطابق» في تحرير › إعدادات الألوان.
+	Undo Changes	التراجع عن التغييرات
+	Use the embedded profile ({profile})	استخدام ملف التعريف المضمن ({profile})
+	set name	اسم المجموعة
+	{name} was changed by another app after it was opened or saved here.	عُدّل {name} في تطبيق آخر بعد فتحه أو حفظه هنا.
+	{set} (modified)	{set} (معدّل)
+	{shortcut} is reserved by the system and can't be assigned.	الاختصار {shortcut} محجوز للنظام ولا يمكن تعيينه.
+
+# Reviewed current display diagnostics; internal engine and protocol strings remain unchanged
+@msg	At most {MAX_PRESETS} export presets can be saved	يمكن حفظ {MAX_PRESETS} إعدادات تصدير مسبقة على الأكثر
+@msg	Content-Aware crop fill needs a Background or an active pixel layer	تحتاج تعبئة الاقتصاص المراعية للمحتوى إلى خلفية أو طبقة بكسلات نشطة
+@msg	Content-Aware fill needs pixels outside the area to fill to sample from	تحتاج التعبئة المراعية للمحتوى إلى بكسلات خارج منطقة التعبئة لأخذ عينات منها
+@msg	Content-Aware fill needs some of the image inside the crop to sample from	تحتاج التعبئة المراعية للمحتوى إلى جزء من الصورة داخل الاقتصاص لأخذ عينات منه
+@msg	No such export preset	لا يوجد إعداد تصدير مسبق بهذا الاسم
+@msg	Pass Through applies to groups only; layer {_1} isn't one	نمط التمرير متاح للمجموعات فقط؛ والطبقة {_1} ليست مجموعة
+@msg	PhotoCraft scripts are JSON or command lists (one command.id {json} per line), not Photoshop ExtendScript (.js/.jsx)	برامج PhotoCraft النصية هي ملفات JSON أو قوائم أوامر (أمر command.id {json} واحد في كل سطر)، وليست Photoshop ExtendScript (.js/.jsx)
+@msg	Render Video to a local directory is unavailable on the web	لا يتاح تصيير الفيديو إلى مجلد محلي في إصدار الويب
+@msg	`alternates` maps command ids to lists of shortcuts	يربط `alternates` معرّفات الأوامر بقوائم اختصارات
+@msg	`importKys.path` is a .kys file	يشير `importKys.path` إلى ملف ‎.kys
+@msg	`layers` holds layer ids, got {v}	يحتوي `layers` على معرّفات طبقات؛ والقيمة المستلمة {v}
+@msg	`layers` is a non-empty list of layer ids, got {v}	يجب أن يكون `layers` قائمة غير فارغة من معرّفات الطبقات؛ والقيمة المستلمة {v}
+@msg	`name` renames one layer, not several	يعيد `name` تسمية طبقة واحدة، وليس عدة طبقات
+@msg	`occurrence` requires `name`	يتطلب `occurrence` وجود `name`
+@msg	`{id}` can't be hidden	لا يمكن إخفاء `{id}`
+@msg	`{k}` (for `{id}`) is reserved by the system and can't be assigned	الاختصار `{k}` للأمر `{id}` محجوز للنظام ولا يمكن تعيينه
+@msg	a set name can't contain control characters	لا يمكن أن يحتوي اسم المجموعة على محارف تحكم
+@msg	a set needs a name	تحتاج المجموعة إلى اسم
+@msg	alternate shortcuts are a list of shortcuts (e.g. ["F3"])	الاختصارات البديلة قائمة اختصارات (مثل ["F3"])
+@msg	color must be empty, red, orange, yellow, green, blue, violet, or gray	يجب أن تكون قيمة color فارغة أو red أو orange أو yellow أو green أو blue أو violet أو gray
+@msg	cropFill must be "background" or "contentAware"	يجب أن تكون قيمة cropFill هي "background" أو "contentAware"
+@msg	curve points must be finite numbers 0..100	يجب أن تكون نقاط المنحنى أعدادًا منتهية ضمن 0..100
+@msg	export scale must be a positive number	يجب أن يكون مقياس التصدير عددًا موجبًا
+@msg	face detection failed	فشل اكتشاف الوجوه
+@msg	is a folder	هو مجلد
+@msg	is read-only	للقراءة فقط
+@msg	it has no effects	لا يحتوي على تأثيرات
+@msg	its folder doesn't exist	مجلده غير موجود
+@msg	layerFilter must be an object	يجب أن تكون قيمة layerFilter كائنًا
+@msg	metadata must be none, exif or all	يجب أن تكون قيمة metadata هي none أو exif أو all
+@msg	multiple layers named `{name}`; specify `occurrence`	توجد طبقات متعددة باسم `{name}`؛ حدد `occurrence`
+@msg	needs "color"	يتطلب "color"
+@msg	needs `layer` or `name`	يتطلب `layer` أو `name`
+@msg	no layer named "{name}"; {_1}	لا توجد طبقة باسم "{name}"؛ {_1}
+@msg	no layer named `{name}` at occurrence {index}	لا توجد طبقة باسم `{name}` عند التكرار {index}
+@msg	paths can't be read on the web; pass the file's text instead	لا يمكن قراءة المسارات في إصدار الويب؛ مرّر نص الملف بدلًا منها
+@msg	paths can't be written on the web; omit `path` to get the text back	لا يمكن الكتابة إلى المسارات في إصدار الويب؛ احذف `path` لاستعادة النص في النتيجة
+@msg	profile must be document or srgb	يجب أن تكون قيمة profile هي document أو srgb
+@msg	quality must be within 1..=100	يجب أن تكون الجودة ضمن 1..=100
+@msg	scale must be within 1..=1000 percent	يجب أن يكون المقياس ضمن 1..=1000 بالمئة
+@msg	sizing must be scale or pixels	يجب أن تكون قيمة sizing هي scale أو pixels
+@msg	strokeTrace must be true, false, "stderr" or "off"	يجب أن تكون قيمة strokeTrace هي true أو false أو "stderr" أو "off"
+@msg	strokeTrace must be true, false, "stderr" or "off"; a CSV file is set at launch (--stroke-trace <path>)	يجب أن تكون قيمة strokeTrace هي true أو false أو "stderr" أو "off"؛ ويُحدد ملف CSV عند التشغيل (--stroke-trace <path>)
+@msg	tgaBits must be auto, 24 or 32	يجب أن تكون قيمة tgaBits هي auto أو 24 أو 32
+@msg	the area is too large for Content-Aware fill	المنطقة أكبر من المسموح للتعبئة المراعية للمحتوى
+@msg	the canvas is too large to sample for a selection	مساحة الرسم أكبر من المسموح لأخذ عينات للتحديد
+@msg	the channel paste is too large	بيانات لصق القناة كبيرة جدًا
+@msg	the crop is too large for Content-Aware fill	الاقتصاص أكبر من المسموح للتعبئة المراعية للمحتوى
+@msg	the export would replace the document's own file {target}; give a `path`	سيستبدل التصدير ملف المستند نفسه {target}؛ حدد `path`
+@msg	the image contains no paint (all white or transparent)	لا تحتوي الصورة على رسم (جميع البكسلات بيضاء أو شفافة)
+@msg	the painted part of the image is too large for a brush tip ({_1}×{_2}; max {max} px)	الجزء المرسوم من الصورة أكبر من المسموح لرأس فرشاة ({_1}×{_2}؛ الحد الأقصى {max} بكسل)
+@msg	the pixels contain no paint (all white or transparent)	لا تحتوي البكسلات على رسم (جميعها بيضاء أو شفافة)
+@msg	the smart filter is not a Filter Gallery filter	المرشح الذكي ليس مرشحًا من معرض المرشحات
+@msg	the timeline is {frames} frames; Render Video is limited to {_1} frames	يحتوي الخط الزمني على {frames} إطارًا؛ والحد الأقصى لتصيير الفيديو {_1} إطارًا
+@msg	the {w} x {h} crop is too large for Content-Aware fill	الاقتصاص {w} × {h} أكبر من المسموح للتعبئة المراعية للمحتوى
+@msg	too large for a brush tip ({tw}×{th}; max {MAX_TIP} px)	الحجم أكبر من المسموح لرأس فرشاة ({tw}×{th}؛ الحد الأقصى {MAX_TIP} بكسل)
+@msg	too many uncovered areas	عدد المناطق غير المغطاة كبير جدًا
+@msg	use either `layer` or `name`, not both	استخدم `layer` أو `name` فقط، ولا تستخدمهما معًا
+@msg	{w} × {h} is too large to render as an animated GIF (limit {MAX_GIF_FRAME_PIXELS} pixels per frame)	الحجم {w} × {h} أكبر من المسموح لتصييره كملف GIF متحرك (الحد {MAX_GIF_FRAME_PIXELS} بكسل لكل إطار)

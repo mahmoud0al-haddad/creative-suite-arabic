@@ -417,3 +417,97 @@
 @msg	{v0}: {e}	{v0}: {e}
 @msg	{v0}: {message}	{v0}: {message}
 @msg	{v0}: {v1}	{v0}: {v1}
+@msg	Import Warnings	تحذيرات الاستيراد
+@msg	PDF writer error: {0}	خطأ في كتابة PDF: {0}
+@msg	`params` must be an object	يجب أن يكون `params` كائنًا
+@msg	a text frame can't become a line	لا يمكن تحويل إطار نص إلى خط
+@msg	a text frame needs a closed path	يتطلب إطار النص مسارًا مغلقًا
+@msg	bad page range `{0}`	نطاق صفحات غير صالح: `{0}`
+@msg	cannot read profile: {0}	تعذّر قراءة ملف التعريف: {0}
+@msg	cell range out of bounds	نطاق الخلايا خارج الحدود
+@msg	cross-references go in story text (not table cells or footnotes yet)	تُدرج المراجع المتبادلة في النص الرئيسي؛ لا تدعم خلايا الجداول أو الحواشي بعد
+@msg	docking action contains an unknown panel or an excessive split path	يتضمن إجراء إرساء اللوحات لوحة غير معروفة أو مسار تقسيم يتجاوز الحد
+@msg	document is from a newer DesignCraft (format {0}); please update	أُنشئ المستند بإصدار أحدث من DesignCraft (صيغة {0})؛ يُرجى التحديث
+@msg	empty run in non-empty story	مقطع نصي فارغ داخل تسلسل نصي غير فارغ
+@msg	footnotes can't be inserted in table cells or other footnotes	لا يمكن إدراج الحواشي السفلية في خلايا الجداول أو داخل حواشٍ أخرى
+@msg	give a non-empty `commands` array or `script` text	حدّد مصفوفة `commands` غير فارغة أو نص `script`
+@msg	help.app: give `app` (e.g. "photocraft")	الأمر help.app: حدّد `app` (مثل "photocraft")
+@msg	hyphenation dictionary: bad prefix	قاموس تقسيم الكلمات: بادئة غير صالحة
+@msg	index markers go in story text	تُدرج علامات الفهرس في النص الرئيسي
+@msg	insets need four numbers	تتطلب المسافات الداخلية أربعة أعداد
+@msg	invalid ICC profile: {0}	ملف تعريف ICC غير صالح: {0}
+@msg	invalid measurement `{0}`	قياس غير صالح: `{0}`
+@msg	limit must be a number	يجب أن يكون الحدّ عددًا
+@msg	load a DTD first	حمّل تعريف DTD أولًا
+@msg	missing item	العنصر غير محدّد
+@msg	mixed `,` and `|` in one group	لا يمكن الجمع بين `,` و`|` في مجموعة واحدة
+@msg	move requires a destination panel	يتطلب النقل تحديد لوحة وجهة
+@msg	move requires an existing destination panel	يتطلب النقل لوحة وجهة موجودة
+@msg	needs a file picker	يتطلب نافذة اختيار ملف
+@msg	no DTD loaded	لم يُحمّل تعريف DTD
+@msg	no changes since the last save	لا توجد تغييرات منذ آخر حفظ
+@msg	no char runs	لا توجد مقاطع أحرف
+@msg	no destination chosen	لم تُحدّد وجهة
+@msg	no dialog open	لا يوجد مربع حوار مفتوح
+@msg	no document	لا يوجد مستند
+@msg	no document open	لا يوجد مستند مفتوح
+@msg	no document open (use new_document first)	لا يوجد مستند مفتوح (استخدم new_document أولًا)
+@msg	no element declarations	لا توجد تعريفات للعناصر
+@msg	no root element	لا يوجد عنصر جذري
+@msg	no such column	لم يُعثر على هذا العمود
+@msg	no such item {0}	لم يُعثر على العنصر {0}
+@msg	no such layer {0}	لم يُعثر على الطبقة {0}
+@msg	no such page {0}	لم يُعثر على الصفحة {0}
+@msg	no such row	لم يُعثر على هذا الصف
+@msg	no such story {0}	لم يُعثر على التسلسل النصي {0}
+@msg	no text insertion point	لا توجد نقطة إدراج نص
+@msg	no writer	لا تتوفر أداة كتابة
+@msg	not a DesignCraft document: {0}	ليس مستند DesignCraft: {0}
+@msg	not a font DesignCraft can read	لا يستطيع DesignCraft قراءة هذا الخط
+@msg	not a swatch exchange file	ليس ملفًا لتبادل عيّنات الألوان
+@msg	not in a table cell	الموضع الحالي ليس داخل خلية جدول
+@msg	nothing to encode	لا توجد بيانات لترميزها
+@msg	nothing to export (no pages selected)	لا توجد صفحات للتصدير (لم تُحدّد صفحات)
+@msg	one must be a record number	يجب أن تكون القيمة one رقم سجل
+@msg	page {0} does not exist	الصفحة {0} غير موجودة
+@msg	parent spreads don't turn	لا يمكن تدوير أحياز الصفحات الأصلية
+@msg	place the insertion point in a text frame to create a table	ضع نقطة الإدراج داخل إطار نص لإنشاء جدول
+@msg	place the insertion point in text to insert a cross-reference	ضع نقطة الإدراج في النص لإدراج مرجع متبادل
+@msg	saved panel layout is invalid; reset the workspace first	تخطيط اللوحات المحفوظ غير صالح؛ أعد ضبط مساحة العمل أولًا
+@msg	select a text frame or place the cursor in text	حدّد إطار نص أو ضع المؤشر في النص
+@msg	select text or a text frame	حدّد نصًا أو إطار نص
+@msg	shortcut: a string or null	يجب أن تكون قيمة shortcut نصًا أو null
+@msg	spacing and insets must be finite numbers	يجب أن تكون قيم التباعد والمسافات الداخلية أعدادًا منتهية
+@msg	the document has no index	لا يتضمن المستند فهرسًا
+@msg	the document has no table of contents	لا يتضمن المستند جدول محتويات
+@msg	the file ends early	انتهى الملف قبل اكتمال بياناته
+@msg	the insertion point is not in footnote text	نقطة الإدراج ليست داخل نص حاشية سفلية
+@msg	the script has no steps	لا يتضمن البرنامج النصي خطوات
+@msg	unbalanced end tag	وسم إغلاق بلا وسم فتح مطابق
+@msg	unexpected end of document	انتهى المستند بصورة غير متوقعة
+@msg	unknown colour profile: {0}	ملف تعريف ألوان غير معروف: {0}
+@msg	unmerge cells that span columns first	ألغِ دمج الخلايا الممتدة عبر الأعمدة أولًا
+@msg	unsupported: {0}	غير مدعوم: {0}
+@msg	window.taskBarPin: `at` is [x, y] in points	الأمر window.taskBarPin: قيمة `at` هي [x, y] بوحدة النقاط
+@msg	window.taskBarPin: the Contextual Task Bar isn't showing; give `at`	الأمر window.taskBarPin: شريط المهام السياقي غير ظاهر؛ حدّد `at`
+@msg	zone must be tab, center, left, right, top or bottom	يجب أن تكون zone إحدى القيم tab أو center أو left أو right أو top أو bottom
+@msg	{src}: listed in designmap.xml but missing from the package; its contents were not imported	{src}: مذكور في designmap.xml لكنه غير موجود في الحزمة؛ لم يُستورد محتواه
+@msg	Presentation	عرض تقديمي
+@msg	Quit confirmation is no longer active	لم يعد تأكيد الخروج نشطًا
+@msg	View/Extras	عرض/إضافات
+@msg	View/Proof Setup	عرض/إعداد المحاكاة اللونية
+@msg	View/Rotate Spread	عرض/تدوير الصفحات المتقابلة
+@msg	View/Screen Mode	عرض/وضع الشاشة
+@msg	View/Separations Preview	عرض/معاينة فواصل الألوان
+@msg	View/Structure	عرض/البنية
+@msg	no free recovery document uid	لا يتوفر معرّف مستند استرداد غير مستخدم
+@msg	save or close recovered document {v0} before reusing its recovery folder	احفظ المستند المسترد {v0} أو أغلقه قبل إعادة استخدام مجلد الاسترداد الخاص به
+@msg	the selected objects are locked	العناصر المحددة مقفلة
+@msg	too many recovery checkpoints; save or close the document before choosing another recovery folder	توجد نقاط استرداد كثيرة جدًا؛ احفظ المستند أو أغلقه قبل اختيار مجلد استرداد آخر
+@msg	{command}: cannot stage chapter changes: {e}	{command}: تعذّر تجهيز تغييرات الفصل: {e}
+@msg	{path}: cannot stage changes: {e}	{path}: تعذّر تجهيز التغييرات: {e}
+@msg	{v0}: failed to save chapter {path}: {e}; completed chapter paths: {completed}	{v0}: تعذّر حفظ الفصل {path}: {e}؛ مسارات الفصول التي اكتملت: {completed}
+@msg	{v0}: no free folder for this run	{v0}: لا يتوفر مجلد غير مستخدم لجلسة التشغيل هذه
+@msg	{v0}: recovery folder changed while restoring its lock	{v0}: تغيّر مجلد الاسترداد أثناء استعادة قفله
+@msg	{v0}: this run no longer owns its recovery folder	{v0}: لم تعد جلسة التشغيل هذه تملك مجلد الاسترداد الخاص بها
+@msg	{v0}: this run no longer owns its recovery lock	{v0}: لم تعد جلسة التشغيل هذه تملك قفل الاسترداد الخاص بها

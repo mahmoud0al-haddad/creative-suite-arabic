@@ -6,7 +6,7 @@
 //! - `@id` context = keyed by command id (`tr_id`).
 //! - `@plural` context = plural forms: the English `one|other` key, and the language's forms
 //!   separated by `|` (one form for a language whose nouns don't inflect for number, up to
-//!   three: `one|few|many` for Russian).
+//!   three: `one|few|many` for Russian, Ukrainian and Polish).
 //! - `@msg` context = a status/error message, or a template whose `{placeholders}` match any text
 //!   (`message`, `msg`).
 //! - Any other context = disambiguation for `tr_ctx`.
@@ -16,6 +16,9 @@
 //! A trailing `…` (U+2026) in source must be preserved in translation.
 
 use std::collections::HashMap;
+
+#[path = "message_tokens.rs"]
+mod message_tokens;
 
 /// A parsed translation catalog for one language.
 #[derive(Debug, Default)]
@@ -47,16 +50,21 @@ impl Template {
     fn new(source: &str, translation: String) -> Option<Self> {
         let mut literals = Vec::new();
         let mut names = Vec::new();
-        let mut rest = source;
-        while let Some(open) = rest.find('{') {
-            let close = open + rest.get(open..)?.find('}')?;
-            literals.push(rest.get(..open)?.to_string());
-            names.push(rest.get(open + 1..close)?.to_string());
-            rest = rest.get(close + 1..)?;
+        for token in message_tokens::tokens(source) {
+            match token {
+                message_tokens::Token::Literal(text) => literals.push(text),
+                message_tokens::Token::Field(name) => names.push(name.to_string()),
+            }
         }
-        literals.push(rest.to_string());
-        // Two placeholders in a row can't be told apart.
-        if names.is_empty() || literals.iter().skip(1).rev().skip(1).any(String::is_empty) {
+        // A filename followed by a typed reason is a diagnostic boundary, not a generic wrapper.
+        let typed_reason = names.len() == 2
+            && names.first().is_some_and(|name| matches!(name.as_str(), "name" | "path" | "file"))
+            && names.last().is_some_and(|name| matches!(name.as_str(), "e" | "error" | "reason"))
+            && literals.first().is_some_and(String::is_empty)
+            && literals.get(1).is_some_and(|literal| literal == ": ")
+            && literals.last().is_some_and(String::is_empty);
+        // A wrapper such as {msg} cannot distinguish an error from arbitrary user data.
+        if names.is_empty() || (!typed_reason && !literals.iter().any(|text| text.chars().any(char::is_alphabetic))) {
             return None;
         }
         Some(Self { literals, names, translation })
@@ -69,30 +77,49 @@ impl Template {
     }
 
     /// The translation with this message's placeholder values filled in, if `s` fits the template.
-    /// Each placeholder matches at least one character; between two literals it takes the
-    /// shortest text that fits, the last one takes everything up to the final literal.
+    /// Only a unique complete decomposition is accepted, within fixed work and field limits.
     fn apply(&self, s: &str, catalog: &Catalog, depth: usize) -> Option<String> {
-        let (first, between) = self.literals.split_first()?;
-        let mut rest = s.strip_prefix(first.as_str())?;
-        let mut values = Vec::with_capacity(self.names.len());
-        for (i, literal) in between.iter().enumerate() {
-            let value = if i + 1 == between.len() {
-                let value = rest.strip_suffix(literal.as_str())?;
-                rest = "";
-                value
-            } else {
-                // Skip one character, so the value isn't empty.
-                let skip = rest.chars().next()?.len_utf8();
-                let at = skip + rest.get(skip..)?.find(literal.as_str())?;
-                let value = rest.get(..at)?;
-                rest = rest.get(at + literal.len()..)?;
-                value
-            };
-            if value.is_empty() {
-                return None;
-            }
-            values.push(value);
-        }
+        let literals: Vec<&str> = self.literals.iter().map(String::as_str).collect();
+        let names: Vec<&str> = self.names.iter().map(String::as_str).collect();
+        let values = message_tokens::unique_capture(&literals, &names, s)
+            .or_else(|| {
+                // The backend's `app` field is a catalog product name, not user data.
+                // Binding that finite field disambiguates nested reasons containing ": ".
+                let product_field = if names.contains(&"app") {
+                    "app"
+                } else if literals.first().copied() == Some("Couldn't open ") && names.contains(&"name") {
+                    "name"
+                } else {
+                    return None;
+                };
+                for app in artcraft_launcher_core::SUITE.iter().map(|app| app.name).chain(std::iter::once("ArtCraft Launcher")) {
+                    let mut fixed = vec![self.literals.first()?.clone()];
+                    let mut remaining_names = Vec::new();
+                    for (index, name) in names.iter().enumerate() {
+                        let suffix = self.literals.get(index + 1)?;
+                        if *name == product_field {
+                            let literal = fixed.last_mut()?;
+                            literal.push_str(app);
+                            literal.push_str(suffix);
+                        } else {
+                            remaining_names.push(*name);
+                            fixed.push(suffix.clone());
+                        }
+                    }
+                    let fixed_literals: Vec<&str> = fixed.iter().map(String::as_str).collect();
+                    let found = if remaining_names.is_empty() {
+                        (fixed.first().is_some_and(|literal| literal == s)).then(Vec::new)
+                    } else {
+                        message_tokens::unique_capture(&fixed_literals, &remaining_names, s)
+                    };
+                    if let Some(found) = found {
+                        let mut found = found.into_iter();
+                        return names.iter().map(|name| if *name == product_field { Some(app) } else { found.next() }).collect();
+                    }
+                }
+                None
+            })
+            .filter(|values| values.iter().all(|value| !value.is_empty()))?;
         let values: Vec<String> = self
             .names
             .iter()
@@ -106,7 +133,7 @@ impl Template {
             })
             .collect();
         let args: Vec<(&str, &str)> = self.names.iter().map(String::as_str).zip(values.iter().map(String::as_str)).collect();
-        Some(super::translate::fmt(&self.translation, &args))
+        Some(message_tokens::render(&self.translation, &args))
     }
 }
 
@@ -214,4 +241,36 @@ pub(super) fn unescape(s: &str) -> String {
         }
     }
     out
+}
+
+#[cfg(test)]
+mod diagnostic_template_regressions {
+    use super::Catalog;
+
+    #[test]
+    fn formatted_json_braces_are_literal_and_values_remain_opaque() {
+        let catalog =
+            Catalog::parse("@msg\tCould not parse {{\"force\":true}} for {path}: {reason}\tتعذر تحليل {{\"force\":true}} للملف {path}: {reason}\n");
+        let message = r#"Could not parse {"force":true} for C:\العربية\O'Brien {reason}.pdf: invalid"#;
+        assert_eq!(catalog.message(message).as_deref(), Some(r#"تعذر تحليل {"force":true} للملف C:\العربية\O'Brien {reason}.pdf: invalid"#));
+        let plain = Catalog::parse("@msg\tCannot use {path}\tتعذر استخدام {path}\n");
+        assert_eq!(plain.message("Cannot use ملف {path} {{x}}.pdf").as_deref(), Some("تعذر استخدام ملف {path} {{x}}.pdf"));
+    }
+
+    #[test]
+    fn pure_wrappers_cannot_translate_arbitrary_user_data() {
+        let catalog = Catalog::parse("@msg\t{msg}\tرسالة {msg}\n@msg\t{name}{line}: {msg}\t{name}{line}: {msg}\n");
+        assert_eq!(catalog.message("report {name}.pdf"), None);
+        assert_eq!(catalog.message("a.txt12: a user title"), None);
+    }
+
+    #[test]
+    fn ambiguous_or_inconsistent_captures_are_not_guessed() {
+        let catalog = Catalog::parse(
+            "@msg\tCannot write {name}: {reason}\tتعذر كتابة {name}: {reason}\n@msg\tCompare {name} with {name}\tقارن {name} مع {name}\n",
+        );
+        assert_eq!(catalog.message("Cannot write name: inside: message"), None);
+        assert_eq!(catalog.message("Compare one with two"), None);
+        assert_eq!(catalog.message("Compare واحد with واحد").as_deref(), Some("قارن واحد مع واحد"));
+    }
 }

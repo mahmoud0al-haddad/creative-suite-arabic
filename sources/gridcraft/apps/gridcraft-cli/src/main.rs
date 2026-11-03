@@ -5,6 +5,7 @@
 //! gridcraft-cli convert <in> <out> [--sheet NAME]
 //! gridcraft-cli eval <formula> [--in FILE] [--sheet S] [--cell A1] [--json]
 //! gridcraft-cli cat <file> [--range A1:D20] [--sheet S] [--formulas] [--csv]
+//! gridcraft-cli check <file-or-dir>... [--json] [--tolerance 1e-9] [--max-report N]
 //! gridcraft-cli run [--in FILE | --sample NAME] [--cmd 'id={json}']... [--script FILE.jsonl] [--out FILE] [--print RANGE] [--quiet]
 //! gridcraft-cli commands [--json] [--search X]
 //! gridcraft-cli functions [--json] [--search X] [--category C]
@@ -28,6 +29,8 @@ macro_rules! outln {
     }};
 }
 
+mod check;
+
 use gridcraft_engine::Session;
 use serde_json::{Value, json};
 
@@ -36,6 +39,8 @@ const USAGE: &str = "usage:
   gridcraft-cli convert <in> <out> [--sheet NAME]         xlsx/csv/tsv/json/html by extension
   gridcraft-cli eval <formula> [--in FILE] [--sheet S] [--cell A1] [--json]
   gridcraft-cli cat <file> [--range A1:D20] [--sheet S] [--formulas] [--csv]
+  gridcraft-cli check <file-or-dir>... [--json] [--tolerance 1e-9] [--max-report N]
+                     cached-value calc oracle + XLSX round-trip fidelity (exit 1 on any difference)
   gridcraft-cli run [--in FILE | --sample NAME] [--cmd 'id={json}']... [--script FILE.jsonl]
                      [--out FILE] [--print RANGE] [--quiet]
   gridcraft-cli commands [--json] [--search X]
@@ -71,6 +76,7 @@ fn main() -> ExitCode {
         Some("eval") => eval(rest),
         Some("cat") => cat(rest),
         Some("run") => run(rest),
+        Some("check") => return check::main(rest),
         Some("commands") => commands(rest),
         Some("functions") => functions(rest),
         Some("mcp") => mcp(rest),
@@ -271,7 +277,7 @@ fn convert(args: &[String]) -> Result<(), String> {
     let mut s = open(input)?;
     activate_sheet(&mut s, a.opt("sheet"))?;
     let d = s.doc().map_err(|e| e.to_string())?;
-    let bytes = gridcraft_engine::io::save_bytes(&d.wb, out).map_err(|e| e.to_string())?;
+    let bytes = gridcraft_engine::io::save_file_bytes(&d.wb, out).map_err(|e| e.to_string())?;
     gridcraft_engine::io::write_file(out, &bytes).map_err(|e| e.to_string())?;
     eprintln!("wrote {out} ({} bytes)", bytes.len());
     Ok(())

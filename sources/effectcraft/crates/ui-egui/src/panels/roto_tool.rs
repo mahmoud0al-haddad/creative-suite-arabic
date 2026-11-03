@@ -184,7 +184,7 @@ pub fn interact(
             let dia = (2.0 * f64::from(origin.distance(pos)) / zoom).clamp(1.0, 5000.0).round();
             let key = if refine { "refineDiameter" } else { "diameter" };
             if let Err(e) = app.session.execute("roto.options", json!({key: dia})) {
-                app.ui.status = e.to_string();
+                app.ui.status = crate::diagnostics::message(&e.to_string());
             }
             painter.circle_stroke(origin, (dia * 0.5 * zoom) as f32, Stroke::new(1.5, col));
             painter.text(origin + vec2(0.0, -14.0), Align2::CENTER_BOTTOM, format!("{dia:.0} px"), Tokens::ui(11.0), col);
@@ -232,7 +232,7 @@ pub fn interact(
 fn run_stroke(app: &mut EffectcraftApp, layer: u64, kind: &str, points: &[[f64; 2]], radius: f64) {
     let r = app.session.execute("roto.stroke", json!({"layer": layer, "kind": kind, "points": points, "radius": radius}));
     if let Err(e) = r {
-        app.ui.status = e.to_string();
+        app.ui.status = crate::diagnostics::message(&e.to_string());
     }
 }
 
@@ -305,7 +305,7 @@ pub fn span_bar(app: &mut EffectcraftApp, ui: &mut egui::Ui, p: &egui::Painter, 
         if handle != 0 && resp.drag_stopped() {
             let k = if handle == 1 { "start" } else { "end" };
             if let Err(e) = app.session.execute("roto.span", json!({"layer": layer.id.0, "effect": uid, k: f})) {
-                app.ui.status = e.to_string();
+                app.ui.status = crate::diagnostics::message(&e.to_string());
             }
         }
     }
@@ -340,7 +340,7 @@ pub fn bar_buttons(app: &mut EffectcraftApp, ui: &mut egui::Ui, p: &egui::Painte
     if widgets::text_button(ui, r, label, frozen, &t, egui::Id::new(("roto-freeze", uid))).clicked() {
         let id = if frozen { "roto.unfreeze" } else { "roto.freeze" };
         if let Err(e) = app.session.execute(id, json!({"layer": layer.id.0, "effect": uid})) {
-            app.ui.status = e.to_string();
+            app.ui.status = crate::diagnostics::message(&e.to_string());
         }
     }
     app.auto.add("layerPanel.roto.freeze", r, label);

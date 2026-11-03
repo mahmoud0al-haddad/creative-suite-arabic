@@ -1,0 +1,8 @@
+[
+  "  ·  larger than the paper",
+  "Scale {scale}%  ·  {width} × {height} in{note}",
+  "Index {index}: {color}",
+  "Strokes: {count} · field {cell} px/node · dab {dab} ms · preview {preview} ms",
+  "Adaptive Wide Angle ({layer})",
+  "{time} ms · straightness {residual} px"
+]

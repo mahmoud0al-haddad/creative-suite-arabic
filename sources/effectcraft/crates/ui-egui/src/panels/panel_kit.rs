@@ -57,7 +57,7 @@ pub fn exec(app: &mut EffectcraftApp, id: &str, p: serde_json::Value) -> Option<
     match app.session.execute(id, p) {
         Ok(v) => Some(v),
         Err(e) => {
-            app.ui.status = e.to_string();
+            app.ui.status = crate::diagnostics::message(&e.to_string());
             None
         }
     }

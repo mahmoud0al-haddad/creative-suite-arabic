@@ -13,9 +13,11 @@ mod arabic;
 mod cs;
 mod de;
 mod es;
+mod fr;
 mod ko;
 mod pt;
 mod ru;
+mod sr;
 mod zh;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -33,10 +35,13 @@ pub enum Language {
     PtBr,
     De,
     Cs,
+    Fr,
+    Sr,
 }
 
 impl Language {
-    pub const ALL: [Self; 10] = [Self::En, Self::Ar, Self::Es, Self::Zh, Self::Ja, Self::Ko, Self::Ru, Self::PtBr, Self::De, Self::Cs];
+    pub const ALL: [Self; 12] =
+        [Self::En, Self::Ar, Self::Es, Self::Zh, Self::Ja, Self::Ko, Self::Ru, Self::PtBr, Self::De, Self::Cs, Self::Fr, Self::Sr];
 
     /// The language's own name, shown in the switcher.
     pub fn name(self) -> &'static str {
@@ -51,6 +56,8 @@ impl Language {
             Self::PtBr => "Português (Brasil)",
             Self::De => "Deutsch",
             Self::Cs => "Čeština",
+            Self::Fr => "Français",
+            Self::Sr => "Srpski",
         }
     }
 
@@ -67,6 +74,8 @@ impl Language {
             Self::PtBr => "pt",
             Self::De => "de",
             Self::Cs => "cs",
+            Self::Fr => "fr",
+            Self::Sr => "sr",
         }
     }
 
@@ -86,6 +95,8 @@ impl Language {
             "pt" => Some(Self::PtBr),
             "de" => Some(Self::De),
             "cs" => Some(Self::Cs),
+            "fr" => Some(Self::Fr),
+            "sr" => Some(Self::Sr),
             _ => None,
         }
     }
@@ -123,6 +134,8 @@ impl Language {
             Self::PtBr => pt::translate(text),
             Self::De => de::translate(text),
             Self::Cs => cs::translate(text),
+            Self::Fr => fr::translate(text),
+            Self::Sr => sr::translate(text),
         };
         translated.unwrap_or_else(|| text.rsplit_once('|').map_or(text, |(_, label)| label))
     }
@@ -291,6 +304,12 @@ const JAPANESE: &[(&str, &str)] = &[
     ("Select\nObjects", "オブジェクトの選択"),
     ("Themes", "テーマ"),
     ("Margins", "余白"),
+    ("Left Margin", "左余白"),
+    ("Right Margin", "右余白"),
+    ("Top Margin", "上余白"),
+    ("Bottom Margin", "下余白"),
+    ("Header Margin", "ヘッダーの余白"),
+    ("Footer Margin", "フッターの余白"),
     ("Size", "サイズ"),
     ("Print\nArea", "印刷範囲"),
     ("Set Print Area", "印刷範囲の設定"),
@@ -341,6 +360,8 @@ const JAPANESE: &[(&str, &str)] = &[
     ("Clear Validation", "入力規則のクリア"),
     ("Group", "グループ化"),
     ("Ungroup", "グループ解除"),
+    ("Show Detail", "詳細データの表示"),
+    ("Hide Detail", "詳細を表示しない"),
     ("Subtotal", "小計"),
     ("Data\nAnalysis", "データ分析"),
     ("Data Analysis", "データ分析"),
@@ -491,6 +512,8 @@ const JAPANESE: &[(&str, &str)] = &[
     ("File Name", "ファイル名"),
     ("Sheet Name", "シート名"),
     ("Go to Header", "ヘッダーに移動"),
+    ("Different First Page", "先頭ページのみ別指定"),
+    ("Different Odd & Even Pages", "奇数/偶数ページ別指定"),
     ("Go to Footer", "フッターに移動"),
     ("Ruler", "ルーラー"),
     // File › Backstage view.
@@ -508,6 +531,16 @@ const JAPANESE: &[(&str, &str)] = &[
     ("Recent", "最近使ったアイテム"),
     ("No recent workbooks yet.", "最近使ったブックはまだありません。"),
     ("More workbooks", "その他のブック"),
+    ("Modified", "更新日時"),
+    ("Not available", "利用できません"),
+    ("Just now", "たった今"),
+    ("Yesterday", "昨日"),
+    ("{n} min ago", "{n} 分前"),
+    ("{n} h ago", "{n} 時間前"),
+    ("{n} days ago", "{n} 日前"),
+    ("{n} weeks ago", "{n} 週間前"),
+    ("{n} months ago", "{n} か月前"),
+    ("{n} years ago", "{n} 年前"),
     ("Browse…", "参照…"),
     ("Not saved yet", "まだ保存されていません"),
     ("Location", "場所"),
@@ -529,9 +562,17 @@ const JAPANESE: &[(&str, &str)] = &[
     ("Keywords", "キーワード"),
     ("Description", "説明"),
     ("No workbook is open.", "ブックが開かれていません。"),
+    ("Save as type", "ファイルの種類"),
+    ("Excel Workbook (*.xlsx)", "Excel ブック (*.xlsx)"),
+    ("CSV UTF-8 (Comma delimited) (*.csv)", "CSV UTF-8 (コンマ区切り) (*.csv)"),
+    ("Web Page (*.html)", "Web ページ (*.html)"),
+    ("PDF (*.pdf)", "PDF ファイル (*.pdf)"),
+    ("Download", "ダウンロード"),
+    (
+        "A CSV file, web page or PDF is a copy: the workbook keeps its own file.",
+        "CSV ファイル、Web ページ、PDF はコピーです。ブックは元のファイルのままです。",
+    ),
     ("Save the workbook under another name or in another folder.", "ブックを別の名前または別のフォルダーに保存します。"),
-    ("Download (.xlsx)", "ダウンロード (.xlsx)"),
-    ("PDF, CSV and web pages are on the Export page.", "PDF、CSV、Web ページは [エクスポート] ページにあります。"),
     ("Print Active Sheets", "作業中のシートを印刷"),
     ("Print Entire Workbook", "ブック全体を印刷"),
     ("Fit Sheet on One Page", "シートを 1 ページに印刷"),
@@ -550,6 +591,7 @@ const JAPANESE: &[(&str, &str)] = &[
     ("Options|General", "全般"),
     ("Options|Save", "保存"),
     ("Show formula bar", "数式バーを表示する"),
+    ("Enable AutoComplete for cell values", "セルの値にオートコンプリートを使用する"),
     ("Save .xlsx workbooks automatically after every change", "変更のたびに .xlsx ブックを自動的に保存する"),
     ("Workbook calculation", "ブックの計算"),
     ("Enable iterative calculation", "反復計算を行う"),
@@ -594,6 +636,8 @@ mod tests {
             assert!(es::translate(english).is_some_and(|text| !text.is_empty()), "missing Spanish: {english}");
             assert!(de::translate(english).is_some_and(|text| !text.is_empty()), "missing German: {english}");
             assert!(cs::translate(english).is_some_and(|text| !text.is_empty()), "missing Czech: {english}");
+            assert!(fr::translate(english).is_some_and(|text| !text.is_empty()), "missing French: {english}");
+            assert!(sr::translate(english).is_some_and(|text| !text.is_empty()), "missing Serbian: {english}");
         }
         assert_eq!(Language::Ja.tr("Data"), "データ");
         assert_eq!(Language::Zh.tr("Data"), "数据");
@@ -605,6 +649,8 @@ mod tests {
         assert_eq!(Language::Es.tr("Sheet1!A1"), "Sheet1!A1");
         assert_eq!(Language::De.tr("Data"), "Daten");
         assert_eq!(Language::De.tr("Sheet1!A1"), "Sheet1!A1");
+        assert_eq!(Language::Fr.tr("Data"), "Données");
+        assert_eq!(Language::Fr.tr("Sheet1!A1"), "Sheet1!A1");
         assert_eq!(Language::PtBr.tr("Date"), "Data");
         assert_eq!(Language::PtBr.tr("Sheet1!A1"), "Sheet1!A1");
         assert_eq!(Language::Ja.tr("Sheet1!A1"), "Sheet1!A1");
@@ -621,6 +667,10 @@ mod tests {
         assert_eq!(Language::Ja.tr("Orientation"), "方向");
         assert_eq!(Language::Cs.tr("Page Layout|Orientation"), "Orientace");
         assert_eq!(Language::Cs.tr("Orientation"), "Orientace textu");
+        assert_eq!(Language::Sr.tr("Data"), "Podaci");
+        assert_eq!(Language::Sr.tr("Sheet1!A1"), "Sheet1!A1");
+        assert_eq!(Language::Sr.tr("Page Layout|Orientation"), "Orijentacija");
+        assert_eq!(Language::Sr.tr("Orientation"), "Orijentacija");
         assert_eq!(Language::parse("xx"), None);
     }
 
@@ -656,6 +706,12 @@ mod tests {
         assert_eq!(Language::from_tag("cs-CZ"), Some(Language::Cs));
         assert_eq!(Language::from_tag("cs_CZ.UTF-8"), Some(Language::Cs));
         assert_eq!(Language::parse("cs"), Some(Language::Cs));
+        assert_eq!(Language::from_tag("fr-FR"), Some(Language::Fr));
+        assert_eq!(Language::from_tag("fr_CA"), Some(Language::Fr));
+        assert_eq!(Language::parse("fr"), Some(Language::Fr));
+        assert_eq!(Language::from_tag("sr-Latn-RS"), Some(Language::Sr));
+        assert_eq!(Language::from_tag("sr-RS"), Some(Language::Sr));
+        assert_eq!(Language::parse("sr"), Some(Language::Sr));
     }
 
     #[test]
@@ -734,6 +790,10 @@ pub fn error_text(message: &str) -> String {
     if CURRENT.get() != Language::Ar {
         return message.to_string();
     }
+    let dynamic = crate::diagnostic_display::display_message(message);
+    if dynamic != message {
+        return dynamic;
+    }
     let translated = t(message);
     if translated != message {
         return translated.to_string();
@@ -744,7 +804,7 @@ pub fn error_text(message: &str) -> String {
         ("unsupported: ", "Unsupported: {message}"),
     ] {
         if let Some(detail) = message.strip_prefix(prefix) {
-            return error_format(template, &[("message", t(detail).to_string())]);
+            return error_format(template, &[("message", crate::diagnostic_display::display_message(detail))]);
         }
     }
     if let Some(command) = message.strip_prefix("unknown command `").and_then(|value| value.strip_suffix('`')) {
@@ -754,7 +814,7 @@ pub fn error_text(message: &str) -> String {
         if let Some((command, detail)) = message.strip_prefix(prefix).and_then(|value| value.split_once("`: ")) {
             return error_format(
                 "Invalid parameters for `{command}`: {message}",
-                &[("command", command.to_string()), ("message", t(detail).to_string())],
+                &[("command", command.to_string()), ("message", crate::diagnostic_display::display_message(detail))],
             );
         }
     }
@@ -764,7 +824,7 @@ pub fn error_text(message: &str) -> String {
                 if let Some((command, detail)) = value.split_once(marker) {
                     return error_format(
                         "Command `{command}` is not available: {message}",
-                        &[("command", command.to_string()), ("message", t(detail).to_string())],
+                        &[("command", command.to_string()), ("message", crate::diagnostic_display::display_message(detail))],
                     );
                 }
             }
@@ -797,5 +857,24 @@ mod mixed_format_tests {
     fn named_and_positional_values_keep_their_own_indices_and_literal_braces() {
         super::set_current(&egui::Context::default(), super::Language::En);
         assert_eq!(super::format("{name}: {} / {}", &[("name", "اسم {x}".into()), ("", "abc".into()), ("", "123".into())]), "اسم {x}: abc / 123");
+    }
+}
+
+/// Arabic elapsed time, with singular/dual/plural forms; numbers stay logical ASCII values.
+pub(crate) fn arabic_ago(n: u64, unit: &str) -> String {
+    let (single, dual, plural, accusative) = match unit {
+        "minute" => ("دقيقة واحدة", "دقيقتين", "دقائق", "دقيقة"),
+        "hour" => ("ساعة واحدة", "ساعتين", "ساعات", "ساعة"),
+        "day" => ("يوم واحد", "يومين", "أيام", "يومًا"),
+        "week" => ("أسبوع واحد", "أسبوعين", "أسابيع", "أسبوعًا"),
+        "month" => ("شهر واحد", "شهرين", "أشهر", "شهرًا"),
+        "year" => ("سنة واحدة", "سنتين", "سنوات", "سنة"),
+        _ => return std::format!("قبل {n} {unit}"),
+    };
+    match n {
+        1 => std::format!("قبل {single}"),
+        2 => std::format!("قبل {dual}"),
+        _ if (3..=10).contains(&(n % 100)) => std::format!("قبل {n} {plural}"),
+        _ => std::format!("قبل {n} {accusative}"),
     }
 }

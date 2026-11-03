@@ -4,19 +4,20 @@ Independent edition maintained by **mahmoud0al-haddad**. Original applications a
 
 | Workspace | Base version | Original source | Exact upstream commit |
 | --- | --- | --- | --- |
-| cadcraft | 0.5.0 | [cadcraft](https://github.com/storytold/cadcraft) | `54ea5e743a29acd8f3178cfaa82fb74a38c2de72` |
-| deckcraft | 0.5.0 | [deckcraft](https://github.com/storytold/deckcraft) | `be14248577b92059eb2b8c0c9460cceffbc1f01d` |
-| designcraft | 0.6.0 | [designcraft](https://github.com/storytold/designcraft) | `ca343e8985dc4d92dd65cf77a8198723b5f8a9eb` |
-| effectcraft | 0.8.0 | [effectcraft](https://github.com/storytold/effectcraft) | `67434e90388b6dca4417555346fa6850b6f96033` |
-| filmcraft | 0.6.0 | [filmcraft](https://github.com/storytold/filmcraft) | `0800a8b0aa4a703ba42172f415b45a61f8d8a5e1` |
-| gridcraft | 0.5.0 | [gridcraft](https://github.com/storytold/gridcraft) | `fb3737aa0308114dc14afd1dc4960a939bc34eed` |
-| lightcraft | 0.6.0 | [lightcraft](https://github.com/storytold/lightcraft) | `76b5377868d912db69a777bda253a5b1b96b22bd` |
-| pdfcraft | 0.6.0 | [pdfcraft](https://github.com/storytold/pdfcraft) | `881682c49570b8d29d74c95fa54354190fd454a1` |
-| photocraft | 0.7.0 | [photocraft](https://github.com/storytold/photocraft) | `2d6ff3f6cc015ff4d13e1dfbdf656317ec3a3451` |
-| soundcraft | 0.5.0 | [soundcraft](https://github.com/storytold/soundcraft) | `240aa848a04811ffff75cf193e69d9d4c404ae68` |
-| vectorcraft | 0.9.0 | [vectorcraft](https://github.com/storytold/vectorcraft) | `2ac3ba2b866ad9d34b2252dd8024f73e34f4b2b8` |
-| wordcraft | 0.5.0 | [wordcraft](https://github.com/storytold/wordcraft) | `30993ffb3f3ec710e0a285865e4de731518687ae` |
-| craft-launcher | 0.2.1 | [craft-launcher](https://github.com/storytold/craft-launcher) | `c273a94a9a37c7a2d7a07fd6cc9ca44e3dcc6b9c` |
+| cadcraft | 0.8.0 | [cadcraft](https://github.com/storytold/cadcraft) | `714111d528acc86dc6b41e03f9a82cabc1066dca` |
+| craft-launcher | 0.5.1 | [craft-launcher](https://github.com/storytold/craft-launcher) | `ed6b32ebf365736ba50bb1ccdc24f183415095f5` |
+| deckcraft | 0.8.0 | [deckcraft](https://github.com/storytold/deckcraft) | `22db9261f9d1a214c296fd390173130c45d76d66` |
+| designcraft | 0.9.0 | [designcraft](https://github.com/storytold/designcraft) | `7cb8b12507def48fb9346e5004340b5e8e4cfcb7` |
+| effectcraft | 0.11.1 | [effectcraft](https://github.com/storytold/effectcraft) | `2a01226894c6bc58ae4fadcc24a10198d693acaa` |
+| figcraft | 0.7.0 | [figcraft](https://github.com/storytold/figcraft) | `47438dd4a2e8b49a7e6bb3dfd480262dadc37f12` |
+| filmcraft | 0.9.0 | [filmcraft](https://github.com/storytold/filmcraft) | `4a69a038d32761f604b3c7e4845b21fb40b3cbe4` |
+| gridcraft | 0.8.0 | [gridcraft](https://github.com/storytold/gridcraft) | `823c56582d00be91e31b4f7f3680496cf89e84fb` |
+| lightcraft | 0.9.1 | [lightcraft](https://github.com/storytold/lightcraft) | `4f0b110bcbd2e350c6d97b47f1d824c2222295c4` |
+| pdfcraft | 0.9.0 | [pdfcraft](https://github.com/storytold/pdfcraft) | `645016addcfb9078c557f0189559ab47cdcee057` |
+| photocraft | 0.10.0 | [photocraft](https://github.com/storytold/photocraft) | `8407d9ccb125af52944fca9d228383459f94aaef` |
+| soundcraft | 0.8.0 | [soundcraft](https://github.com/storytold/soundcraft) | `2578ea69a388395ddadb6394d7b4ab40f21aa670` |
+| vectorcraft | 0.13.1 | [vectorcraft](https://github.com/storytold/vectorcraft) | `904f0fe5227bd987d55319e89a38b4b8f046998c` |
+| wordcraft | 0.8.0 | [wordcraft](https://github.com/storytold/wordcraft) | `f2e15cf8f899a79899a2d9595ca4ce7df1e5ea22` |
 
 ## Shared build inputs
 
@@ -36,3 +37,9 @@ These acknowledgments describe inputs used, not a claim that those contributors 
 ## Renderer and local modifications
 
 Patched **egui/epaint 0.36.2** keep their MIT/Apache licenses and provenance under each workspace vendor directory. This edition modifies shaping/bidi line layout, cursor/selection handling, ordinary Arabic font selection, language startup behavior, catalogs/diagnostics and neutral independent branding. Other dependencies keep their own licenses. No proprietary Windows font or Microsoft runtime binary is included in the public source export.
+
+## Additional open interface fallbacks
+
+DeckCraft reads the separate optional `craft-fonts/fonts/community-ui-manifest.txt`: Nanum Gothic Regular (NHN Corporation / Sandoll Communications, Google Fonts commit `133ccbee9a8b408eb71f31a36ccb9116f5c695ad`) and ZCOOL XiaoWei Regular (ZCOOL XiaoWei Project Authors / Li Dawei, commit `d427686494a89f0b7ecb9833273b6aabb83a6350`). Both retain their original SIL OFL-1.1 text, metadata and exact file SHA-256 under their input directories. Other applications keep their existing font manifests.
+
+The same DeckCraft-only optional manifest also supplies its default Inter Variable family by Rasmus Andersson / The Inter Project Authors, Google Fonts commit `0b58fb370093f9a9f4ff785d94405710b79de67c`, TTF SHA-256 `29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031`. Its original OFL and metadata are retained in `fonts/community-inter/`.
